@@ -1,0 +1,56 @@
+<h3>Calendar</h3>
+
+<?php echo $this->form; ?>
+
+<?php if($this->id > 0):?>
+<br clear="all"/>
+
+<h3>Holidays</h3>
+
+<table border="1">
+
+<thead>
+	<tr>
+		<th>Year</th>
+		<th>Date</th>
+		<th>Type</th>
+		<th>Holiday</th>
+		<th></th>
+	</tr>
+</thead>
+
+<tbody>
+
+<?php foreach ($this->calendar_entries as $value): ?>
+	<tr class="year-<?php echo $value->getYear(); ?>">
+		<td><?php if((int) $value->getYear() > 0) echo $value->getYear();?></td>
+		<td><?php echo $value->getDate();?></td>
+		<td><?php echo ucfirst($value->getType());?></td>
+		<td>			
+			<?php echo $value->getName(); ?>
+		</td>
+		<td>			
+			<a href="/manager/rate/deletecalendarentry/id/<?php echo $value->getId(); ?>">
+				Delete
+			</a>
+		</td>
+	</tr>
+<?php endforeach; ?>
+</tbody>
+</table>
+
+<br clear="all"/>
+
+<h3>Add holiday</h3>
+<?php echo $this->entryform; ?>
+<?php endif; ?>
+
+<script>
+<!--
+	$(function() {
+		$('button.cancel').click(function() {
+			history.back();	 
+		} ); 
+	} );
+//-->
+</script>

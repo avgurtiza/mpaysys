@@ -1,0 +1,11 @@
+<table>
+    <tbody>
+        <?php foreach($this->riders as $rider) : ?>
+        <tr rider-id="<?php echo $rider->getId(); ?>" class="clickable rider-row">
+            <td><?php echo $this->groups[$rider->getGroupId()]; ?></td>
+            <td><?php echo $rider->getLastName(); ?>, <?php echo $rider->getFirstName(); ?></td>
+            <td><?php echo $rider->getEmployeeNumber(); ?></td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>

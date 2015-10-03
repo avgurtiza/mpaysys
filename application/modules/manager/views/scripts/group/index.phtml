@@ -1,0 +1,26 @@
+<table border="1">
+<thead>
+	<tr>
+		<th>Client</th>
+		<th>Group name</th>
+		<th>Actions</th>
+	</tr>
+</thead>
+<tbody>
+<?php foreach ($this->groups as $value): ?>
+	<tr>
+		<td><?php echo $this->clients[$value->getClientId()]; ?></td>
+		<td><?php echo $value->getName(); ?></td>
+		<td>
+			<a href="/manager/group/employees/id/<?php echo $value->getId(); ?>">Employees</a>
+			<a href="/manager/group/edit/id/<?php echo $value->getId(); ?>">Edit</a>
+		</td>
+	</tr>
+<?php endforeach; ?>
+	<tr>
+		<td><a href="/manager/group/edit"><span class="icon icon-gray-add"></span>  Add new group</a></td>
+		<td></td>
+		<td></td>
+	</tr>	
+</tbody>
+</table>

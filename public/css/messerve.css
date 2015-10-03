@@ -1,0 +1,283 @@
+@font-face {
+	font-family: OpenSans;
+	src: url('/fonts/OpenSans-Regular.ttf'); /* IE9 */
+}
+
+
+
+html,body {
+	font-family: 'OpenSans', sans-serif !important;
+	 height: 101%;
+	 color: #333;
+    /* font-size: 0.9em !important; */
+}
+
+input, button, select, .ibutton { 
+	/* font-family: 'OpenSans', sans-serif !important; */
+	color: #333;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px; 
+	border: 1px solid #666;
+}
+
+
+div#main {
+	width: 960px;
+	margin: 0 auto;
+}
+
+table td {
+	border-color: #666;
+}
+
+table th {
+	border-color: #666;
+	background-color: #666;
+	color: #ddd;
+}
+
+input {
+	border: 1px solid #ccc;
+  /* Safari 5, Chrome support border-radius without vendor prefix.
+   * FF 3.0/3.5/3.6, Mobile Safari 4.0.4 require vendor prefix.
+   * No support in Safari 3/4, IE 6/7/8, Opera 10.0.
+   */
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  padding: 2px 4px;
+}
+
+.zend_form {
+	font-weight: bold;
+}
+
+fieldset {
+	border: 1px solid #666;
+	width: 600px;
+	padding: 8px;
+	-moz-border-radius: 2px;
+  	-webkit-border-radius: 2px;
+  	border-radius: 2px;
+}
+
+fieldset legend {
+	margin: 0 4px;
+	padding: 0 4px;
+	font-weight: bold;
+	font-style: italic;
+	color: #666;
+}
+
+.zend_form dt {
+	float: left;
+	clear: left;
+	width: 120px;
+	text-align: right;
+	padding: 4px 0;
+}
+
+.zend_form label { padding-right: 4px; }
+
+dl dd { margin-bottom: 0; }
+
+form.bigform .zend_form dt {
+	float: left;
+	clear: left;
+	width: 180px;
+	text-align: right;
+	padding: 4px 0;
+}
+
+.zend_form dd {
+	float: left;
+	clear: right;
+	padding: 4px 0;
+}
+
+ul.errors {
+	margin: 0;
+}
+
+ul.errors li {
+	list-style: none;
+	font-weight: normal;
+	font-style: italic;
+	color: #C00;
+	font-size: 0.8em;
+}
+
+.hor-menu {
+	margin: 0;
+}
+
+.hor-menu dd {
+	padding: 0 8px;
+	float: left;
+	margin: 0
+}
+
+input[name=name] {
+	width: 250px;
+}
+
+#monthly-element input,#hourly-element input {
+	width: 80px;
+}
+
+.attendance-grid {
+	width: 98%;
+}
+
+.attendance-grid td {
+	width: 175px;
+	text-align: left;
+}
+
+.attendance-grid dl {
+	margin-left: 0;
+}
+
+.attendance-grid dt {
+	font-weight: bold;
+	width: 40%;
+	float: left;
+	text-align: left;
+}
+
+.attendance-grid dd {
+	width: 48%;
+	float: left;
+}
+
+ul.breadcrumb {
+	margin: 0;
+	padding: 0;
+	margin-bottom: 2.8em;
+	clear: right;
+}
+
+.breadcrumb li {
+	margin-left: 0;
+	float: left;
+	padding: 0 8px;
+	list-style: none;
+	height: 2.0em;
+	line-height: 2.0em;
+	border: 1px solid #666;
+	border-width: 1px 0;
+	font-size: 1.4em;
+
+}
+
+.breadcrumb li:last-child {
+	clear: right;
+	border-width: 1px 1px 1px 0;
+}
+
+.breadcrumb li.parent {
+	background-color: #666;
+	font-weight: bold;
+}
+
+.breadcrumb a:link,.breadcrumb a:visited {
+	text-decoration: none;
+}
+
+.breadcrumb a:hover {
+	text-decoration: underline;
+}
+
+li.parent a:link,li.parent a:visited {
+	color: #eee !important;
+}
+
+#content table {
+	clear: left;
+}
+
+.breadcrumb .title {
+	font-weight: bold;
+	font-style: italic;
+	color: #333;
+}
+
+.attendance-grid td:hover {
+	cursor: pointer;
+	background-color: #ddd;
+}
+
+.pseudo-table dt {
+	float: left;
+	clear: left;
+	width: 180px;
+	text-align: left;
+	padding: 4px 0;
+	font-weight: bold;
+}
+
+.pseudo-table dd {
+	float: left;
+	clear: right;
+	padding: 4px 0;
+}
+
+dt.deductions { font-style: italic; }
+
+
+#add-deduct .zend_form { margin-left: 0; padding-left: 0; }
+#attendance_id-element, #add-deduct dt#deduct-label, #add-deduct dt#add-label { display: none; }
+
+dd#deduct-element, dd#add-element { width: 350px; }
+dd#deduct-element fieldset, dd#add-element fieldset { width: 320px; }
+
+.deductions { color: #f00; }
+
+p.description { font-weight: normal; font-size: 0.8em; font-style: italic; }
+
+.puny { font-size: 0.8em; color: #999; }
+
+.dtr { width: 100%; }
+.dtr .hours input[type=text] { width: 5em; text-align: right; }
+.dtr td { border-width: 0 0 1px 0; }
+
+td.ot-type { font-size: 0.8em; }
+
+body.payslips { font-size: 0.8em; }
+
+tr.special, tr.legal { background-color: #ffa; }
+
+dl.hours-breakdown { font-size: 0.8em; margin: 0; }
+dl.hours-breakdown dt { float: left; width: 80px; clear: left; font-weight: bold; }
+dl.hours-breakdown dd { float: left; width: 80px; clear: right; }
+
+dl#bop-list { font-size: 0.8em; margin: 0; clear: both; }
+dl#bop-list dt { float: left; width: 200px; clear: left; font-weight: bold; }
+dl#bop-list dd { float: left; width: 80px; clear: right; }
+
+input.small-field { width: 1em !important; }
+
+ .sort-this { cursor: pointer; }
+ 
+ a.ibutton { text-decoration: none; padding: 2px 6px; }
+ 
+ /* select.big-select { font-size: 1.2em !important; } */
+
+ul.report-list li { list-style: none; }
+ul.report-list li a { font-size: 0.7em; color: gray; }
+ul.report-list li:first-child a { font-size: 1.0em; color: black;}
+
+.warn { color: #f00 !important; font-weight: bold; }
+
+.civtime { text-align: right; margin-right: 0.5em; }
+
+.clickable:hover { background-color: #FCF0AD; cursor: pointer; }
+
+.generic-modal { display: none; }
+
+th { color: #fff !important; }
+
+.dtr input { margin: 0;  }
+
+.bop #content { font-size: 0.8em;  }

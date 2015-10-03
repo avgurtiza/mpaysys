@@ -1,0 +1,20 @@
+<table border="1">
+<thead>
+	<tr>
+		<th>Calendars</th>
+	</tr>
+</thead>
+<tbody>
+<?php foreach ($this->calendars as $value): ?>
+	<tr>
+		<td>			
+			<a href="/manager/rate/calendaredit/id/<?php echo $value->getId(); ?>">
+				<?php echo $value->getName(); ?>
+			</a>
+		</td>
+	</tr>
+<?php endforeach; ?>
+	<tr>
+		<td><a href="/manager/rate/calendaredit"><span class="icon icon-gray-add"></span>  Add new calendar</a></td>
+	</tr>	
+</tbody>

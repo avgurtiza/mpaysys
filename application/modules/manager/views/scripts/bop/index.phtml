@@ -1,0 +1,9 @@
+<?php foreach($this->bop_forms as $bfvalue): ?>
+<fieldset id="bop-<?php echo $bfvalue['id']; ?>">
+	<legend><?php echo $bfvalue['name']?></legend>
+	<p>
+		<?php echo $bfvalue['form']; ?>
+	</p>
+</fieldset>
+<?php endforeach;?>
+<br />

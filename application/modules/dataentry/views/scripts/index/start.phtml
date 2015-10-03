@@ -1,0 +1,35 @@
+<form method="post" action="" id="find-rider">
+    Rider <em><small>(type name to start searching)</small></em>    <input type="text" name="rider" id="rider" />
+</form>
+
+<br />
+
+<div id="riders"></div>
+
+<script>
+    $(function() {
+        $('#rider').on('keyup', function() {
+
+            var rider = $(this);
+
+            if(rider.val().length >= 3) {
+
+                $.post('/dataentry/index/riders', {
+                        'keywords': rider.val()
+                    } , function(data) {
+                        $('#riders').html(data);
+                    }
+                );
+            } else {
+                $('#riders').empty();
+            }
+        } );
+
+        $('#riders').on('click', '.rider-row'
+            , function() {
+                var rider = $(this).attr('rider-id');
+                window.location.href = '/dataentry/index/rider/id/' + rider;
+            }
+        );
+    } );
+</script>

@@ -1,0 +1,34 @@
+<ul class="breadcrumbs">
+	<li class=""><a href="/manager/client">Clients</a></li>
+	<li class=""><a href="/manager/client/edit/id/<?php echo $this->client->getId();?>"><?php echo $this->client->getName();?></a></li>
+	<?php if($this->employee): ?>
+	<li class="current"><?php echo $this->employee->getFirstName();?>  <?php echo $this->employee->getLastName();?></li>
+    <?php endif; ?>
+
+</ul>
+
+
+<?php echo $this->form; ?>
+
+<h4 style="clear: both;">BOP deduction history</h4>
+<dl id="bop-list">
+    <?php foreach($this->bop_data as $bvalue) :?>
+    <dt>
+        <?php echo $this->bops[$bvalue["bop_id"]]; ?>:
+        <?php echo date("Y-m-d", strtotime($bvalue["date"])); ?>
+    </dt>
+    <dd>P <?php echo $bvalue["motorcycle_deduction"]; ?></dd>
+    <?php endforeach; ?>
+</dl>
+<br clear="all" />
+<br />
+
+<script>
+<!--
+	$(function() {
+		$('button.cancel').click(function() {
+			history.back();	 
+		} ); 
+	} );
+//-->
+</script>

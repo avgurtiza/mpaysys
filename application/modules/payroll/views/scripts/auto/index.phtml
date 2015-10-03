@@ -1,0 +1,118 @@
+<form id="auto-process">
+    <input type="text" name="date_start" value="<?php echo $this->date_start; ?>" style="width: 150px;"/><br />
+    <input type="text" name="date_end" value="<?php echo $this->date_end; ?>" style="width: 150px;" /><br />
+    <input type="text" name="pay_period" value="<?php echo $this->pay_period; ?>" style="width: 150px;" /><br />
+    <input type="text" name="fuelcost" value=""  style="width: 150px;" /><br />
+    <dl>
+        <dd><input id="mass-check" class="mass-check" type="checkbox" > <label for="mass-check">Check/Un-check all</label></dd>
+    <?php $last_client = ""; foreach ($this->groups as $client=>$groups) : ?>
+        <?php if($last_client != $client): ?>
+         <dt style="clear: both;"><?php echo $client;?></dt>
+
+        <?php endif; ?>
+        <?php if(is_array($groups)) : foreach($groups as $gindex=>$group) : ?>
+            <dd style="clear: left; float: left; width: 200px;">
+                <input id="group-<?php echo $gindex; ?>" class="group-check" type="checkbox" name="groups[]" gname="<?php echo $group; ?>" value="<?php echo $gindex; ?>">
+                <label for="group-<?php echo $gindex; ?>"><?php echo $group; ?></label>
+            </dd>
+            <!--<dd style="float: left; clear: right;width: 100px;"">
+                <input type="text" name="fuel[]" gid="<?php echo $gindex; ?>"  />
+            </dd>-->
+        <?php endforeach; endif;?>
+
+    <?php $last_client = $client; endforeach; ?>
+        <dd style="clear: both;"><input id="mass-check2" class="mass-check" type="checkbox" > <label for="mass-check2">Check/Un-check all</label></dd>
+    </dl>
+
+    <br clear="all">
+    <input type="submit" value="Process payroll">
+    <br />
+    <br />
+    <div id="progress" style="height: 2.0rem; width: 10px; background-color: #008CBA; color: #ffff00; font-weight: bold; padding-left: 1.0rem;"></div>
+    <p id="feedback" style="font-size: 0.8rem"></p>
+
+</form>
+
+<script>
+    var url = "/payroll/index/payslips";
+    // var url = "/payroll/index/clientreport";
+    // var url = "/payroll/index/summaryreport";
+
+    var finished_count = 0;
+    var groups_list = [];
+    var groups, group_size;
+
+    $(function() {
+        $('body').on('change', '#feedback', function(){
+            alert('changed');
+        });
+
+        $(".group-check, .mass-check").attr("checked","checked");
+
+        $(".mass-check").on("change", function() {
+            if($(this).is(":checked")) {
+                $(".group-check").attr("checked","checked");
+            } else {
+                $(".group-check").removeAttr("checked");
+            }
+        } );
+
+        groups = $("input.group-check");
+        group_size = $("input.group-check:checked").length;
+
+        $("#auto-process").on('submit', function(event) {
+            event.preventDefault();
+            $("#feedback").empty().html("Processing started.");
+
+            $(groups).each(function() {
+                if($(this).is(":checked")) {
+                    groups_list.push ($(this).val());
+                }
+            } );
+
+            process_group(0);
+            //
+        } );
+    } );
+
+    function process_group(index) {
+        var group_id = groups_list[index];
+        var pay_period = $("input[name=pay_period]").val();
+        var date_start = $("input[name=date_start]").val();
+        var date_end = $("input[name=date_end]").val();
+        var fuelcost = $("input[name=fuelcost]").val();
+
+        var postvars = {
+            "is_ajax" : "true"
+            , "group_id" : group_id
+            , "date_start" : date_start
+            , "date_end" : date_end
+            , "pay_period" : pay_period
+            , "fuelcost" : fuelcost
+        };
+
+        console.log(postvars);
+
+        var group_name = $("#group-" + group_id).attr("gname");
+
+        $.post(url, postvars, function(data) {
+            // console.log(data);
+            finished_count++;
+
+            var percent = Math.round((finished_count/group_size) * 100);
+
+            $("#progress").html(percent + "%").width((percent + 20) + "px");
+
+            $("#feedback").append('<br>' + group_name + ' done. (' + percent + '%)')
+
+            if(finished_count >= group_size) {
+                $("#feedback").append('<br>Payroll done.')
+                finished_count = 0;
+            } else {
+                process_group(index + 1);
+            }
+
+        } );
+
+    }
+</script>

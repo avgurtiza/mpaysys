@@ -1,0 +1,18 @@
+			<tr id="row-<?php echo $this->data->getId(); ?>" class="<?php echo $this->data->getStatus(); ?>">
+				<td class="mass-check">
+					<!-- <input type="checkbox" value="<?php echo $this->data->getId(); ?>" name="id[]" /> -->
+				</td>
+				<td class="">
+						<?php echo $this->data->getUsername(); ?>
+				</td>
+				<td class="">
+						<?php echo $this->data->getRealName(); ?>
+				</td>
+				<td class="">
+						<?php echo ucfirst($this->data->getType()); ?>
+				</td>
+				<td class="actions"><a href="#" class="edit ibutton">Edit</a> <!-- <a href="#" class="delete ui-button">Delete</a> -->
+					<input type="hidden" value="<?php echo $this->data->getId(); ?>"
+					class="entry-id" />
+				</td>
+			</tr>

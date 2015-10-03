@@ -1,0 +1,11 @@
+<?php echo $this->form; ?>
+<script type="text/javascript">
+<!--
+var success = <?php echo $this->success; ?>;
+$(function() { 
+	if(success) {
+		window.parent.close_dialog('reload');
+	}
+} );
+//-->
+</script>

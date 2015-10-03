@@ -1,0 +1,48 @@
+			<div class="yui-g">
+				<div class="" style="width: 48%; float: left;">
+					<table style="width: 80%;">
+						<thead>
+							<tr>
+								<th>Employee Rates</th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php foreach ($this->rates as $value): ?>
+							<tr>
+								<td><a href="/manager/rate/edit/id/<?php 
+									echo $value->getId(); ?>"><?php 
+									echo $value->getName(); ?></a></td>
+							</tr>
+							<?php endforeach; ?>
+							<tr>
+								<td><a href="/manager/rate/edit"><span class="icon icon-gray-add"></span>
+										Add new rate</a></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div class=""  style="width: 48%; float: left;">
+					<table style="width: 80%;">
+						<thead>
+							<tr>
+								<th>Client Rates</th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php foreach ($this->client_rates as $value): ?>
+							<tr>
+								<td><a href="/manager/rate/editclient/id/<?php 
+									echo $value->getId(); ?>"><?php 
+									echo $value->getName(); ?></a>
+								</td>
+							</tr>
+							<?php endforeach; ?>
+							<tr>
+								<td><a href="/manager/rate/editclient"><span
+										class="icon icon-gray-add"></span> Add new rate</a>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>

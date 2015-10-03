@@ -1,0 +1,44 @@
+
+<ul class="breadcrumb">
+	<li class="parent"><a href="/manager/client">Clients</a></li>
+	<li><a href="/manager/client/edit/id/<?php 
+	echo $this->client->getId(); ?>"><?php 
+	echo $this->client->getName(); ?></a></li>
+	<li class="title"><?php echo $this->group->getName(); ?></li>
+</ul>
+
+<table border="1">
+<thead>
+	<tr>
+		<th>Name </th>
+		<th>Date employed</th>
+		<th>Rate</th>
+		<th>Actions</th>
+	</tr>
+</thead>
+<tbody>
+<?php foreach ($this->employees as $value): ?>
+	<tr>
+		<td><?php echo $value->getLastName(); ?>, <?php 
+			echo $value->getFirstName(); ?> <?php 
+			echo $value->getMiddleInitial(); ?></td>
+		<td><?php echo $value->getDateEmployed(); ?></td>
+		<td><?php if(isset($this->rates[$value->getRateId()]))  echo $this->rates[$value->getRateId()]; ?></td>
+		<td>
+			<a href="/manager/employee/edit/group_id/<?php echo $this->group->getId(); ?>/client_id/<?php echo $this->group->getClientId(); ?>/id/<?php echo $value->getId(); ?>">Edit</a>
+			<a href="/manager/deduction/index/group_id/<?php echo $this->group->getId(); ?>/employee_id/<?php echo $value->getId(); ?>">Deductions</a>
+		</td>
+	</tr>
+<?php endforeach; ?>
+<?php if($this->group->getId() > 0): ?>
+	<tr>
+		<td><a href="/manager/employee/edit/group_id/<?php 
+			echo $this->group->getId(); ?>/client_id/<?php 
+			echo $this->group->getClientId(); ?>"><span class="icon icon-gray-add"></span>  Add new employee</a></td>
+		<td></td>
+		<td></td>
+		<td></td>
+	</tr>	
+<?php endif; ?>
+</tbody>
+</table>

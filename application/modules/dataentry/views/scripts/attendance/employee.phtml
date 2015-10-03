@@ -1,0 +1,296 @@
+<ul class="breadcrumb">
+	<li class="parent"><a href="/dataentry/attendance">Attendance</a></li>
+	<li><a href="/dataentry/attendance/employees?pay_period=<?php 
+		echo $this->pay_period;?>&group_id=<?php echo $this->group_id;?>">
+			<span class="icon icon-gray-arrowleft"></span>  Client/Group
+		</a>
+	</li>
+	<li class="title"><?php echo $this->employee->getFirstname();?> <?php echo $this->employee->getLastname();?></li>
+</ul>
+
+<br clear="all" />
+
+<form name="dtr-grid" method="post" action="">
+	<input type="submit" value="Save" />
+	<br /><br />
+	<table class="dtr">
+		<thead>
+			<tr>
+				<th>Date</th>
+				
+				<th>IN 1</th>
+				<th>OUT 1</th>
+				
+				<th>IN 2</th>
+				<th>OUT 2</th>
+				
+				<th>IN 3</th>
+				<th>OUT 3</th>
+				
+				<th>OT Type</th>
+				<th>Total</th>
+			</tr>
+		</thead>
+		<tbody>
+		<?php foreach($this->dates as $dkey=>$dvalue) :
+			$approved_ot_hours = 0;
+			if($dvalue->ot_approved == 'yes') {	
+				$hours = floor($dvalue->getOtApprovedHours());
+				$minutes = round(($dvalue->getOtApprovedHours() - $hours) * 60,2);
+				$approved_ot_hours = $hours . ':' . str_pad($minutes,2,0, STR_PAD_LEFT);
+			}
+		?>
+			<tr class="hours <?php if(isset($this->holidays[$dkey])) { 
+				echo $this->holidays[$dkey]->getType(); 
+				} ?>" id="row-<?php echo $dvalue->id; ?>">
+				<td valign="top">
+					
+					<?php echo $dkey ; ?> <br />
+					<em><?php echo $dvalue->id ; ?></em>
+					<input type="hidden" name="<?php echo $dkey ; ?>[id]" value="<?php echo $dvalue->id; ?>" />
+                    <input type="button" value="Delete" class="reset-day" attendanceid="<?php echo $dvalue->id; ?>" />
+
+				</td>
+				<td valign="top"><input type="text" class="miltime in" name="<?php echo $dkey ; ?>[start_1]" value="<?php echo $dvalue->start_1; ?>" /><div class="civtime">0</div></td>
+				<td valign="top"><input type="text" class="miltime out" name="<?php echo $dkey ; ?>[end_1]" value="<?php echo $dvalue->end_1; ?>" /><div class="civtime">0</div></td>
+				<td valign="top"><input type="text" class="miltime in" name="<?php echo $dkey ; ?>[start_2]" value="<?php echo $dvalue->start_2; ?>" /><div class="civtime">0</div></td>
+				<td valign="top"><input type="text" class="miltime out" name="<?php echo $dkey ; ?>[end_2]" value="<?php echo $dvalue->end_2; ?>" /><div class="civtime">0</div></td>
+				<td valign="top"><input type="text" class="miltime in" name="<?php echo $dkey ; ?>[start_3]" value="<?php echo $dvalue->start_3; ?>" /><div class="civtime">0</div></td>
+				<td valign="top"><input type="text" class="miltime out" name="<?php echo $dkey ; ?>[end_3]" value="<?php echo $dvalue->end_3; ?>" /><div class="civtime">0</div></td>
+				<td class="ot-type" valign="top">
+					<input type="checkbox" value="yes" class="check-extend" name="<?php echo $dkey ; ?>[extended_shift]" 
+						<?php if($dvalue->extended_shift== 'yes'):?>checked="checked"<?php endif; ?> /> Extended shift<br />
+				
+					<input type="checkbox" value="yes" class="check-approve" name="<?php echo $dkey ; ?>[ot_approved]" <?php if($dvalue->ot_approved == 'yes'):?>checked="checked"<?php endif; ?> />
+                    Approved OT<br />
+                    <input type="text" class="" name="<?php echo $dkey ; ?>[ot_approved_hours]"
+						value="<?php echo $approved_ot_hours; ?>" style="width: 4.0em;" />
+
+					<br />
+					<input type="radio" name="<?php echo $dkey ; ?>[type]" value="regular" 
+						<?php if($dvalue->type == 'regular'):?>checked="checked"<?php endif; ?> />Regular <br />
+					<input type="radio" name="<?php echo $dkey ; ?>[type]" value="rest" 
+						<?php if($dvalue->type == 'rest'):?>checked="checked"<?php endif; ?> />Sunday<br />
+					<!-- <input type="radio" name="<?php echo $dkey ; ?>[type]" value="special" 
+						<?php if($dvalue->type == 'special'):?>checked="checked"<?php endif; ?> />Sun/Special -->
+					
+					
+					<?php if(isset($this->holidays[$dkey])): ?>
+					<br />
+					
+					<strong>Holiday:  </strong>
+					<?php echo ucfirst($this->holidays[$dkey]->getType());?> -  
+					<?php echo $this->holidays[$dkey]->getName();?>
+					<?php endif; ?>
+				</td>
+				<td valign="top">
+
+						<dl class="hours-breakdown">
+						<?php
+							$total_reg = 0;
+							$total_ot = 0;
+							$total_hours = 0;
+							
+							// preprint($dvalue->toArray());
+							
+							foreach($dvalue->toArray() as $ekey=>$evalue):
+							
+							if($ekey == 'id' 
+								|| $ekey == 'employee_id'
+								|| $ekey == 'employee_number'
+								|| $ekey == 'type'
+								|| $ekey == 'ot_approved'
+								|| $ekey == 'ot_approved_hours'
+								|| $ekey == 'ot_actual_hours'
+								|| $ekey == 'start_1' 
+								|| $ekey == 'start_2'
+								|| $ekey == 'start_3'
+									
+								|| $ekey == 'end_1'
+								|| $ekey == 'end_2'
+								|| $ekey == 'end_3'
+									
+								|| $ekey == 'group_id'
+								|| $ekey == 'fuel_overage'
+								|| $ekey == 'datetime_start' 
+								|| $ekey == 'datetime_end'
+								|| $ekey == 'today'
+								|| $ekey == 'today_nd'
+								|| $ekey == 'today_ot'
+								|| $ekey == 'today_nd_ot'
+								|| $ekey == 'tomorrow_nd'
+								|| $ekey == 'tomorrow_ot'
+								|| $ekey == 'tomorrow_nd_ot'
+
+                                /* || $ekey == 'fuel_cost'
+                                || $ekey == 'fuel_hours'
+                                || $ekey == 'fuel_alloted'*/
+							) continue;
+	
+							if(!round($evalue,2) > 0) continue;
+                                $warn_css = '';
+                                if($evalue > 9 || $evalue < 0) $warn_css = 'warn';
+						?>
+							<dt><?php echo ucwords(str_replace('_', ' ',$ekey));?></dt>
+							<dd class="<?php echo $warn_css;?>">
+                                <?php if(strstr($ekey,'fuel')) {
+                                    echo $evalue . ' L';
+                                } else {
+                                    echo decimal_to_time($evalue,2);
+                                    echo " (" . number_format($evalue,2). ")";
+
+                                }
+                                ?>
+                            </dd>
+						<?php
+                                if(!strstr($ekey,'fuel')) {
+        							if(strstr($ekey, 'ot') ) {
+        								$total_ot += $evalue;
+		        					} else {
+                                        $total_reg += $evalue;
+                                    }
+                                }
+							endforeach;
+						?>
+						<?php
+							$total_hours = $total_reg + $total_ot; 
+							if($total_hours > 0): 
+						?>
+							<dt>Total</dt>
+							<dd>
+								<?php echo decimal_to_time($total_hours,2); ?>
+							</dd>
+						
+								<?php if($dvalue->getOtApprovedHours() > 0 && $dvalue->getOtApproved() == 'yes'): ?>
+										<dt>Approved OT</dt>
+										<dd><?php echo decimal_to_time($dvalue->getOtApprovedHours(),2); ?></dd>
+								<?php endif; ?>
+										<dt>Actual OT</dt>
+										<dd><?php echo decimal_to_time($dvalue->getOtActualHours(),2); ?></dd>
+								<?php if($dvalue->getOtActualHours() > 5 || $dvalue->getOtApprovedHours() > $dvalue->getOtActualHours()): ?>
+                                        <dt class="warn">CHECK OT</dt>
+                                        <dd class="warn"></dd>
+                                <?php endif; ?>
+								
+							<?php endif;?>
+						</dl>
+				</td>
+			</tr>
+		<?php endforeach;?>
+		</tbody>
+	</table>
+	<br />
+	<input type="submit" value="Save" />
+</form>
+
+
+<?php if($this->user_auth->type == 'admin'): ?>
+<?php echo $this->form; ?>
+<?php endif; ?>
+
+<br clear="all" />
+
+<script>
+<!--
+    function padfield(num, size) {
+        var s = "000000000" + num;
+        return s.substr(s.length-size);
+    }
+
+
+    getFormattedTime = function (fourDigitTime) {
+        fourDigitTime = padfield(fourDigitTime,4);
+        var hours24 = parseInt(fourDigitTime.substring(0, 2),10);
+        var hours = ((hours24 + 11) % 12) + 1;
+        var amPm = hours24 > 11 ? ' PM' : ' AM';
+        var minutes = padfield(fourDigitTime.substring(2),2);
+
+        return hours + ':' + minutes + amPm;
+    };
+
+
+
+	$(function() {
+
+        $('.reset-day').click(function(evt) {
+            if(!confirm('Are you sure you want to delete this attendance entry?')) {
+                return;
+            } else {
+                evt.preventDefault();
+                var this_button = $(this);
+                var attendance_id = this_button.attr('attendanceid');
+
+                this_button.val('Wait...');
+
+                $.post('/dataentry/attendance/resetday', { 'attendance_id' : attendance_id  }, function(data) {
+                    $('#row-'+attendance_id+' .hours-breakdown').empty();
+                    $('#row-'+attendance_id+' input[type=text]').val(0);
+                    console.log(data);
+                    this_button.remove();
+                } );
+
+            }
+        } );
+
+		$('.attendance-grid td').click(function() {
+			var url = $('a.open-daily-attendance', this).attr('href');
+			window.location.href = url; 
+		} );
+
+		$('.check-approve').change(function() {
+			if($(this).is(':checked')) {
+				$(this).next('input').val('1');
+			} else {
+				$(this).next('input').val('0');				
+			} 
+		} );
+
+        var time_fields = $('tr.hours input[type=text]');
+        /*
+        $(time_fields).each(function() {
+            var previous_field = $(this).parent().prev().find('.miltime').val();
+            var next_field = $(this).parent().next('td').find('.miltime').val();
+
+            if($(this).is('.in')) {
+                if(previous_field != '0000' && next_field != '0000' && next_field != '0') {
+                    var altval = padfield($(this).val(),4);
+                    $(this).val(altval);
+                } else {
+                    $(this).val('');
+                }
+            }
+
+            if($(this).is('.out')) {
+                if(previous_field != '0000' && previous_field != '' && next_field != '0000') {
+                    var altval = padfield($(this).val(),4);
+                    $(this).val(altval);
+                } else {
+                    $(this).val('');
+                }
+            }
+
+        } );
+        */
+            $('input.miltime').each(function() {
+                var miltime = $(this).val();
+                var civtime = $(this).siblings('.civtime');
+
+                if(miltime != '' && civtime.html() != '') {
+                    civtime.html(getFormattedTime(miltime));
+                } else {
+                    civtime.html('');
+                }
+
+                if($(this).is('.in')) {
+                    var nextout = $(this).parents('td:first').next('td');
+
+                    if(nextout.children('.out').val() == '0' && miltime == '0') {
+                        civtime.html('');
+                        nextout.children('.civtime').html('');
+                    }
+                }
+            } );
+
+	} );
+//-->
+</script>

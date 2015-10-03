@@ -1,0 +1,46 @@
+[production]
+phpSettings.display_startup_errors = 1
+phpSettings.display_errors = 1
+includePaths.library = APPLICATION_PATH "/../library"
+bootstrap.path = APPLICATION_PATH "/Bootstrap.php"
+bootstrap.class = "Bootstrap"
+appnamespace = "Messerve"
+resources.frontController.params.displayExceptions = 1
+resources.frontController.params.prefixDefaultModule = 1
+resources.modules.0 = ""
+resources.db.adapter = "PDO_MYSQL"
+resources.db.params.dbname = "messerve_prod"
+resources.db.params.host = "localhost"
+resources.db.params.username = "root"
+resources.db.params.password = "DbFixpass00"
+autoloadernamespaces.0 = "Zodeken_"
+
+resources.layout.layoutPath = APPLICATION_PATH "/layouts/scripts/"
+resources.frontController.moduleDirectory = APPLICATION_PATH "/modules"
+
+autoloadernamespaces[] = "Messervelib"
+
+messerve.fueloverage = 1.5
+messerve.fuelcost = 52
+messerve.fuelperhour = 0.19
+
+[staging : production]
+
+[testing : production]
+phpSettings.display_startup_errors = 1
+phpSettings.display_errors = 1
+
+[development : production]
+phpSettings.display_startup_errors = 1
+phpSettings.display_errors = 1
+resources.frontController.params.displayExceptions = 1
+resources.db.adapter = "PDO_MYSQL"
+resources.db.params.dbname = "messerve_13"
+resources.db.params.host = "localhost"
+resources.db.params.username = "root"
+resources.db.params.password = "dbpass00"
+
+[zodeken]
+outputTemplate = "default"
+packageName = "Messerve"
+

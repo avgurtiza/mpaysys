@@ -1,0 +1,34 @@
+<?php
+
+class Manager_IndexController extends Zend_Controller_Action
+{
+
+	protected $_user_auth;
+	
+	public function init()
+	{
+		/* Initialize action controller here */
+		$storage = new Zend_Auth_Storage_Session();
+		$data = $storage->read();
+		 
+		if(!$data){
+			$this->_redirect('auth/login');
+		}
+		 
+		$this->_user_auth = $data;
+		
+		$this->view->user_auth = $this->_user_auth;
+	        /* Initialize action controller here */
+    }
+
+    public function indexAction()
+    {
+    	echo 'HERE';
+        // action body
+        $Attendance = new Messerve_Model_Attendance();
+        print_r($Attendance);
+    }
+
+
+}
+

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Messerve</title>
+
+<link rel="stylesheet" href="/css/normalize.css">
+<link rel="stylesheet" href="/css/foundation.css">
+<link rel="stylesheet" href="/css/foundation-datepicker.css">
+<link rel="stylesheet" href="/css/foundation-icons.css" />
+
+<link href="/css/messerve.css?update=20150608B" type="text/css" rel="stylesheet" />
+<link href="/css/smoothness/jquery-ui-1.9.0.custom.min.css" type="text/css" rel="stylesheet" />
+
+<script src="/js/vendor/modernizr.js"></script>
+<script src="/js/jquery-1.8.2.js"></script>
+<script src="/js/foundation.min.js"></script>
+<script src="/js/jquery-ui-1.9.0.custom.min.js"></script>
+<script src="/js/foundation-datepicker.js"></script>
+
+
+</head>
+<body class="<?php 
+			echo Zend_Controller_Front::getInstance()->getRequest()->getModuleName(); ?> <?php 
+			echo Zend_Controller_Front::getInstance()->getRequest()->getControllerName(); ?> <?php 
+			if(Zend_Controller_Front::getInstance()->getRequest()->getControllerName() != Zend_Controller_Front::getInstance()->getRequest()->getActionName()) 
+				echo Zend_Controller_Front::getInstance()->getRequest()->getActionName(); ?>">
+
+<div id="main" class="yui3-g">
+	<div class="yui3-u-1" >
+		<div class="yui3-u-1" id="content">
+			<?php // preprint($this->user_auth); ?>
+
+            <?php echo $this->partial('partials/encoder.phtml'); ?>
+
+			<dl class="hor-menu">
+				<?php if($this->user_auth && $this->user_auth->type == 'admin'): ?>
+				<dd><a href="/manager/client">Clients / Employees</a></dd>
+				<dd><a href="/manager/bop">BOP</a></dd>
+				<dd><a href="/manager/fuel/import">Petron import</a></dd>
+				<dd><a href="/manager/rate">Rates</a></dd>
+				<dd><a href="/manager/rate/calendar">Calendars</a></dd>
+				<dd><a href="/user/grid">Users</a></dd>
+				<dd><a href="/payroll/index">Payroll</a></dd>
+                <?php endif; ?>
+				
+				<?php if($this->user_auth && $this->user_auth->type != 'encoder'): ?>
+				<dd><a href="/dataentry/attendance">Attendance</a></dd>
+				<?php endif; ?>
+
+                <?php if($this->user_auth && $this->user_auth->type == 'encoder'): ?>
+                    <dd><a href="/dataentry/index/start">Deductions</a></dd>
+                <?php endif;?>
+
+			</dl>
+			
+			<br clear="all" />
+			<br clear="all" />
+			
+			<?php echo $this->layout()->content; ?>
+		</div>
+	</div>
+</div>
+<br clear="all" /><br />
+<div style="background-color: #fea; border: 1px solid #999; width: 100%; position: fixed; bottom:0px; padding: 10px; margin-top: 10px; margin-bottom: 0;">
+
+
+    <dl class="hor-menu">
+        <dd><em>Messerve Payroll System 0.3.1 (SSS table rollout)</em></dd>
+        <?php if($this->user_auth): ?>
+            <dd>You are logged in as <strong><?php echo $this->user_auth->real_name; ?></strong></dd>
+            <dd><a href="/auth/changepass">Change password</a></dd>
+            <dd><a href="/auth/logout">Logout</a></dd>
+        <?php else: ?>
+            <dd><a href="/auth/login">Login</a></dd>
+        <?php endif;?>
+    </dl>
+
+</div>
+
+<script type="text/javascript">
+    $(document).foundation();
+</script>
+</body>
+</html>

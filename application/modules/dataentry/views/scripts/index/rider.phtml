@@ -1,0 +1,80 @@
+<!-- TODO:  Show employee and group details -->
+<h3>
+    Deductions for <?php echo $this->rider->getFirstname(); ?> <?php echo $this->rider->getLastname(); ?>
+    (<?php echo $this->rider->getEmployeeNumber(); ?>)
+</h3>
+
+
+<a href="/dataentry/index/start" class="button tiny radius"><span class="fi-magnifying-glass"></span>  Search again</a>  &nbsp;
+
+<a href="#" data-reveal-id="deduction-modal" class="button tiny radius"><span class="fi-plus">  Add new</a>
+
+<div id="deduction-modal" class="reveal-modal" style="font-size: 0.8em !important;" data-reveal>
+    <?php echo $this->form; ?>
+    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+</div>
+
+<br /><br />
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Amount</th>
+        <th>Deduction</th>
+        <th>Cut-off</th>
+        <th>Balance</th>
+        <th>Notes</th>
+    </tr>
+    </thead>
+    <tbody>
+    <?php if(count($this->deductions) > 0): ?>
+        <?php foreach($this->deductions as $value) : ?>
+            <tr>
+                <?php if($value->getDateAdded() != '0000-00-00 00:00:00' && DateTime::createFromFormat('Y-m-d H:i:s', $value->getDateAdded())): ?>
+                <td><?php echo $value->getDateAdded(); ?></td>
+                <?php else: ?>
+                <td></td>
+                <?php endif; ?>
+                <td><?php echo ucwords(str_replace('_', ' ', $value->getType()))?></td>
+                <td>P <?php echo number_format($value->getAmount(),2);?></td>
+                <td>P <?php echo number_format($value->getDeduction(),2);?></td>
+                <td>
+                    <?php if($value->getCutOff() == '1'): ?>
+                        1-15
+                    <?php elseif($value->getCutOff() == '2'): ?>
+                        16-31
+                    <?php elseif($value->getCutOff() == '3'): ?>
+                        Both
+                    <?php endif;?>
+                </td>
+                <td><?php echo number_format($value->getAmount() - $this->deducted_amounts[$value->getId()],2); ?></td>
+                <td><?php echo $value->getNotes(); ?></td>
+                <!--<td><a href="/manager/deduction/edit/id/<?php echo $value->getId();?>">Edit</a></td>-->
+            </tr>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <tr>
+            <td colspan="7">No deductions</td>
+        </tr>
+    <?php endif; ?>
+    </tbody>
+</table>
+
+
+<br clear="all" /><br />
+<script>
+    $(function() {
+        $('.add-new-deduction').on('click', function(evt) {
+
+            evt.preventDefault;
+
+            $('#deduction-modal').dialog( {
+                width : '720', height : '300'
+                , modal : true
+                , position: { my: "center", at: "center", of: window }
+            } );
+        } );
+    } );
+</script>

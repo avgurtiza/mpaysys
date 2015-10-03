@@ -1,0 +1,31 @@
+<h3><?php echo $this->client->getName(); ?> - <?php echo $this->group->getName();?></h3>
+
+<table>
+<?php 
+	$total = 0; 
+	foreach($this->bill as $key=>$value): 
+?>
+<tr>
+	<td><?php echo ucwords(str_replace('_',' ', $key)); ?></td>
+	<td><?php if($this->hours[$key] > 0) echo number_format($this->hours[$key],2); ?></td>
+	<td><?php if($value > 0) echo 'P ' . number_format($value,2); ?></td>
+</tr>
+<?php 
+	$total += $value; 
+	endforeach;
+?>
+<tr>
+	<td><strong>Total</strong></td>
+	<td><?php echo number_format(array_sum($this->hours),2); ?></td>
+	<td>P <?php echo number_format($total,2)?></td>
+</tr>
+</table>
+<!-- "Employee number","First name","Middle name","Last name","TIN","SSS","HDMF","Philhealth","Date employed","Regular","Rate","","Regular Night","Rate","","Regular OT","Rate","","Regular Night OT","Rate","","Sunday","Rate","","Sunday Night","Rate","","Sunday OT","Rate","","Sunday Night OT","Rate","","Special","Rate","","Special Night","Rate","","Special OT","Rate","","Special Night OT","Rate","","Legal","Rate","","Legal Night","Rate","","Legal OT","Rate","","Legal Night OT","Rate","","Unattended Legal","Rate","","Restday OT","Rate","","Restday Night OT","Rate","","Ecola","Rate","","13th month", "Gasoline allow","Maint allow", "Bike ownership","Incentives","Paternity","Misc income","SSS Employee","SSS Employer","Philhealth Employee","Philhealth Employer","HDMF Employee","HDMF Employer","EC","Bike rehab","Bike insurance/reg","SSS loan","HDMF loan","Fuel overage","Maintenance deduct","Accident deduct","Uniform","Lost card","Food","Communications","Cash bond"	
+<?php foreach($this->bill as $value):?>
+"<?php
+	echo implode('","', $value['info']) . '","'; 
+	echo implode('","', $value['income']) . '","';
+	echo implode('","', $value['deductions']);
+?>"
+<?php endforeach;?>
+ -->
