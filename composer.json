@@ -1,0 +1,13 @@
+{
+    "name": "slide-gurtiza/messerve-payroll",
+    "description": "--",
+    "authors": [
+        {
+            "name": "Slide Gurtiza",
+            "email": "slide.gurtiza@gmail.com"
+        }
+    ],
+    "require": {
+        "zendframework/zendframework1": "^1.12"
+    }
+}
