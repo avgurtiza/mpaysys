@@ -56,22 +56,44 @@ class Manager_FuelController extends Zend_Controller_Action
     			$i = 0;
     			
     			foreach ($file as $row) {
-    				// preprint($row,1);
     				array_map('trim', $row);
     				
     				if(!$i > 0) {
     					$i++; continue; // skip header row
     				}
-    				
-    				
-    				
+
     				if(isset($row[7]) && $row[7] != '' && isset($row[15]) && $row[15] != '') {
     					// if(trim($row[7]) == '') continue;
-    					$invoice_date = date('Y-m-d h:i:s', strtotime($row[12]));
+    					// $invoice_date = date('Y-m-d h:i:s', strtotime($row[12]));
+                        $raw_invoice_date = str_replace('/','-',$row[12]);
+                        $temp_invoice_date = DateTime::createFromFormat('Y-m-d', $raw_invoice_date);
+
+                        if(!$temp_invoice_date) $temp_invoice_date = DateTime::createFromFormat('d-m-Y', $raw_invoice_date);
+                        if(!$temp_invoice_date) $temp_invoice_date = DateTime::createFromFormat('d-m-y', $raw_invoice_date);
+
+                        if(!$temp_invoice_date) {
+                            die('INVALID DATE ' . $raw_invoice_date);
+                        }
+
+                        $invoice_date = $temp_invoice_date->format('Y-m-d');
+
+                        $raw_statement_date = str_replace('/','-',$row[2]);
+                        $temp_statement_date = DateTime::createFromFormat('Y-m-d', $raw_statement_date);
+
+                        if(!$temp_statement_date) $temp_statement_date = DateTime::createFromFormat('d-m-Y', $raw_statement_date);
+                        if(!$temp_statement_date) $temp_statement_date = DateTime::createFromFormat('d-m-y', $raw_statement_date);
+
+                        if(!$temp_statement_date) {
+                            die('INVALID DATE ' . $raw_statement_date);
+                        }
+
+                        $statement_date = $temp_statement_date->format('Y-m-d');
+
     					$data = array(
    							'gascard' => $row[7]
-    						, 'raw_invoice_date' => $row[12]
-    						, 'invoice_date' => $invoice_date 
+    						, 'raw_invoice_date' => $raw_invoice_date
+    						, 'statement_date' => $statement_date
+    						, 'invoice_date' => $invoice_date
     						, 'product_quantity' => $row[17]
     						, 'invoice_number' => $row[15]
     						, 'station_name' => $row[13]
@@ -83,8 +105,6 @@ class Manager_FuelController extends Zend_Controller_Action
     						$orphans[] = $data;
     						continue;
     					}
-    					
-    					// echo "<br /> Looking for user with gas card {$row[7]}...";
     					
     					if(isset($gascard_employee[$row[7]])) {
     						$Employee = $gascard_employee[$row[7]];
@@ -120,8 +140,6 @@ class Manager_FuelController extends Zend_Controller_Action
     							->setEmployeeId($Employee->getId())
     							->save();
     						
-    						// preprint($Employee->toArray());
-    						
     						$data['employee'] = $Employee->getFirstname() . ' ' . $Employee->getLastname() . ' ' . $Employee->getEmployeeNumber();
     						$saved[] = $data;
     					} else {
@@ -136,7 +154,6 @@ class Manager_FuelController extends Zend_Controller_Action
     			$this->view->orphans = $orphans;
 
                 echo "<h1>SAVED : " . count($saved) . "</h1>";
-                // preprint($orphans);
     		}
     	}
     }
