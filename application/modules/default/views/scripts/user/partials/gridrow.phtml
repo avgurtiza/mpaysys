@@ -9,7 +9,10 @@
 						<?php echo $this->data->getRealName(); ?>
 				</td>
 				<td class="">
+
+						<?php if($this->data->getStatus() == 'active') : ?>
 						<?php echo ucfirst($this->data->getType()); ?>
+						<?php endif; ?>
 				</td>
 				<td class="actions"><a href="#" class="edit ibutton">Edit</a> <!-- <a href="#" class="delete ui-button">Delete</a> -->
 					<input type="hidden" value="<?php echo $this->data->getId(); ?>"

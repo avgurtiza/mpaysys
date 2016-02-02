@@ -39,7 +39,7 @@ class Default_UserController extends Zend_Controller_Action
         // action body
     	$User = new Messerve_Model_User();
     	$this->view->grid_title = 'User';
-    	$this->view->entries = $User->getMapper()->fetchList('1',array('CAST(type AS CHAR) ASC','real_name'));
+    	$this->view->entries = $User->getMapper()->fetchList('1',array('status','CAST(type AS CHAR) ASC','real_name'));
     }
 
     public function editAction()

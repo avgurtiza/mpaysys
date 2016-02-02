@@ -2277,12 +2277,44 @@ class Payroll_IndexController extends Zend_Controller_Action
 	}
 
     public function thirteenthAction() {
+        $wage_schedule_path = realpath(APPLICATION_PATH . '/../vendor/messerve_wage_increase_schedule.csv');
+        $group_wage_switch = [];
+        $row = 1;
+        if (($handle = fopen($wage_schedule_path, "r")) !== FALSE) {
+            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+
+                if(!intval($data[0])) continue;
+
+                $group_wage_switch[$data[0]] = [
+                    'name' => $data[1] . ' - ' . $data[2]
+                    , 'date'=> $data[3]
+                    , 'before'=> date('Y-m-d 23:59', strtotime('-1 day', strtotime($data[3])))
+                ];
+            }
+            fclose($handle);
+        }
+
+        // preprint($group_wage_switch,1);
+
         $this->_helper->viewRenderer->setNoRender(true);
         $this->_helper->layout->disableLayout();
-        header('Content-type','text/csv'); header("Content-Disposition: attachment;filename=thirteen.csv"); header('Content-Type: text/html; charset=utf-8');
+
+        header('Content-type','text/csv');
+        header("Content-Disposition: attachment;filename=thirteen.csv");
 
         $EmployeeMap = new Messerve_Model_Mapper_Employee();
         $employees = $EmployeeMap->fetchList('1',array('group_id ASC', 'lastname ASC', 'firstname ASC'));
+
+		$last_year = date('Y',strtotime('last year'));
+		$this_year = date('Y');
+
+
+        $clients = array();
+        $ClientMap = new Messerve_Model_Mapper_Client();
+
+        foreach($ClientMap->fetchAll() as $client) {
+            $clients[$client->getId()] = $client->getName();
+        }
 
         foreach($employees as $evalue) {
             $Group = new Messerve_Model_Group();
@@ -2290,22 +2322,37 @@ class Payroll_IndexController extends Zend_Controller_Action
             $Rate = new Messerve_Model_Rate();
             $Rate->find($Group->getRateId());
 
-            // preprint($Rate->toArray(),1);
+            $pre = 0;
+            $post = 0;
+            $notes = '';
 
-            $pre_jan = $this->_get_work_duration($evalue->getId(),0,'2013-11-16','2013-12-31 23:59');
-            $post_jan = $this->_get_work_duration($evalue->getId(),0,'2014-01-01','2014-11-15 23:59');
+            $group_name = '';
+            if($evalue->getGroupId()) $group_name = $clients[$Group->getClientId()] . '-' .$Group->getName();
 
-            if(!($pre_jan + $post_jan) >0 ) continue;
+            if($evalue->getGroupId() && $group_wage_switch[$evalue->getGroupId()]['date'] != '') {
+                // echo "\n"; print_r($group_wage_switch[$evalue->getGroupId()]);
+                $pre = $this->_get_work_duration($evalue->getId(),0, $last_year . '-11-16', $group_wage_switch[$evalue->getGroupId()]['before']);
+                $post = $this->_get_work_duration($evalue->getId(),0,  $group_wage_switch[$evalue->getGroupId()]['date'], $this_year . '-11-15 23:59');
+                $notes = $group_wage_switch[$evalue->getGroupId()]['date'];
+            } else { // Unemployed, get everything
+                $post = $this->_get_work_duration($evalue->getId(),0, $last_year . '-11-16', $this_year . '-11-15 23:59');
+            }
 
-            if($Group->getRateId() == '6') {
+
+            if(!($pre + $post) > 0 ) continue;
+
+            /*if($Group->getRateId() == '6') {
                 $Rate5 = new Messerve_Model_Rate();
                 $Rate5->find(5);
                 echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t{$pre_jan}\t{$Rate5->getReg()}\t{$post_jan}\t{$Rate->getReg()}";
             } else {
                 echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t0\t0\t{$post_jan}\t{$Rate->getReg()}";
-            }
+            }*/
+            echo "\n{$evalue->getEmployeeNumber()}\t{$group_name}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t{$pre}\t0\t{$post}\t{$Rate->getReg()}\t{$notes}";
 
-        }
+			// echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t0\t0\t{$post_jan}\t{$Rate->getReg()}";
+
+		}
 
     }
 

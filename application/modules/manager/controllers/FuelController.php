@@ -30,6 +30,16 @@ class Manager_FuelController extends Zend_Controller_Action
     }
     
     public function importAction() {
+
+		define('P_GASCARD_NO',5);
+		define('P_STATEMENT_DATE',2);
+		define('P_INVOICE_DATE',10);
+		define('P_PRODUCT_QUANTITY',15);
+		define('P_INVOICE_NUMBER',13);
+		define('P_STATION_NAME',11);
+		define('P_PRODUCT',14);
+		define('P_FUEL_COST',18);
+
     	if($this->_request->isPost()) {
     		set_time_limit(0);
     		$upload = new Zend_File_Transfer_Adapter_Http();
@@ -54,51 +64,73 @@ class Manager_FuelController extends Zend_Controller_Action
     			$gascard_employee = array();
     			
     			$i = 0;
-    			
+
+				/*
+				 *  ORIGINAL MAP
+				 *
+				 *
+				 $data = array(
+					'gascard' => $row[7]
+				, 'raw_invoice_date' => $raw_invoice_date
+				, 'statement_date' => $statement_date
+				, 'invoice_date' => $invoice_date
+				, 'product_quantity' => $row[17]
+				, 'invoice_number' => $row[15]
+				, 'station_name' => $row[13]
+				, 'product' => $row[16]
+				, 'fuel_cost' => $row[18]
+				);
+				*/
+
     			foreach ($file as $row) {
     				array_map('trim', $row);
-    				
-    				if(!$i > 0) {
-    					$i++; continue; // skip header row
-    				}
 
-    				if(isset($row[7]) && $row[7] != '' && isset($row[15]) && $row[15] != '') {
+                    /*if($i < 3) {
+                        $i++; continue; // skip header row
+                    }*/
+
+                    if(!is_numeric($row[P_GASCARD_NO])) {
+                        continue;
+                    }
+
+                    if(isset($row[P_GASCARD_NO]) && $row[P_GASCARD_NO] != '' && isset($row[P_INVOICE_NUMBER]) && $row[P_INVOICE_NUMBER] != '') {
     					// if(trim($row[7]) == '') continue;
     					// $invoice_date = date('Y-m-d h:i:s', strtotime($row[12]));
-                        $raw_invoice_date = str_replace('/','-',$row[12]);
+                        $raw_invoice_date = str_replace('/','-',$row[P_INVOICE_DATE]);
                         $temp_invoice_date = DateTime::createFromFormat('Y-m-d', $raw_invoice_date);
 
-                        if(!$temp_invoice_date) $temp_invoice_date = DateTime::createFromFormat('d-m-Y', $raw_invoice_date);
-                        if(!$temp_invoice_date) $temp_invoice_date = DateTime::createFromFormat('d-m-y', $raw_invoice_date);
+                        // if(!$temp_invoice_date) $temp_invoice_date = DateTime::createFromFormat('d-m-Y', $raw_invoice_date);
+                        if(!$temp_invoice_date) $temp_invoice_date = DateTime::createFromFormat('m-d-Y H:i', $raw_invoice_date);
 
                         if(!$temp_invoice_date) {
-                            die('INVALID DATE ' . $raw_invoice_date);
+                            die('INVALID INVOICE DATE ' . $raw_invoice_date);
                         }
 
                         $invoice_date = $temp_invoice_date->format('Y-m-d');
 
-                        $raw_statement_date = str_replace('/','-',$row[2]);
+                        $raw_statement_date = str_replace('/','-',$row[P_STATEMENT_DATE]);
+                        $raw_statement_date = str_replace("'",'',$raw_statement_date);
                         $temp_statement_date = DateTime::createFromFormat('Y-m-d', $raw_statement_date);
 
-                        if(!$temp_statement_date) $temp_statement_date = DateTime::createFromFormat('d-m-Y', $raw_statement_date);
-                        if(!$temp_statement_date) $temp_statement_date = DateTime::createFromFormat('d-m-y', $raw_statement_date);
+                        // if(!$temp_statement_date) $temp_statement_date = DateTime::createFromFormat('d-m-Y', $raw_statement_date);
+                        if(!$temp_statement_date) $temp_statement_date = DateTime::createFromFormat('m-d-Y', $raw_statement_date);
 
                         if(!$temp_statement_date) {
-                            die('INVALID DATE ' . $raw_statement_date);
+                            die('INVALID STATEMENT DATE ' . $raw_statement_date);
                         }
 
                         $statement_date = $temp_statement_date->format('Y-m-d');
 
     					$data = array(
-   							'gascard' => $row[7]
+   							'gascard' => $row[P_GASCARD_NO]
     						, 'raw_invoice_date' => $raw_invoice_date
     						, 'statement_date' => $statement_date
     						, 'invoice_date' => $invoice_date
-    						, 'product_quantity' => $row[17]
-    						, 'invoice_number' => $row[15]
-    						, 'station_name' => $row[13]
-    						, 'product' => $row[16]
-    						, 'fuel_cost' => $row[18]
+    						, 'product_quantity' => $row[P_PRODUCT_QUANTITY]
+    						, 'invoice_number' => $row[P_INVOICE_NUMBER]
+    						, 'station_name' => $row[P_STATION_NAME]
+    						, 'product' => $row[P_PRODUCT]
+    						, 'fuel_cost' => $row[P_FUEL_COST]
     					);
     						
     					if(in_array($row[7], $gascard_no_user)) {
@@ -106,12 +138,12 @@ class Manager_FuelController extends Zend_Controller_Action
     						continue;
     					}
     					
-    					if(isset($gascard_employee[$row[7]])) {
-    						$Employee = $gascard_employee[$row[7]];
+    					if(isset($gascard_employee[$row[P_GASCARD_NO]])) {
+    						$Employee = $gascard_employee[$row[P_GASCARD_NO]];
     					} else {
     						$EmployeeMap = new Messerve_Model_Mapper_Employee();
-    						$Employee = $EmployeeMap->findOneByField('gascard',$row[7]);
-    						$gascard_employee[$row[7]] = $Employee; 
+    						$Employee = $EmployeeMap->findOneByField('gascard',$row[P_GASCARD_NO]);
+    						$gascard_employee[$row[P_GASCARD_NO]] = $Employee;
     					}
     					
     					if($Employee && $Employee->getId() > 0) {
@@ -125,7 +157,7 @@ class Manager_FuelController extends Zend_Controller_Action
                                 )
    								, array(
                                     $invoice_date
-                                    , "{$row[15]}"
+                                    , "{$row[P_INVOICE_NUMBER]}"
                                     , $Employee->getId()
                                 )
    							, $Fuel);
@@ -143,7 +175,7 @@ class Manager_FuelController extends Zend_Controller_Action
     						$data['employee'] = $Employee->getFirstname() . ' ' . $Employee->getLastname() . ' ' . $Employee->getEmployeeNumber();
     						$saved[] = $data;
     					} else {
-    						$gascard_no_user[] = $row[7];
+    						$gascard_no_user[] = $row[P_GASCARD_NO];
     						$orphans[] = $data;
     					}
     					
