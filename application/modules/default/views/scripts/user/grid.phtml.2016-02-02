@@ -1,0 +1,69 @@
+<?php if(!count($this->entries) > 0): ?>
+<span class="generic-notice">No records found.</span>
+<?php else: ?>
+<form method="post" action="#" id="grid-form">
+	<table class="data-grid">
+		<thead>
+			<tr>
+				<th class="mass-check"></th>
+				<th class="title">Username</th>
+				<th class="">Real name</th>
+				<th class="">User type</th>
+				<th class="actions">Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			<?php foreach($this->entries as $value): ?>
+			<?php echo $this->partial('user/partials/gridrow.phtml', array('data'=>$value)); ?>			
+			<?php endforeach;?>
+		</tbody>
+	</table>
+</form>
+
+<a href="#" class="add-entry" data-reveal-id="utility-dialog">Add user</a>
+
+
+<?php endif; ?>
+
+<div id="utility-dialog" class="reveal-modal" data-reveal></div>
+<br />
+<br />
+<script type="text/javascript">
+<!--
+
+var last_entry = 0;
+
+function close_dialog(action) {
+	$('#utility-dialog').dialog('close');
+	if(action == 'update') {
+		var postdata = { id: last_entry };
+		$.post('<?php echo $this->url(array('action'=>'getdata'));?>'
+				, postdata
+				, function(data) { 
+					$('#row-' + last_entry).replaceWith(data);
+					$('#row-' + last_entry + ' .ui-button').button();
+				} );
+	}
+	
+	if(action == 'reload') {
+		window.location.reload();
+	}
+}
+
+$(function() { 
+	$('.data-grid a.edit').live('click', function(evt) {
+		evt.preventDefault();
+		last_entry = $(this).siblings('input.entry-id:first').val();
+		var iframe = '<iframe frameborder="0" class="modal-iframe" width="500" height="300" src="<?php echo $this->url(array('action'=>'edit')); ?>/id/'
+			+ last_entry + '"></iframe>';
+		$('#utility-dialog').html(iframe).dialog( { width: 580, height: 400, title: 'Edit user' } );
+	} );
+	
+	$('.add-entry').click(function(evt) {
+		evt.preventDefault();
+		var iframe = '<iframe frameborder="0" class="modal-iframe" width="700" height="350" seamless="seamless" src="<?php echo $this->url(array('action'=>'add')); ?>"></iframe>';
+		$('#utility-dialog').html(iframe); // .dialog( { width: 580, height: 400, title: 'Add user' } );
+	} );
+} );
+//-->
+</script>

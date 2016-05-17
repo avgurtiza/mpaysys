@@ -2284,6 +2284,9 @@ class Payroll_IndexController extends Zend_Controller_Action
         $EmployeeMap = new Messerve_Model_Mapper_Employee();
         $employees = $EmployeeMap->fetchList('1',array('group_id ASC', 'lastname ASC', 'firstname ASC'));
 
+		$last_year = date('Y',strtotime('last year'));
+		$this_year = date('Y');
+
         foreach($employees as $evalue) {
             $Group = new Messerve_Model_Group();
             $Group->find($evalue->getGroupId());
@@ -2292,20 +2295,23 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             // preprint($Rate->toArray(),1);
 
-            $pre_jan = $this->_get_work_duration($evalue->getId(),0,'2013-11-16','2013-12-31 23:59');
-            $post_jan = $this->_get_work_duration($evalue->getId(),0,'2014-01-01','2014-11-15 23:59');
+            $pre_jan = $this->_get_work_duration($evalue->getId(),0, $last_year . '-11-16', $last_year . '-12-31 23:59');
+            $post_jan = $this->_get_work_duration($evalue->getId(),0, $this_year . '-01-01', $this_year . '-11-15 23:59');
 
             if(!($pre_jan + $post_jan) >0 ) continue;
 
-            if($Group->getRateId() == '6') {
+            /*if($Group->getRateId() == '6') {
                 $Rate5 = new Messerve_Model_Rate();
                 $Rate5->find(5);
                 echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t{$pre_jan}\t{$Rate5->getReg()}\t{$post_jan}\t{$Rate->getReg()}";
             } else {
                 echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t0\t0\t{$post_jan}\t{$Rate->getReg()}";
-            }
+            }*/
+            echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t{$pre_jan}\t{$Rate->getReg()}\t{$post_jan}\t{$Rate->getReg()}";
 
-        }
+			// echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t0\t0\t{$post_jan}\t{$Rate->getReg()}";
+
+		}
 
     }
 
@@ -2349,3 +2355,4 @@ class Payroll_IndexController extends Zend_Controller_Action
         return array($table_sss,$calculated_sss);
     }
 }
+
