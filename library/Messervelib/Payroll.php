@@ -2,7 +2,8 @@
 
 class Messervelib_Payroll
 {
-    protected $_max_regular_hours = null, $_init_night_diff_start, $_init_night_diff_end;
+    protected $_max_regular_hours = null, $_init_night_diff_start, $_init_night_diff_end
+    , $_night_diff_start, $_night_diff_end, $_midnight;
     protected $_config;
     protected $_client_rates, $_employee_rates;
 
@@ -19,15 +20,11 @@ class Messervelib_Payroll
     public function save_the_day($employee_id, $group_id, $data)
     {
         $config = Zend_Registry::get('config');
-        $overage = $config->messerve->fueloverage;
+        // $overage = $config->messerve->fueloverage;
 
         $Employee = new Messerve_Model_Employee();
 
         $Employee->find($employee_id);
-
-        if ($Employee->getType() == 'serviceman') { // Employee is a Manila Gas serviceman, deduct 1-hour break
-            // $start_1 += 3600; // Retired.  Encoders deduct on encoding
-        }
 
         $Group = new Messerve_Model_Group();
         $Group->find($group_id);
@@ -40,10 +37,11 @@ class Messervelib_Payroll
 
         $first_day_id = null; // cache record of first day for fuel calcs
 
+        /*
         $total_fuel_purchase_l = 0;
-
         $client_rates = array();
         $employee_rates = array();
+        */
 
         foreach ($data as $date => $attendance) {
 
@@ -74,7 +72,8 @@ class Messervelib_Payroll
                     $cutoff = '1';
                     $rate_date_start = date('Y-m-01', $unix_date);
                     $rate_date_end = date('Y-m-15', $unix_date);
-                } elseif (date('d', $unix_date) == '16') {
+                    // } elseif (date('d', $unix_date) == '16') {
+                } else {
                     $cutoff = '2';
                     $rate_date_start = date('Y-m-16', $unix_date);
                     $rate_date_end = date('Y-m-d', strtotime("last day of this month", $unix_date));
@@ -334,7 +333,6 @@ class Messervelib_Payroll
 
             $start_1 = strtotime($date . ' T' . str_pad($attendance['start_1'], 4, 0, STR_PAD_LEFT));
 
-
             $end_1 = $attendance['end_1'] != '' ? strtotime($date . ' T' . str_pad($attendance['end_1'], 4, 0, STR_PAD_LEFT)) : 0;
 
             if ($end_1 < $start_1) {
@@ -429,18 +427,18 @@ class Messervelib_Payroll
             $this->_ot_start = $ot_start;
 
             if ($duration_1 > 0) {
-                $d1_attendance = $this->_break_it_down($start_1, $end_1, 1);
+                $d1_attendance = $this->_break_it_down($start_1, $end_1, 1, $attendance);
                 $time_array += $d1_attendance;
             }
 
             if ($duration_2 > 0) {
-                $d2_attendance = $this->_break_it_down($start_2, $end_2, 2);
+                $d2_attendance = $this->_break_it_down($start_2, $end_2, 2, $attendance);
                 $time_array += $d2_attendance;
             }
 
 
             if ($duration_3 > 0) {
-                $d3_attendance = $this->_break_it_down($start_3, $end_3, 3);
+                $d3_attendance = $this->_break_it_down($start_3, $end_3, 3, $attendance);
                 $time_array += $d3_attendance;
             }
 
@@ -459,13 +457,10 @@ class Messervelib_Payroll
             $reg_nd_ot = 0;
 
             if ($ot_duration > 0) {
-
-                // echo "<br /> Has OT";
-
                 $ot_balance = $ot_duration;
 
                 for ($i = 3; $i > 0; $i--) {
-                    // echo "<br /> === $i // $ot_balance";
+
                     if (isset($time_array[$i])) {
 
                         if (isset($time_array[$i]['tomorrow'])) {
@@ -482,18 +477,14 @@ class Messervelib_Payroll
                         }
 
                         if (isset($time_array[$i]['tomorrow_nd'])) {
-                            // echo "<br /> Setting Tomorrow ND : $i $ot_balance : {$time_array[$i]['tomorrow_nd']}";
                             if (($time_array[$i]['tomorrow_nd'] - $ot_balance) >= 0) {
-                                // echo " :A ";
                                 $tomorrow_nd += $time_array[$i]['tomorrow_nd'] - $ot_balance;
                                 $tomorrow_nd_ot += $ot_balance;
                                 $ot_balance = 0;
                             } elseif ($ot_balance > 0) {
-                                // echo " :B ";
                                 $ot_balance -= $time_array[$i]['tomorrow_nd'];
                                 $tomorrow_nd_ot += $time_array[$i]['tomorrow_nd'];
                             } else {
-                                // echo " :C ";
                                 $tomorrow_nd += $time_array[$i]['tomorrow_nd'];
                             }
                         }
@@ -841,7 +832,7 @@ class Messervelib_Payroll
 
                 if ($employee_id > 0 && $Attendance->getId() > 0) {
                     $PayrollToday->getMapper()->findOneByField(
-                        array("employee_id","attendance_id", "date")
+                        array("employee_id", "attendance_id", "date")
                         , array($employee_id, $Attendance->getId(), $new_date_today)
                         , $PayrollToday
                     );
@@ -878,7 +869,7 @@ class Messervelib_Payroll
                 $PayrollTomorrow = new Messerve_Model_AttendancePayroll();
 
                 $PayrollTomorrow->getMapper()->findOneByField(
-                    array("employee_id","attendance_id", "date")
+                    array("employee_id", "attendance_id", "date")
                     , array($employee_id, $Attendance->getId(), $new_date_tomorrow)
                     , $PayrollTomorrow
                 );
@@ -1192,16 +1183,16 @@ class Messervelib_Payroll
 
         switch ($bop_age) {
             case(0):
-            case(1):
+                // case(1):
                 $maintenance = $BOP->getMaintenance1();
                 break;
-            case(2):
+            case(1):
                 $maintenance = $BOP->getMaintenance2();
                 break;
-            case(3):
+            case(2):
                 $maintenance = $BOP->getMaintenance3();
                 break;
-            case(4):
+            case(3):
                 $maintenance = $BOP->getMaintenance4();
                 break;
             default:
@@ -1317,13 +1308,11 @@ class Messervelib_Payroll
         return (array("employee" => $employee_rate, "client" => $client_rate));
     }
 
-    protected function _break_it_down($start, $end, $duration_id)
+    protected function _break_it_down($start, $end, $duration_id, $Attendance = null)
     {
 
         $broken_array = array('today' => 0, 'today_nd' => 0, 'tomorrow_nd' => 0, 'tomorrow' => 0);
 
-        // echo "<br /> Duration $duration_id // {$this->_date} :: Start - " . date('Y-m-d H:i', $start) . " // End - ". date('Y-m-d H:i', $end); if($this->_ot_start) echo " // OT - ". date('Y-m-d H:i', $this->_ot_start);
-        // echo " // ND start - " . date('Y-m-d H:i', $this->_night_diff_start) . " // ND end - " . date('Y-m-d H:i', $this->_night_diff_end) ;
 
         /* Today */
         if ($end < $this->_night_diff_start) {
@@ -1333,19 +1322,15 @@ class Messervelib_Payroll
 
         /* ND */
 
-
         if ($end <= $this->_midnight && $end >= $this->_night_diff_start) {
 
             echo "<br />Duration: $duration_id ";
 
             if ($start <= $this->_night_diff_start) {
-                echo "<br /> ND :A ";
                 $today = $this->_night_diff_start - $start;
                 if ($today > 0) $broken_array['today'] += $today;
 
                 $today_nd = $end - $this->_night_diff_start;
-
-                echo '<br />' . date('Y-m-d H:i', $end);
 
                 if ($today_nd > 0) $broken_array['today_nd'] += $today_nd;
 
@@ -1358,9 +1343,24 @@ class Messervelib_Payroll
                 if ($today_nd > 0) $broken_array['today_nd'] += $today_nd;
             }
 
-            // if($duration_id == 2) die('<br />' .date('Y-m-d H:i',$start) . ' - ' . date('Y-m-d H:i',$end));
-
         }
+
+        /* Early ND */
+        $early_night_diff_end = strtotime(date('Y-m-d ' . $this->_init_night_diff_end, $start));
+
+        if ($start < $early_night_diff_end 
+ 		&& $end < $this->_midnight
+		// && !$start > $this->_midnight
+	) {
+            if ($end > $early_night_diff_end) {
+                $broken_array['today_nd'] = $early_night_diff_end - $start;
+                $broken_array['today'] = $end - $early_night_diff_end;
+            } else {
+                $broken_array['today_nd'] = $end - $start;
+                $broken_array['today'] = 0;
+            }
+        }
+
 
         /* Tomorrow */
         if ($end > $this->_midnight) {
@@ -1426,16 +1426,8 @@ class Messervelib_Payroll
             return $x / 3600;
         }, $broken_array);
 
-        /*
-         if($this->_round_to_ten_minutes) {
-        foreach($broken_array as $bkey=>$bvalue) {
-        $minutes = $bvalue * 60;
-        // $rounded = round($minutes,-1);
-        $rounded = floor($minutes / 10) * 10; // round down to nearest 10 minutes
-        $broken_array[$bkey] = $rounded/60;
-        }
-        }
-        */
+        // if($Attendance['id'] == '241297' && $duration_id == 2) { preprint($Attendance) ;preprint($broken_array,1); }
+
 
         return array($duration_id => $broken_array);
     }
@@ -1663,3 +1655,4 @@ class Messervelib_Payroll
 
     }
 }
+

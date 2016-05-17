@@ -25,7 +25,7 @@
 
 <?php endif; ?>
 
-<div id="utility-dialog" class="reveal-modal" data-reveal></div>
+<div id="utility-dialog" class="" data-reveal></div>
 <br />
 <br />
 <script type="text/javascript">
@@ -54,16 +54,17 @@ $(function() {
 	$('.data-grid a.edit').live('click', function(evt) {
 		evt.preventDefault();
 		last_entry = $(this).siblings('input.entry-id:first').val();
-		var iframe = '<iframe frameborder="0" class="modal-iframe" width="500" height="300" src="<?php echo $this->url(array('action'=>'edit')); ?>/id/'
+		var iframe = '<iframe frameborder="0" class="modal-iframe" width="500" height="550" src="<?php echo $this->url(array('action'=>'edit')); ?>/id/'
 			+ last_entry + '"></iframe>';
-		$('#utility-dialog').html(iframe).dialog( { width: 580, height: 400, title: 'Edit user' } );
+		$('#utility-dialog').html(iframe).dialog( { width: 580, height: 580, title: 'Edit user' } );
 	} );
 	
 	$('.add-entry').click(function(evt) {
 		evt.preventDefault();
-		var iframe = '<iframe frameborder="0" class="modal-iframe" width="700" height="350" seamless="seamless" src="<?php echo $this->url(array('action'=>'add')); ?>"></iframe>';
+		var iframe = '<iframe frameborder="0" class="modal-iframe" width="700" height="550" seamless="seamless" src="<?php echo $this->url(array('action'=>'add')); ?>"></iframe>';
 		$('#utility-dialog').html(iframe); // .dialog( { width: 580, height: 400, title: 'Add user' } );
 	} );
 } );
 //-->
 </script>
+
