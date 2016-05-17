@@ -1183,7 +1183,6 @@ class Messervelib_Payroll
 
         switch ($bop_age) {
             case(0):
-                // case(1):
                 $maintenance = $BOP->getMaintenance1();
                 break;
             case(1):
