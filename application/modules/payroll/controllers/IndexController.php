@@ -2309,6 +2309,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 		$this_year = date('Y');
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
         $clients = array();
@@ -2319,6 +2320,8 @@ class Payroll_IndexController extends Zend_Controller_Action
         }
 
 >>>>>>> 5c9908853d03a2392f1dccf3523045a3274c3c3e
+=======
+>>>>>>> 5d90c5444e4fd6eec1d6810f4ca8e0fe3a2e85ae
         foreach($employees as $evalue) {
             $Group = new Messerve_Model_Group();
             $Group->find($evalue->getGroupId());

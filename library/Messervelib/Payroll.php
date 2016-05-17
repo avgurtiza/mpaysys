@@ -1184,10 +1184,13 @@ class Messervelib_Payroll
         switch ($bop_age) {
             case(0):
 <<<<<<< HEAD
+<<<<<<< HEAD
                 // case(1):
 =======
             // case(1):
 >>>>>>> 5c9908853d03a2392f1dccf3523045a3274c3c3e
+=======
+>>>>>>> 5d90c5444e4fd6eec1d6810f4ca8e0fe3a2e85ae
                 $maintenance = $BOP->getMaintenance1();
                 break;
             case(1):
