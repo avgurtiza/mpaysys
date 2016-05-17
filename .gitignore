@@ -1,7 +1,3 @@
 /vendor/
-<<<<<<< HEAD
-/idea/
+/.idea/
 /Zend/
-=======
-.idea/
->>>>>>> 5c9908853d03a2392f1dccf3523045a3274c3c3e

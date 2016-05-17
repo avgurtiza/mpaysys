@@ -2308,20 +2308,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 		$last_year = date('Y',strtotime('last year'));
 		$this_year = date('Y');
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 
-        $clients = array();
-        $ClientMap = new Messerve_Model_Mapper_Client();
-
-        foreach($ClientMap->fetchAll() as $client) {
-            $clients[$client->getId()] = $client->getName();
-        }
-
->>>>>>> 5c9908853d03a2392f1dccf3523045a3274c3c3e
-=======
->>>>>>> 5d90c5444e4fd6eec1d6810f4ca8e0fe3a2e85ae
         foreach($employees as $evalue) {
             $Group = new Messerve_Model_Group();
             $Group->find($evalue->getGroupId());
@@ -2344,11 +2331,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $post = $this->_get_work_duration($evalue->getId(),0, $last_year . '-11-16', $this_year . '-11-15 23:59');
             }
 
-<<<<<<< HEAD
-            $pre_jan = $this->_get_work_duration($evalue->getId(),0, $last_year . '-11-16', $last_year . '-12-31 23:59');
-            $post_jan = $this->_get_work_duration($evalue->getId(),0, $this_year . '-01-01', $this_year . '-11-15 23:59');
-=======
->>>>>>> 5c9908853d03a2392f1dccf3523045a3274c3c3e
 
             if(!($pre + $post) > 0 ) continue;
 
@@ -2359,11 +2341,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             } else {
                 echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t0\t0\t{$post_jan}\t{$Rate->getReg()}";
             }*/
-<<<<<<< HEAD
-            echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t{$pre_jan}\t{$Rate->getReg()}\t{$post_jan}\t{$Rate->getReg()}";
-=======
             echo "\n{$evalue->getEmployeeNumber()}\t{$group_name}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t{$pre}\t0\t{$post}\t{$Rate->getReg()}\t{$notes}";
->>>>>>> 5c9908853d03a2392f1dccf3523045a3274c3c3e
 
 			// echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t0\t0\t{$post_jan}\t{$Rate->getReg()}";
 
