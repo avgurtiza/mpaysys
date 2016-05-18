@@ -1270,17 +1270,23 @@ class Payroll_IndexController extends Zend_Controller_Action
 	    		;    		
     		
 	    		// $this_ecola = $this->_get_ecola($evalue->getId(), $group_id, $date_start, $date_end,$this_rate->Ecola);
-	    		
+	    		/*
 	    		$this_ecola = $total_hours >= ($period_size * 8) ?   
 	    			$this_rate->Ecola * $period_size
 	    			: $total_hours * ($this_rate->Ecola / 8);
-	    		
-	    		$non_ot = $attendance->sum_reg 
-	    			+ $attendance->sum_sun 
-	    			+ $attendance->sum_spec 
-	    			+ $attendance->sum_legal 
-	    			+ $attendance->sum_legal_unattend
-	    			+ $attendance->sum_rest;
+	    		*/
+	    		$non_ot = $attendance->sum_reg
+					+ $attendance->sum_reg_nd
+					+ $attendance->sum_sun
+					+ $attendance->sum_sun_nd
+					+ $attendance->sum_spec
+					+ $attendance->sum_spec_nd
+	    			+ $attendance->sum_legal
+					+ $attendance->sum_legal_nd
+					+ $attendance->sum_legal_unattend
+	    			+ $attendance->sum_rest
+					+ $attendance->sum_rest_nd
+				;
 	    		
 	    		$this_ecola = ($non_ot / 8) * $this_rate->Ecola;
 	    		
