@@ -478,6 +478,10 @@ class Payroll_IndexController extends Zend_Controller_Action
         $cmd = "mkdir -p $folder"; shell_exec($cmd); // Create folder
         
         // $csv_filename = $folder . date('Y-m-d-Hi') .  "_BankImport_" ."{$group_id}_{$date_start}_{$this->_client->getName()}_{$Group->getName()}.csv";
+		$rec_copy_data = array(
+			'branch' => $Client->getName() . '-' .$Group->getName()
+			, 'riders' => array()
+		);
         
         foreach ($this->_employee_payroll as $value) {
         	$page = new Zend_Pdf_Page(612,396);
@@ -597,6 +601,14 @@ class Payroll_IndexController extends Zend_Controller_Action
         	$reliever_text = $group_id == $Employee->getGroupId() ? '' : ' (Reliever)';
         	$page->setFont($bold, 8)->drawText($Client->getName() . '-' .$Group->getName() . $reliever_text, $dim_x + 340, $dim_y, 'UTF-8');
         	
+
+			$rec_copy_data['riders'][$Employee->getId()] = array(
+				'employee_number' => $Employee->getEmployeeNumber()
+				, 'name' => $value['attendance']->lastname . ', '
+					. $value['attendance']->firstname . ' '
+					. $value['attendance']->middleinitial
+				, 'pay_period' => $date_start. ' to ' .$date_end
+			);
         	
         	$dim_y -= 16;
         	$page->drawLine($dim_x-2, $dim_y, $dim_x + 560, $dim_y);
@@ -673,7 +685,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                         foreach ($rvalue as $dkey => $dvalue) {
                             $dim_y -= 8;
 
-                            if ($dkey == 'reg') {
+                            // if ($dkey == 'reg') {
+                            if ($dkey == 'reg' || $dkey == 'nd') {
+
                                 $ecola_additions[] = ($dvalue['hours'] / 8) * $ecola;
                             }
 
@@ -1036,6 +1050,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $filename = $folder .  "Payslips_{$this->_client->getName()}_{$Group->getName()}_{$group_id}_{$date_start}_{$this->_last_date}.pdf";
          
+		$this->_receiving_copy($pdf,$rec_copy_data);
+
         $pdf->save($filename);
 
         $this->summaryreportAction();
@@ -1049,6 +1065,41 @@ class Payroll_IndexController extends Zend_Controller_Action
 
     }
     
+	protected function _receiving_copy($pdf, $rec_copy_data) {
+		$page = new Zend_Pdf_Page(Zend_Pdf_Page::SIZE_A4);
+		$logo = Zend_Pdf_Image::imageWithPath(APPLICATION_PATH . '/../public/images/messerve.png');
+		$font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+		$bold =  Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_BOLD);
+
+		$pageHeight = $page->getHeight();
+		$pageWidth = $page->getWidth();
+
+		$dim_x = 32;
+		$dim_y = $pageHeight - 25;
+
+		$imageHeight = 41;
+		$imageWidth = 119;
+
+		$bottomPos = $dim_y - $imageHeight;
+		$rightPos = $dim_x + $imageWidth;
+
+		$page->drawImage($logo, $dim_x, $bottomPos, $rightPos, $dim_y);
+		$dim_y -= 64;
+
+		$page->setFont($bold, 14)->drawText("{$rec_copy_data['branch']}", $dim_x, $dim_y);
+		$dim_y -= 24;
+		$page->setFont($bold, 10)->drawText("Emp#  Name", $dim_x, $dim_y);
+		$page->setFont($bold, 10)->drawText("Pay period                            Signature ", $dim_x+180, $dim_y);
+
+		foreach($rec_copy_data['riders'] as $rider) {
+			$dim_y -= 24;
+			$page->setFont($font, 8)->drawText("{$rider['employee_number']}   {$rider['name']}", $dim_x, $dim_y);
+			$page->setFont($font, 8)->drawText("{$rider['pay_period']}               __________________________", $dim_x+180, $dim_y);
+		}
+
+		$pdf->pages[] = $page;
+	}
+
 
     protected function _fetch_employees($group_id, $date_start, $date_end) {
 		$EmployeeMap = new Messerve_Model_Mapper_Employee();
@@ -1274,13 +1325,27 @@ class Payroll_IndexController extends Zend_Controller_Action
 	    		$this_ecola = $total_hours >= ($period_size * 8) ?   
 	    			$this_rate->Ecola * $period_size
 	    			: $total_hours * ($this_rate->Ecola / 8);
-	    		
+/*	    		
 	    		$non_ot = $attendance->sum_reg 
 	    			+ $attendance->sum_sun 
 	    			+ $attendance->sum_spec 
 	    			+ $attendance->sum_legal 
 	    			+ $attendance->sum_legal_unattend
 	    			+ $attendance->sum_rest;
+*/
+	    		$non_ot = $attendance->sum_reg
+					+ $attendance->sum_reg_nd
+					+ $attendance->sum_sun
+					+ $attendance->sum_sun_nd
+					+ $attendance->sum_spec
+					+ $attendance->sum_spec_nd
+	    			+ $attendance->sum_legal
+					+ $attendance->sum_legal_nd
+					+ $attendance->sum_legal_unattend
+	    			+ $attendance->sum_rest
+					+ $attendance->sum_rest_nd
+				;
+
 	    		
 	    		$this_ecola = ($non_ot / 8) * $this_rate->Ecola;
 	    		
@@ -2284,6 +2349,9 @@ class Payroll_IndexController extends Zend_Controller_Action
         $EmployeeMap = new Messerve_Model_Mapper_Employee();
         $employees = $EmployeeMap->fetchList('1',array('group_id ASC', 'lastname ASC', 'firstname ASC'));
 
+		$last_year = date('Y',strtotime('last year'));
+		$this_year = date('Y');
+
         foreach($employees as $evalue) {
             $Group = new Messerve_Model_Group();
             $Group->find($evalue->getGroupId());
@@ -2292,20 +2360,23 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             // preprint($Rate->toArray(),1);
 
-            $pre_jan = $this->_get_work_duration($evalue->getId(),0,'2013-11-16','2013-12-31 23:59');
-            $post_jan = $this->_get_work_duration($evalue->getId(),0,'2014-01-01','2014-11-15 23:59');
+            $pre_jan = $this->_get_work_duration($evalue->getId(),0, $last_year . '-11-16', $last_year . '-12-31 23:59');
+            $post_jan = $this->_get_work_duration($evalue->getId(),0, $this_year . '-01-01', $this_year . '-11-15 23:59');
 
             if(!($pre_jan + $post_jan) >0 ) continue;
 
-            if($Group->getRateId() == '6') {
+            /*if($Group->getRateId() == '6') {
                 $Rate5 = new Messerve_Model_Rate();
                 $Rate5->find(5);
                 echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t{$pre_jan}\t{$Rate5->getReg()}\t{$post_jan}\t{$Rate->getReg()}";
             } else {
                 echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t0\t0\t{$post_jan}\t{$Rate->getReg()}";
-            }
+            }*/
+            echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t{$pre_jan}\t{$Rate->getReg()}\t{$post_jan}\t{$Rate->getReg()}";
 
-        }
+			// echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t0\t0\t{$post_jan}\t{$Rate->getReg()}";
+
+		}
 
     }
 
@@ -2349,3 +2420,4 @@ class Payroll_IndexController extends Zend_Controller_Action
         return array($table_sss,$calculated_sss);
     }
 }
+

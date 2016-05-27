@@ -281,3 +281,5 @@ th { color: #fff !important; }
 .dtr input { margin: 0;  }
 
 .bop #content { font-size: 0.8em;  }
+
+.user .inactive td { color: #aaa !important; font-style: italic; }

@@ -673,7 +673,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                         foreach ($rvalue as $dkey => $dvalue) {
                             $dim_y -= 8;
 
-                            if ($dkey == 'reg') {
+                            // if ($dkey == 'reg') {
+                            if ($dkey == 'reg' || $dkey == 'nd') {
+
                                 $ecola_additions[] = ($dvalue['hours'] / 8) * $ecola;
                             }
 
@@ -1274,13 +1276,27 @@ class Payroll_IndexController extends Zend_Controller_Action
 	    		$this_ecola = $total_hours >= ($period_size * 8) ?   
 	    			$this_rate->Ecola * $period_size
 	    			: $total_hours * ($this_rate->Ecola / 8);
-	    		
+/*	    		
 	    		$non_ot = $attendance->sum_reg 
 	    			+ $attendance->sum_sun 
 	    			+ $attendance->sum_spec 
 	    			+ $attendance->sum_legal 
 	    			+ $attendance->sum_legal_unattend
 	    			+ $attendance->sum_rest;
+*/
+	    		$non_ot = $attendance->sum_reg
+					+ $attendance->sum_reg_nd
+					+ $attendance->sum_sun
+					+ $attendance->sum_sun_nd
+					+ $attendance->sum_spec
+					+ $attendance->sum_spec_nd
+	    			+ $attendance->sum_legal
+					+ $attendance->sum_legal_nd
+					+ $attendance->sum_legal_unattend
+	    			+ $attendance->sum_rest
+					+ $attendance->sum_rest_nd
+				;
+
 	    		
 	    		$this_ecola = ($non_ot / 8) * $this_rate->Ecola;
 	    		
@@ -2284,6 +2300,9 @@ class Payroll_IndexController extends Zend_Controller_Action
         $EmployeeMap = new Messerve_Model_Mapper_Employee();
         $employees = $EmployeeMap->fetchList('1',array('group_id ASC', 'lastname ASC', 'firstname ASC'));
 
+		$last_year = date('Y',strtotime('last year'));
+		$this_year = date('Y');
+
         foreach($employees as $evalue) {
             $Group = new Messerve_Model_Group();
             $Group->find($evalue->getGroupId());
@@ -2292,20 +2311,23 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             // preprint($Rate->toArray(),1);
 
-             $pre_jan = $this->_get_work_duration($evalue->getId(),0,'2014-11-16','2014-12-31 23:59');
-             $post_jan = $this->_get_work_duration($evalue->getId(),0,'2015-01-01','2015-11-15 23:59');
-		
+            $pre_jan = $this->_get_work_duration($evalue->getId(),0, $last_year . '-11-16', $last_year . '-12-31 23:59');
+            $post_jan = $this->_get_work_duration($evalue->getId(),0, $this_year . '-01-01', $this_year . '-11-15 23:59');
+
             if(!($pre_jan + $post_jan) >0 ) continue;
 
-            if($Group->getRateId() == '6') {
+            /*if($Group->getRateId() == '6') {
                 $Rate5 = new Messerve_Model_Rate();
                 $Rate5->find(5);
-                echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}--6/5\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t{$pre_jan}\t{$Rate5->getReg()}\t{$post_jan}\t{$Rate->getReg()}";
+                echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t{$pre_jan}\t{$Rate5->getReg()}\t{$post_jan}\t{$Rate->getReg()}";
             } else {
-                echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}--{$Rate->getId()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t0\t0\t{$post_jan}\t{$Rate->getReg()}";
-            }
+                echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t0\t0\t{$post_jan}\t{$Rate->getReg()}";
+            }*/
+            echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t{$pre_jan}\t{$Rate->getReg()}\t{$post_jan}\t{$Rate->getReg()}";
 
-        }
+			// echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t0\t0\t{$post_jan}\t{$Rate->getReg()}";
+
+		}
 
     }
 
@@ -2349,3 +2371,4 @@ class Payroll_IndexController extends Zend_Controller_Action
         return array($table_sss,$calculated_sss);
     }
 }
+
