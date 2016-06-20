@@ -706,6 +706,16 @@ class Messervelib_Payroll
                 }
             }
 
+            if ($holiday_today && $holiday_today->getType() == 'special') {
+                $time_array += array('spec' => $reg, 'spec_nd' => $nd, 'spec_ot' => $ot, 'spec_nd_ot' => $nd_ot);
+            }
+
+            if ($holiday_tomorrow && $holiday_tomorrow->getType() == 'special') {
+                $time_array += array('spec' => $tomorrow, 'spec_nd' => $tomorrow_nd, 'spec_ot' => $tomorrow_ot
+                , 'spec_nd_ot' => $tomorrow_nd_ot
+                );
+            }
+
             if ($holiday_tomorrow && $holiday_tomorrow->getType() == 'legal') {
                 if (($reg + $nd + $ot + $nd_ot) > 0) { // Attendance yesterday?  Make it legal
                     $time_array = array_merge($time_array, array(
@@ -738,15 +748,7 @@ class Messervelib_Payroll
                 , 'reg_nd_ot' => $tomorrow_nd_ot);
             }
 
-            if ($holiday_today && $holiday_today->getType() == 'special') {
-                $time_array += array('spec' => $reg, 'spec_nd' => $nd, 'spec_ot' => $ot + $tomorrow_ot, 'spec_nd_ot' => $nd_ot);
-            }
 
-            if ($holiday_tomorrow && $holiday_tomorrow->getType() == 'special') {
-                $time_array += array('spec' => $tomorrow, 'spec_nd' => $tomorrow_nd, 'spec_ot' => $tomorrow_ot
-                , 'spec_nd_ot' => $tomorrow_nd_ot
-                );
-            }
 
             $time_array = array_merge($time_array, array( // For stats only
                 'today' => $reg
