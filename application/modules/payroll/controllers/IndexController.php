@@ -716,7 +716,11 @@ class Payroll_IndexController extends Zend_Controller_Action
             $page->setFont($font, 8)->drawText('Total hours pay', $dim_x + 220, $dim_y);
             $page->setFont($mono, 8)->drawText(str_pad(substr(number_format($total_pay, 3), 0, -1), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
 
-            $ecola_addition = $this->get_cutoff_attended_days($Employee->getId(),$date_start,$date_end) * $ecola;
+            $ecola_addition = 0;
+
+            if($Employee->getGroupId() == $group_id) {
+                $ecola_addition = $this->get_cutoff_attended_days($Employee->getId(),$date_start,$date_end) * $ecola;
+            }
 
             $dim_y -= 8;
             $page->setFont($font, 8)->drawText('ECOLA', $dim_x + 220, $dim_y);
@@ -2115,7 +2119,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $select = $AttendanceDb->select();
 
         $select->from($AttendanceDb, array("COUNT(*) AS amount"))
-            ->where("WHERE employee_id = $employee_id
+            ->where("employee_id = $employee_id
                 AND datetime_start >= '$date_start 00:00'
                 AND datetime_end <= '$date_end 23:59'");
 
