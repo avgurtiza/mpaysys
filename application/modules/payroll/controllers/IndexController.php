@@ -637,21 +637,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , $this->_request->getParam('date_start')
             );
 
-            /*
-            $page->setFont($font, 8)->drawText('Daily rate', $dim_x, $dim_y,  'UTF8');
-            $page->setFont($mono, 8)->drawText(number_format($pay_rate,2), $dim_x + 110, $dim_y,  'UTF8');
-
-            $dim_y -= 10;
-            $page->setFont($font, 8)->drawText('Ecola', $dim_x, $dim_y,  'UTF8');
-            $page->setFont($mono, 8)->drawText(number_format($Rate->getEcola(),2), $dim_x + 110, $dim_y,  'UTF8');
-
-            $dim_y -= 10;
-            $page->setFont($font, 8)->drawText('Min. wage', $dim_x, $dim_y,  'UTF8');
-            $page->setFont($mono, 8)->drawText(number_format($pay_rate + $Rate->getEcola(),2), $dim_x + 110, $dim_y,  'UTF8');
-            $dim_y -= 10;
-            $dim_y -= 10;
-            */
-
             $total_no_hours = 0;
             $total_pay = 0;
             $total_deduct = 0;
@@ -688,7 +673,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                         foreach ($rvalue as $dkey => $dvalue) {
                             $dim_y -= 8;
 
-                            if (($dkey == 'reg' || $dkey == 'nd') && $group_id == $Employee->getGroupId()) {
+                            if (($dkey == 'reg' || $dkey == 'nd')) {
                                 // E-cola applies to parent group ONLY and is not pro-rated
                                 // $ecola_additions[] = ($dvalue['hours'] / 8) * $ecola;
                                 $ecola_additions[] = $ecola;
@@ -1008,6 +993,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setInsurance($value['deductions']['insurance'])
                 ->setMiscDeduction($total_misc_deduct)
                 ->setDeductionData(json_encode($scheduled_deductions))
+
                 ->setSssLoan($scheduled_deductions_array['sss_loan'])
                 ->setHdmfLoan($scheduled_deductions_array['hdmf_loan'])
                 ->setUniform($scheduled_deductions_array['uniform'])
@@ -1015,10 +1001,13 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setAdjustment($scheduled_deductions_array['adjustment'])
                 ->setMiscellaneous($scheduled_deductions_array['misc'])
                 ->setCommunication($scheduled_deductions_array['communication'])
+
                 ->setMiscAddition($value['more_income']['misc_income'])
+
                 ->setBopInsurance($bop_insurance)
                 ->setBopMotorcycle($bop_motorcycle)
                 ->setBopMaintenance($bop_maintenance)
+
                 ->setFuelOverage($fuel_overage)
                 ->setFuelAddition($value['more_income']['gasoline'])
                 ->setFuelDeduction($fuel_deduction)
@@ -1231,38 +1220,39 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setIntegrityCheck(false)
                 ->from('attendance', array(
                         'sum_fuel_overage' => 'SUM(fuel_overage)'
-                    , 'sum_reg' => 'SUM(reg)'
-                    , 'sum_reg_nd' => 'SUM(reg_nd)'
-                    , 'sum_reg_ot' => 'SUM(reg_ot)'
-                    , 'sum_reg_nd_ot' => 'SUM(reg_nd_ot)'
-                    , 'sum_sun' => 'SUM(sun)'
-                    , 'sum_sun_nd' => 'SUM(sun_nd)'
-                    , 'sum_sun_ot' => 'SUM(sun_ot)'
-                    , 'sum_sun_nd_ot' => 'SUM(sun_nd_ot)'
-                    , 'sum_spec' => 'SUM(spec)'
-                    , 'sum_spec_nd' => 'SUM(spec_nd)'
-                    , 'sum_spec_ot' => 'SUM(spec_ot)'
-                    , 'sum_spec_nd_ot' => 'SUM(spec_nd_ot)'
-                    , 'sum_legal' => 'SUM(legal)'
-                    , 'sum_legal_nd' => 'SUM(legal_nd)'
-                    , 'sum_legal_ot' => 'SUM(legal_ot)'
-                    , 'sum_legal_nd_ot' => 'SUM(legal_nd_ot)'
-                    , 'sum_legal_unattend' => 'SUM(legal_unattend)'
+                        , 'sum_reg' => 'SUM(reg)'
+                        , 'sum_reg_nd' => 'SUM(reg_nd)'
+                        , 'sum_reg_ot' => 'SUM(reg_ot)'
+                        , 'sum_reg_nd_ot' => 'SUM(reg_nd_ot)'
+                        , 'sum_sun' => 'SUM(sun)'
+                        , 'sum_sun_nd' => 'SUM(sun_nd)'
+                        , 'sum_sun_ot' => 'SUM(sun_ot)'
+                        , 'sum_sun_nd_ot' => 'SUM(sun_nd_ot)'
+                        , 'sum_spec' => 'SUM(spec)'
+                        , 'sum_spec_nd' => 'SUM(spec_nd)'
+                        , 'sum_spec_ot' => 'SUM(spec_ot)'
+                        , 'sum_spec_nd_ot' => 'SUM(spec_nd_ot)'
+                        , 'sum_legal' => 'SUM(legal)'
+                        , 'sum_legal_nd' => 'SUM(legal_nd)'
+                        , 'sum_legal_ot' => 'SUM(legal_ot)'
+                        , 'sum_legal_nd_ot' => 'SUM(legal_nd_ot)'
+                        , 'sum_legal_unattend' => 'SUM(legal_unattend)'
 
-                    , 'sum_rest' => 'SUM(rest)'
-                    , 'sum_rest_nd' => 'SUM(rest_nd)'
-                    , 'sum_rest_ot' => 'SUM(rest_ot)'
-                    , 'sum_rest_nd_ot' => 'SUM(rest_nd_ot)'
+                        , 'sum_rest' => 'SUM(rest)'
+                        , 'sum_rest_nd' => 'SUM(rest_nd)'
+                        , 'sum_rest_ot' => 'SUM(rest_ot)'
+                        , 'sum_rest_nd_ot' => 'SUM(rest_nd_ot)'
 
-                    , 'today' => 'SUM(today)'
-                    , 'today_nd' => 'SUM(today_nd)'
-                    , 'today_ot' => 'SUM(today_ot)'
-                    , 'today_nd_ot' => 'SUM(today_nd_ot)'
+                        , 'today' => 'SUM(today)'
+                        , 'today_nd' => 'SUM(today_nd)'
+                        , 'today_ot' => 'SUM(today_ot)'
+                        , 'today_nd_ot' => 'SUM(today_nd_ot)'
 
-                    , 'tomorrow' => 'SUM(tomorrow)'
-                    , 'tomorrow_nd' => 'SUM(tomorrow_nd)'
-                    , 'tomorrow_ot' => 'SUM(tomorrow_ot)'
-                    , 'tomorrow_nd_ot' => 'SUM(tomorrow_nd_ot)'
+                        , 'tomorrow' => 'SUM(tomorrow)'
+                        , 'tomorrow_nd' => 'SUM(tomorrow_nd)'
+                        , 'tomorrow_ot' => 'SUM(tomorrow_ot)'
+                        , 'tomorrow_nd_ot' => 'SUM(tomorrow_nd_ot)'
+                        , 'day_count'=> 'COUNT(*)'
                     )
                 )
                 ->join('employee', 'employee.id = attendance.employee_id')
@@ -1314,20 +1304,11 @@ class Payroll_IndexController extends Zend_Controller_Action
                 + $attendance->sum_rest_nd
                 + $attendance->sum_rest_ot
                 + $attendance->sum_rest_nd_ot;
-
-            // $this_ecola = $this->_get_ecola($evalue->getId(), $group_id, $date_start, $date_end,$this_rate->Ecola);
-
+            /*
             $this_ecola = $total_hours >= ($period_size * 8) ?
                 $this_rate->Ecola * $period_size
                 : $total_hours * ($this_rate->Ecola / 8);
-            /*
-                            $non_ot = $attendance->sum_reg
-                                + $attendance->sum_sun
-                                + $attendance->sum_spec
-                                + $attendance->sum_legal
-                                + $attendance->sum_legal_unattend
-                                + $attendance->sum_rest;
-            */
+
             $non_ot = $attendance->sum_reg
                 + $attendance->sum_reg_nd
                 + $attendance->sum_sun
@@ -1342,6 +1323,10 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
             $this_ecola = ($non_ot / 8) * $this_rate->Ecola;
+            */
+
+            $this_ecola = $this_rate->Ecola * 8 * $attendance->day_count;
+            error_log(print_r($attendance,true) . "\n", 3, '/home/fixstop/debug.log');
 
             $employee_payroll[$evalue->getId()]['pay'] = array(
                 'reg' => $attendance->sum_reg * $this_rate->Reg
@@ -1374,7 +1359,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'e_cola' => $this_ecola
             );
 
-            // echo ('<br />HERE ' . $this_rate->LegalUnattend . ' -- ' . $attendance->sum_legal_unattend . "//");
             $sss_deduct = $total_hours * ($this_rate->SSSEmployee / 22 / 8);
 
             $config = Zend_Registry::get('config');
@@ -1998,40 +1982,6 @@ class Payroll_IndexController extends Zend_Controller_Action
         $now_x = $dim_x + ($i * 22) + 110;
 
         $now_inc = 35;
-        /*
-        $page->setFont($font, 8)->drawText($all_total_total_hours, $dim_x + $now_x, $dim_y, 'UTF8');
-        $now_x += $now_inc;
-
-        $page->setFont($font, 8)->drawText($all_total_reg, $dim_x + $now_x, $dim_y, 'UTF8');
-        $now_x += $now_inc;
-
-        $page->setFont($font, 8)->drawText($all_total_reg_ot, $dim_x + $now_x, $dim_y, 'UTF8');
-        $now_x += $now_inc;
-
-        $page->setFont($font, 8)->drawText($all_total_sun_ot, $dim_x + $now_x, $dim_y, 'UTF8');
-        $now_x += $now_inc;
-
-        $page->setFont($font, 8)->drawText($all_total_spec_ot, $dim_x + $now_x, $dim_y, 'UTF8');
-        $now_x += $now_inc;
-
-        $page->setFont($font, 8)->drawText($all_total_legal_ot, $dim_x + $now_x, $dim_y, 'UTF8');
-        $now_x += $now_inc;
-
-        $page->setFont($font, 8)->drawText($all_total_legal_unattend, $dim_x + $now_x, $dim_y, 'UTF8');
-        $now_x += $now_inc;
-        $page->setFont($font, 8)->drawText($all_total_rest, $dim_x + $now_x, $dim_y, 'UTF8');
-        $now_x += $now_inc;
-        $page->setFont($font, 8)->drawText($all_total_rest_ot, $dim_x + $now_x, $dim_y, 'UTF8');
-        $now_x += $now_inc;
-
-        $page->setFont($font, 8)->drawText($all_total_nd, $dim_x + $now_x, $dim_y, 'UTF8');
-        $now_x += $now_inc;
-        $page->setFont($font, 8)->drawText($all_total_nd_ot, $dim_x + $now_x, $dim_y, 'UTF8');
-        $now_x += $now_inc;
-
-        $dim_y -= 10;
-        */
-
 
         $now_x = $dim_x + ($i * 22) + 110 + 66;
         $now_inc = 68;
@@ -2248,6 +2198,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'Cash bond' => number_format(round($pvalue->getCashBond() * -1, 2), 2)
             , 'Insurance' => number_format(round($pvalue->getInsurance() * -1, 2), 2)
                 // , 'Misc deduction'=>number_format(round($pvalue->getMiscDeduction() * -1,2),2)
+
             , 'SSS loan' => number_format(round($pvalue->getSSSLoan() * -1, 2), 2)
             , 'HDMF loan' => number_format(round($pvalue->getHDMFLoan() * -1, 2), 2)
             , 'Accident' => number_format(round($pvalue->getAccident() * -1, 2), 2)
@@ -2256,6 +2207,8 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'Miscellaneous' => number_format(round($pvalue->getMiscellaneous() * -1, 2), 2)
             , 'Communication' => number_format(round($pvalue->getCommunication() * -1, 2), 2)
                 // , 'Fuel overage'=>number_format(round($pvalue->getFuelOverage() * -1,2),2)
+
+
             , 'Fuel deduction' => number_format(round($pvalue->getFuelDeduction() * -1, 2), 2)
             , 'BOP motorcycle' => $pvalue->getBopMotorcycle() * -1
             , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1

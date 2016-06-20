@@ -729,9 +729,7 @@ class Messervelib_Payroll
 
             }
 
-
-
-            $time_array = array_merge($time_array, array(
+            $time_array = array_merge($time_array, array( // For stats only
                 'today' => $reg
                 , 'today_ot' => $ot
                 , 'today_nd' => $nd
