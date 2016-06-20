@@ -646,9 +646,10 @@ class Payroll_IndexController extends Zend_Controller_Action
             $sss_deductions = array();
 
             foreach ($employee_pay as $pkey => $pvalue) {
+                $ecola = 0;
+                $sss = 0;
+
                 foreach ($pvalue as $rkey => $rvalue) {
-                    $ecola = 0;
-                    $sss = 0;
 
                     if ($rkey == "meta") {
 
