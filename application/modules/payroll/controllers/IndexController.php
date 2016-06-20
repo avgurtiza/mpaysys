@@ -671,14 +671,10 @@ class Payroll_IndexController extends Zend_Controller_Action
                     } else {
                         $page->setFont($font, 8)->drawText("{$rkey}", $dim_x, $dim_y);
 
+                        $ecola_additions[] = $ecola; // Daily E-cola
+
                         foreach ($rvalue as $dkey => $dvalue) {
                             $dim_y -= 8;
-
-                            if (($dkey == 'reg' || $dkey == 'nd')) {
-                                // E-cola applies to parent group ONLY and is not pro-rated
-                                // $ecola_additions[] = ($dvalue['hours'] / 8) * $ecola;
-                                $ecola_additions[] = $dvalue->day_count * $ecola;
-                            }
 
                             $sss_deductions[] = ($sss / 22 / 8) * $dvalue['hours'];
 
