@@ -686,58 +686,77 @@ class Messervelib_Payroll
             }
 
 
-
-            if (
-                ($holiday_today && $holiday_today->getType() == 'legal')
-                || ($holiday_tomorrow && $holiday_tomorrow->getType() == 'legal')
-            ) {
-                $time_array = array_merge($time_array, array(
-                    'legal' => $reg + $tomorrow
-                    , 'legal_nd' => $nd + $tomorrow_nd
-                    , 'legal_ot' => $ot + $tomorrow_ot
-                    , 'legal_nd_ot' => $nd_ot + $tomorrow_nd_ot
-                    , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Legal both days, reset regular to 0
-                ));
-
-                /*
-                if (!$work_duration > 0) { // Do unattended OT calcs
-                    $time_array += array('legal_unattend' => $this->_max_regular_hours);
+            if ($holiday_today && $holiday_today->getType() == 'legal') {
+                if (($tomorrow + $tomorrow_nd + $tomorrow_ot + $tomorrow_nd_ot) > 0) { // Attendance tomorrow?  Make it legal
+                    $time_array = array_merge($time_array, array(
+                        'legal' => $reg + $tomorrow
+                        , 'legal_nd' => $nd + $tomorrow_nd
+                        , 'legal_ot' => $ot + $tomorrow_ot
+                        , 'legal_nd_ot' => $nd_ot + $tomorrow_nd_ot
+                        , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Legal both days, reset regular to 0
+                    ));
+                } else {
+                    $time_array = array_merge($time_array, array(
+                        'legal' => $reg
+                        , 'legal_nd' => $nd
+                        , 'legal_ot' => $ot
+                        , 'legal_nd_ot' => $nd_ot
+                        , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Legal both days, reset regular to 0
+                    ));
                 }
-                */
-            } else {
+            }
 
-                if (!$holiday_tomorrow && $attendance['type'] == 'rest') {
+            if ($holiday_tomorrow && $holiday_tomorrow->getType() == 'legal') {
+                if (($reg + $nd + $ot + $nd_ot) > 0) { // Attendance yesterday?  Make it legal
+                    $time_array = array_merge($time_array, array(
+                        'legal' => $reg + $tomorrow
+                        , 'legal_nd' => $nd + $tomorrow_nd
+                        , 'legal_ot' => $ot + $tomorrow_ot
+                        , 'legal_nd_ot' => $nd_ot + $tomorrow_nd_ot
+                        , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Legal both days, reset regular to 0
+                    ));
+                } else {
+                    $time_array = array_merge($time_array, array(
+                        'legal' => $tomorrow
+                        , 'legal_nd' => $tomorrow_nd
+                        , 'legal_ot' => $tomorrow_ot
+                        , 'legal_nd_ot' => $tomorrow_nd_ot
+                        , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Legal both days, reset regular to 0
+                    ));
+                }
+            }
+
+
+            if (!$holiday_tomorrow && $attendance['type'] == 'rest') {
                 // TODO:  cleanup, or figure out what this placeholder is for.  Might be deprecated due to unuse of restday ot
 
-                } else {
-                    $time_array += array(
-                        'reg' => $tomorrow
-                    , 'reg_nd' => $tomorrow_nd
-                    , 'reg_ot' => $tomorrow_ot
-                    , 'reg_nd_ot' => $tomorrow_nd_ot);
-                }
+            } else {
+                $time_array += array(
+                    'reg' => $tomorrow
+                , 'reg_nd' => $tomorrow_nd
+                , 'reg_ot' => $tomorrow_ot
+                , 'reg_nd_ot' => $tomorrow_nd_ot);
+            }
 
-                if ($holiday_today && $holiday_today->getType() == 'special') {
-                    $time_array += array('spec' => $reg, 'spec_nd' => $nd, 'spec_ot' => $ot + $tomorrow_ot, 'spec_nd_ot' => $nd_ot);
-                }
+            if ($holiday_today && $holiday_today->getType() == 'special') {
+                $time_array += array('spec' => $reg, 'spec_nd' => $nd, 'spec_ot' => $ot + $tomorrow_ot, 'spec_nd_ot' => $nd_ot);
+            }
 
-                if ($holiday_tomorrow && $holiday_tomorrow->getType() == 'special') {
-                    $time_array += array('spec' => $tomorrow, 'spec_nd' => $tomorrow_nd, 'spec_ot' => $tomorrow_ot
-                    , 'spec_nd_ot' => $tomorrow_nd_ot
-                    );
-                }
-
+            if ($holiday_tomorrow && $holiday_tomorrow->getType() == 'special') {
+                $time_array += array('spec' => $tomorrow, 'spec_nd' => $tomorrow_nd, 'spec_ot' => $tomorrow_ot
+                , 'spec_nd_ot' => $tomorrow_nd_ot
+                );
             }
 
             $time_array = array_merge($time_array, array( // For stats only
                 'today' => $reg
-                , 'today_ot' => $ot
-                , 'today_nd' => $nd
-                , 'today_nd_ot' => $nd_ot
-                , 'tomorrow' => $tomorrow
-                , 'tomorrow_ot' => $tomorrow_ot
-                , 'tomorrow_nd' => $tomorrow_nd
-                , 'tomorrow_nd_ot' => $tomorrow_nd_ot
+            , 'today_ot' => $ot
+            , 'today_nd' => $nd
+            , 'today_nd_ot' => $nd_ot
+            , 'tomorrow' => $tomorrow
+            , 'tomorrow_ot' => $tomorrow_ot
+            , 'tomorrow_nd' => $tomorrow_nd
+            , 'tomorrow_nd_ot' => $tomorrow_nd_ot
             ));
 
             if ($Attendance->getOtApproved() != 'yes') {
@@ -1445,7 +1464,7 @@ class Messervelib_Payroll
 
         foreach ($payroll_raw as $pvalue) { // TODO:  Construct array properly
 
-            if (json_decode($pvalue->getRateData())){
+            if (json_decode($pvalue->getRateData())) {
                 @$payroll[$pvalue->getRateId()]['meta'] = json_decode($pvalue->getRateData());
             }
 
