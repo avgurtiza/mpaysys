@@ -469,9 +469,9 @@ class Payroll_IndexController extends Zend_Controller_Action
         $pdf = new Zend_Pdf();
         $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
         $bold = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_BOLD);
-        // $italic =  Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_ITALIC);
+        $italic =  Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_ITALIC);
         $mono = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_COURIER);
-        // $boldmono =  Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_COURIER_BOLD);
+        $boldmono =  Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_COURIER_BOLD);
 
         $logo = Zend_Pdf_Image::imageWithPath(APPLICATION_PATH . '/../public/images/messerve.png');
 
