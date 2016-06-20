@@ -1230,7 +1230,7 @@ class Messervelib_Payroll
             )
             ->join('employee', 'employee.id = attendance.employee_id')
             ->where('attendance.employee_id = ?', $employee_id)
-            ->where("datetime_start BETWEEN '{$date_start}' AND '{$date_end}'");
+            ->where("datetime_start >= '{$date_start}' AND datetime_start <='{$date_end} 23:59'");
 
         if ($group_id > 0) {
             $select->where('attendance.group_id = ?', $group_id);
@@ -1415,7 +1415,7 @@ class Messervelib_Payroll
 
         $FuelMap = new Messerve_Model_Mapper_Fuelpurchase();
 
-        $fuel_purchases = $FuelMap->fetchList("invoice_date BETWEEN '{$date_start}' AND '{$date_end} 23:59' AND employee_id = {$employee_id}"
+        $fuel_purchases = $FuelMap->fetchList("invoice_date >= '{$date_start}' AND invoice_date <= '{$date_end} 23:59' AND employee_id = {$employee_id}"
         );
 
         $fuel_purchased = 0;

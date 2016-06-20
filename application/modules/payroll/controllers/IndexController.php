@@ -1109,7 +1109,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $select->where("employee_id NOT IN ({$permanents})")
                 ->where('group_id = ?', $group_id)
-                ->where("datetime_start BETWEEN '{$date_start}' AND '{$date_end}'")
+                ->where("datetime_start >= '{$date_start} 00:00' AND datetime_start <= '{$date_end} 23:59'")
                 ->group('employee_id');
 
             $relievers_result = $AttendDB->fetchAll($select);
@@ -1128,9 +1128,8 @@ class Payroll_IndexController extends Zend_Controller_Action
             $select = $AttendDB->select(true);
 
             $select
-                // ->where("employee_id NOT IN ({$permanents})")
                 ->where('group_id = ?', $group_id)
-                ->where("datetime_start BETWEEN '{$date_start}' AND '{$date_end}'")
+                ->where("datetime_start >= '{$date_start} 00:00' AND datetime_start <= '{$date_end} 23:59'")
                 ->group('employee_id');
 
             $relievers_result = $AttendDB->fetchAll($select);
@@ -1259,7 +1258,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->join('employee', 'employee.id = attendance.employee_id')
                 ->where('attendance.employee_id = ?', $evalue->getId())
                 ->where('attendance.group_id = ?', $group_id)
-                ->where("datetime_start BETWEEN '{$date_start}' AND '{$date_end}'");
+                ->where("datetime_start >= '{$date_start} 00:00' AND datetime_start <= '{$date_end} 23:59'");
 
 
             $attendance = $AttendDB->fetchRow($select);
@@ -2121,7 +2120,8 @@ class Payroll_IndexController extends Zend_Controller_Action
         $select->from($AttendanceDb, array("COUNT(*) AS amount"))
             ->where("employee_id = $employee_id
                 AND datetime_start >= '$date_start 00:00'
-                AND datetime_end <= '$date_end 23:59'");
+                AND datetime_end <= '$date_end 23:59'
+                AND start_1 >= 1");
 
         $rows = $AttendanceDb->fetchAll($select);
 
@@ -2367,7 +2367,8 @@ class Payroll_IndexController extends Zend_Controller_Action
             )
             ->join('employee', 'employee.id = attendance.employee_id')
             ->where('attendance.employee_id = ?', $employee_id)
-            ->where("datetime_start BETWEEN '{$date_start}' AND '{$date_end}'");
+            ->where("datetime_start >= '{$date_start} 00:00' AND datetime_start <= '{$date_end} 23:59'");
+        ;
 
         if ($group_id > 0) {
             $select->where('attendance.group_id = ?', $group_id);
