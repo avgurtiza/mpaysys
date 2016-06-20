@@ -36,8 +36,8 @@
       <file leaf-file-name="IndexController.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.53846157">
-              <caret line="720" column="54" selection-start-line="720" selection-start-column="54" selection-end-line="720" selection-end-column="54" />
+            <state vertical-scroll-proportion="0.46153846">
+              <caret line="721" column="84" selection-start-line="721" selection-start-column="84" selection-end-line="721" selection-end-column="84" />
               <folding />
             </state>
           </provider>
@@ -400,8 +400,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.53846157">
-          <caret line="720" column="54" selection-start-line="720" selection-start-column="54" selection-end-line="720" selection-end-column="54" />
+        <state vertical-scroll-proportion="0.46153846">
+          <caret line="721" column="84" selection-start-line="721" selection-start-column="84" selection-end-line="721" selection-end-column="84" />
           <folding />
         </state>
       </provider>

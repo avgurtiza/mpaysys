@@ -724,7 +724,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $dim_y -= 8;
             $page->setFont($font, 8)->drawText('ECOLA', $dim_x + 220, $dim_y);
-            $page->setFont($mono, 8)->drawText(str_pad(number_format(array_sum($ecola_addition), 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
+            $page->setFont($mono, 8)->drawText(str_pad(number_format($ecola_addition, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
             // echo $total_pay . ' + ' . $value['pay']['e_cola'];
             // $total_pay += $value['pay']['e_cola'];
             $total_pay += array_sum($ecola_addition);
