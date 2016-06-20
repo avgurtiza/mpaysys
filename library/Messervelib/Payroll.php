@@ -1439,35 +1439,48 @@ class Messervelib_Payroll
             AND attendance_id > 0
             ");
 
+        $all_days = 0;
 
         $payroll = array();
 
-        foreach ($payroll_raw as $pvalue) { // TODO:  Construct array properly
+        $payroll['day_count'] = 0;
 
-            if (json_decode($pvalue->getRateData())) @$payroll[$pvalue->getRateId()]['meta'] = json_decode($pvalue->getRateData());
+        foreach ($payroll_raw as $pvalue) { // TODO:  Construct array properly
+            $ecola_viable = false;
+
+            if (json_decode($pvalue->getRateData())){
+                @$payroll[$pvalue->getRateId()]['meta'] = json_decode($pvalue->getRateData());
+            }
 
             if ($pvalue->getRegHours() > 0) {
                 @$payroll[$pvalue->getRateId()][$pvalue->getHolidayType()]['reg']['hours'] += $pvalue->getRegHours();
                 @$payroll[$pvalue->getRateId()][$pvalue->getHolidayType()]['reg']['pay'] += $pvalue->getRegPay();
+                $ecola_viable = true;
             }
 
 
             if ($pvalue->getOtHours() > 0) {
                 @$payroll[$pvalue->getRateId()][$pvalue->getHolidayType()]['ot']['hours'] += $pvalue->getOtHours();
                 @$payroll[$pvalue->getRateId()][$pvalue->getHolidayType()]['ot']['pay'] += $pvalue->getOtPay();
+                $ecola_viable = true;
             }
 
             if ($pvalue->getNdHours() > 0) {
                 @$payroll[$pvalue->getRateId()][$pvalue->getHolidayType()]['nd']['hours'] += $pvalue->getNdHours();
                 @$payroll[$pvalue->getRateId()][$pvalue->getHolidayType()]['nd']['pay'] += $pvalue->getNdPay();
+                $ecola_viable = true;
             }
 
             if ($pvalue->getNdOtHours() > 0) {
                 @$payroll[$pvalue->getRateId()][$pvalue->getHolidayType()]['nd_ot']['hours'] += $pvalue->getNdOtHours();
                 @$payroll[$pvalue->getRateId()][$pvalue->getHolidayType()]['nd_ot']['pay'] += $pvalue->getNdOtPay();
+                $ecola_viable = true;
+            }
+
+            if($ecola_viable) {
+                $payroll['day_count']++;
             }
         }
-
 
         return $payroll;
     }

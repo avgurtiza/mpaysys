@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="dadc4ea7-dcae-45f0-a214-eea4dea9a4ab" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php" afterPath="$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/library/Messervelib/Payroll.php" afterPath="$PROJECT_DIR$/library/Messervelib/Payroll.php" />
     </list>
     <ignored path="Rolling.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -26,8 +27,8 @@
       <file leaf-file-name="Payroll.php" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/library/Messervelib/Payroll.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-2.7586207">
-              <caret line="1446" column="38" selection-start-line="1446" selection-start-column="38" selection-end-line="1446" selection-end-column="38" />
+            <state vertical-scroll-proportion="-6.3965516">
+              <caret line="1483" column="0" selection-start-line="1483" selection-start-column="0" selection-end-line="1483" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -37,7 +38,7 @@
         <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.55758685">
-              <caret line="673" column="68" selection-start-line="673" selection-start-column="68" selection-end-line="673" selection-end-column="68" />
+              <caret line="693" column="74" selection-start-line="693" selection-start-column="74" selection-end-line="693" selection-end-column="74" />
               <folding />
             </state>
           </provider>
@@ -392,8 +393,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/library/Messervelib/Payroll.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-2.7586207">
-          <caret line="1446" column="38" selection-start-line="1446" selection-start-column="38" selection-end-line="1446" selection-end-column="38" />
+        <state vertical-scroll-proportion="-6.3965516">
+          <caret line="1483" column="0" selection-start-line="1483" selection-start-column="0" selection-end-line="1483" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -401,7 +402,7 @@
     <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.55758685">
-          <caret line="673" column="68" selection-start-line="673" selection-start-column="68" selection-end-line="673" selection-end-column="68" />
+          <caret line="693" column="74" selection-start-line="693" selection-start-column="74" selection-end-line="693" selection-end-column="74" />
           <folding />
         </state>
       </provider>

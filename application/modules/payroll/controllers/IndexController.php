@@ -668,10 +668,10 @@ class Payroll_IndexController extends Zend_Controller_Action
                         $page->setFont($font, 8)->drawText('Min. wage', $dim_x + 140, $dim_y, 'UTF8');
                         $page->setFont($mono, 8)->drawText(number_format($pay_rate + $ecola, 2), $dim_x + 180, $dim_y, 'UTF8');
                         $dim_y -= 8;
-                    } else {
+                    } elseif($rkey != 'day_count') {
                         $page->setFont($font, 8)->drawText("{$rkey}", $dim_x, $dim_y);
 
-                        $ecola_additions[] = $ecola; // Daily E-cola
+
 
                         foreach ($rvalue as $dkey => $dvalue) {
                             $dim_y -= 8;
@@ -690,6 +690,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                         }
 
                     }
+
+                    $ecola_additions[] = $ecola * $employee_pay['day_count']; // Daily E-cola
                     $dim_y -= 8;
 
                 }
