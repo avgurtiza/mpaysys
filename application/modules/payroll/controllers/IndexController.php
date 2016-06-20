@@ -605,10 +605,10 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $rec_copy_data['riders'][$Employee->getId()] = array(
                 'employee_number' => $Employee->getEmployeeNumber()
-            , 'name' => $value['attendance']->lastname . ', '
+                , 'name' => $value['attendance']->lastname . ', '
                     . $value['attendance']->firstname . ' '
                     . $value['attendance']->middleinitial
-            , 'pay_period' => $date_start . ' to ' . $date_end
+                , 'pay_period' => $date_start . ' to ' . $date_end
             );
 
             $dim_y -= 16;
@@ -642,7 +642,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             $total_deduct = 0;
             $total_misc_deduct = 0;
 
-            $ecola_additions = array();
             $sss_deductions = array();
 
             foreach ($employee_pay as $pkey => $pvalue) {
@@ -668,10 +667,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                         $page->setFont($font, 8)->drawText('Min. wage', $dim_x + 140, $dim_y, 'UTF8');
                         $page->setFont($mono, 8)->drawText(number_format($pay_rate + $ecola, 2), $dim_x + 180, $dim_y, 'UTF8');
                         $dim_y -= 8;
-                    } elseif($rkey != 'day_count') {
+                    } else {
                         $page->setFont($font, 8)->drawText("{$rkey}", $dim_x, $dim_y);
-
-
 
                         foreach ($rvalue as $dkey => $dvalue) {
                             $dim_y -= 8;
@@ -691,7 +688,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     }
 
-                    $ecola_additions[] = $ecola * $employee_pay['day_count']; // Daily E-cola
                     $dim_y -= 8;
 
                 }
@@ -720,12 +716,14 @@ class Payroll_IndexController extends Zend_Controller_Action
             $page->setFont($font, 8)->drawText('Total hours pay', $dim_x + 220, $dim_y);
             $page->setFont($mono, 8)->drawText(str_pad(substr(number_format($total_pay, 3), 0, -1), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
 
+            $ecola_addition = $this->get_cutoff_attended_days($Employee->getId(),$date_start,$date_end) * $ecola;
+
             $dim_y -= 8;
             $page->setFont($font, 8)->drawText('ECOLA', $dim_x + 220, $dim_y);
-            $page->setFont($mono, 8)->drawText(str_pad(number_format(array_sum($ecola_additions), 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
+            $page->setFont($mono, 8)->drawText(str_pad(number_format(array_sum($ecola_addition), 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
             // echo $total_pay . ' + ' . $value['pay']['e_cola'];
             // $total_pay += $value['pay']['e_cola'];
-            $total_pay += array_sum($ecola_additions);
+            $total_pay += array_sum($ecola_addition);
 
             $sss_deduction = $this->get_sss_deduction($total_pay);
 
@@ -2109,6 +2107,21 @@ class Payroll_IndexController extends Zend_Controller_Action
         }
 
         die();
+    }
+
+    protected function get_cutoff_attended_days($employee_id, $date_start, $date_end) {
+        $AttendanceDb = new Messerve_Model_DbTable_Attendance();
+
+        $select = $AttendanceDb->select();
+
+        $select->from($AttendanceDb, array("COUNT(*) AS amount"))
+            ->where("WHERE employee_id = $employee_id
+                AND datetime_start >= '$date_start 00:00'
+                AND datetime_end <= '$date_end 23:59'");
+
+        $rows = $AttendanceDb->fetchAll($select);
+
+        return($rows[0]->amount);
     }
 
     public function philhealthexportAction()
