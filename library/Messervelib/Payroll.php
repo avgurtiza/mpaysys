@@ -727,14 +727,6 @@ class Messervelib_Payroll
                         , 'legal_nd_ot' => $nd_ot + $tomorrow_nd_ot
                         , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Legal both days, reset regular to 0
                     ));
-                } else {
-                    $time_array = array_merge($time_array, array(
-                        'legal' => $tomorrow
-                        , 'legal_nd' => $tomorrow_nd
-                        , 'legal_ot' => $tomorrow_ot
-                        , 'legal_nd_ot' => $tomorrow_nd_ot
-                        , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Legal both days, reset regular to 0
-                    ));
                 }
             }
 
