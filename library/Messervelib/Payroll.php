@@ -133,6 +133,7 @@ class Messervelib_Payroll
             $rates_tomorrow = $this->_get_rate_today($date_tommorow);
 
             if (!$attendance['start_1'] > 0) { // Skipping records with no start_1 times
+                // TODO:  Mod to accommodate 12MN start dates
 
                 $legal_unattended_viable = false;
 
@@ -159,7 +160,7 @@ class Messervelib_Payroll
                     }
 
                     // Has attendance the following day
-
+                    /*
                     $AttendanceT = new Messerve_Model_Attendance();
                     $AttendanceT = $AttendanceT->getMapper()->findByField(
                         array('employee_id', 'datetime_start')
@@ -175,7 +176,7 @@ class Messervelib_Payroll
                             break;
                         }
                     }
-
+                    */
                     // Check if there is actual legal holiday attendance for other outlets
                     $AttendanceN = new Messerve_Model_Attendance();
                     $AttendanceN = $AttendanceN->getMapper()->findByField(
@@ -684,85 +685,61 @@ class Messervelib_Payroll
                 );
             }
 
-            if ($holiday_today && $holiday_today->getType() == 'special') {
-                $time_array += array('spec' => $reg, 'spec_nd' => $nd, 'spec_ot' => $ot + $tomorrow_ot, 'spec_nd_ot' => $nd_ot);
-            }
 
-            if ($holiday_today && $holiday_today->getType() == 'legal') {
-                // die('HERE: ' . __LINE__);
-                $time_array += array('legal' => $reg, 'legal_nd' => $nd, 'legal_ot' => $ot
-                , 'legal_nd_ot' => $nd_ot);
-
-                if (!$work_duration > 0) { // Do unattended OT calcs
-                    $time_array += array('legal_unattend' => $this->_max_regular_hours);
-                }
-            }
-
-            if ($holiday_tomorrow && $holiday_tomorrow->getType() == 'legal') {
-                $time_array += array('legal' => $tomorrow, 'legal_nd' => $tomorrow_nd, 'legal_ot' => $tomorrow_ot
-                , 'legal_nd_ot' => $tomorrow_nd_ot
-                );
-            }
-
-            if ($holiday_tomorrow && $holiday_tomorrow->getType() == 'special') {
-                $time_array += array('spec' => $tomorrow, 'spec_nd' => $tomorrow_nd, 'spec_ot' => $tomorrow_ot
-                , 'spec_nd_ot' => $tomorrow_nd_ot
-                );
-            }
-
-            if (!$holiday_tomorrow && $attendance['type'] == 'rest') {
-
-            } else {
-                $time_array += array(
-                    'reg' => $tomorrow
-                , 'reg_nd' => $tomorrow_nd
-                , 'reg_ot' => $tomorrow_ot
-                , 'reg_nd_ot' => $tomorrow_nd_ot);
-            }
 
             if (
-                $holiday_today && $holiday_today->getType() == 'legal'
-                && $holiday_tomorrow && $holiday_tomorrow->getType() == 'legal'
+                ($holiday_today && $holiday_today->getType() == 'legal')
+                || ($holiday_tomorrow && $holiday_tomorrow->getType() == 'legal')
             ) {
                 $time_array = array_merge($time_array, array(
                     'legal' => $reg + $tomorrow
-                , 'legal_nd' => $nd + $tomorrow_nd
-                , 'legal_ot' => $ot + $tomorrow_ot
-                , 'legal_nd_ot' => $nd_ot + $tomorrow_nd_ot
-                , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Legal both days, reset regular to 0
+                    , 'legal_nd' => $nd + $tomorrow_nd
+                    , 'legal_ot' => $ot + $tomorrow_ot
+                    , 'legal_nd_ot' => $nd_ot + $tomorrow_nd_ot
+                    , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Legal both days, reset regular to 0
                 ));
+
+                /*
+                if (!$work_duration > 0) { // Do unattended OT calcs
+                    $time_array += array('legal_unattend' => $this->_max_regular_hours);
+                }
+                */
+            } else {
+
+                if (!$holiday_tomorrow && $attendance['type'] == 'rest') {
+                // TODO:  cleanup, or figure out what this placeholder is for.  Might be deprecated due to unuse of restday ot
+
+                } else {
+                    $time_array += array(
+                        'reg' => $tomorrow
+                    , 'reg_nd' => $tomorrow_nd
+                    , 'reg_ot' => $tomorrow_ot
+                    , 'reg_nd_ot' => $tomorrow_nd_ot);
+                }
+
+                if ($holiday_today && $holiday_today->getType() == 'special') {
+                    $time_array += array('spec' => $reg, 'spec_nd' => $nd, 'spec_ot' => $ot + $tomorrow_ot, 'spec_nd_ot' => $nd_ot);
+                }
+
+                if ($holiday_tomorrow && $holiday_tomorrow->getType() == 'special') {
+                    $time_array += array('spec' => $tomorrow, 'spec_nd' => $tomorrow_nd, 'spec_ot' => $tomorrow_ot
+                    , 'spec_nd_ot' => $tomorrow_nd_ot
+                    );
+                }
+
             }
 
-            if (
-                $holiday_today && $holiday_today->getType() == 'legal'
-                && $holiday_tomorrow && $holiday_tomorrow->getType() == 'special'
-            ) {
-                echo "LEGAL SPECIAL reg $reg, tomorrow $tomorrow, reg_nd $nd, tomorrow_nd $tomorrow_nd <br />";
 
-                $time_array = array_merge($time_array, array(
-                    'spec' => $tomorrow
-                , 'spec_nd' => $tomorrow_nd
-                , 'spec_ot' => $tomorrow_ot
-                , 'spec_nd_ot' => $tomorrow_nd_ot
-
-                , 'legal' => $reg
-                , 'legal_nd' => $nd
-                , 'legal_ot' => $ot
-                , 'legal_nd_ot' => $nd_ot
-
-                , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Holiday both days, reset regular to 0
-                ));
-            }
 
             $time_array = array_merge($time_array, array(
                 'today' => $reg
-            , 'today_ot' => $ot
-            , 'today_nd' => $nd
-            , 'today_nd_ot' => $nd_ot
-            , 'tomorrow' => $tomorrow
-            , 'tomorrow_ot' => $tomorrow_ot
-            , 'tomorrow_nd' => $tomorrow_nd
-            , 'tomorrow_nd_ot' => $tomorrow_nd_ot
+                , 'today_ot' => $ot
+                , 'today_nd' => $nd
+                , 'today_nd_ot' => $nd_ot
+                , 'tomorrow' => $tomorrow
+                , 'tomorrow_ot' => $tomorrow_ot
+                , 'tomorrow_nd' => $tomorrow_nd
+                , 'tomorrow_nd_ot' => $tomorrow_nd_ot
             ));
 
             if ($Attendance->getOtApproved() != 'yes') {
@@ -777,7 +754,6 @@ class Messervelib_Payroll
 
                 $time_array['today_ot'] = 0;
                 $time_array['today_nd_ot'] = 0;
-                // $time_array['tomorrow_nd'] = 0;
                 $time_array['tomorrow_nd_ot'] = 0;
 
             }
@@ -827,7 +803,6 @@ class Messervelib_Payroll
                 */
                 $new_date_today = date("Y-m-d", strtotime($Attendance->getDatetimeStart()));
 
-
                 $rates_today['_prefix'] = $pay_rate_prefix;
 
                 if ($employee_id > 0 && $Attendance->getId() > 0) {
@@ -859,8 +834,7 @@ class Messervelib_Payroll
                         ->setDateProcessed(date("Y-m-d H:i:s"))
                         ->save();
                 }
-
-
+                
                 $holiday_type_tomorrow = "Regular";
                 $pay_rate_prefix = "reg";
 
@@ -1348,10 +1322,10 @@ class Messervelib_Payroll
         /* Early ND */
         $early_night_diff_end = strtotime(date('Y-m-d ' . $this->_init_night_diff_end, $start));
 
-        if ($start < $early_night_diff_end 
- 		&& $end < $this->_midnight
-		// && !$start > $this->_midnight
-	) {
+        if ($start < $early_night_diff_end
+            && $end < $this->_midnight
+            // && !$start > $this->_midnight
+        ) {
             if ($end > $early_night_diff_end) {
                 $broken_array['today_nd'] = $early_night_diff_end - $start;
                 $broken_array['today'] = $end - $early_night_diff_end;
