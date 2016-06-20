@@ -1096,6 +1096,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $pdf->pages[] = $page;
     }
+<<<<<<< HEAD
 
     protected function _fetch_employees($group_id, $date_start, $date_end)
     {
@@ -1373,6 +1374,216 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             , 'e_cola' => $this_ecola
             );
+=======
+    
+    protected function _compute() {
+    	$date_start = $this->_request->getParam('date_start');
+    	$date_end = $this->_request->getParam('date_end');
+    	 
+    	$Rate = new Messerve_Model_Mapper_Rate();
+    	$rates = $Rate->fetchAll();
+    	$rates_array = array();
+    	
+    	foreach ($rates as $value) {
+    		$rates_array[$value->getId()] = $value;
+    	}
+    	
+    	$group_id = (int) $this->_request->getParam('group_id');
+    	$Group = new Messerve_Model_Group();
+    	$Group->find($group_id);
+    	 
+    	 
+    	$Client = new Messerve_Model_Client();
+    	$Client->find($Group->getClientId());
+    	
+    	$this->_client = $Client;
+    	
+    	$pay_period = $this->_request->getParam('pay_period');
+    	 
+    	$employees = $this->_fetch_employees($group_id, $date_start, $date_end);
+    	    	
+    	$employee_payroll = array();
+    	 
+    	$employer_bill = array();
+    	 
+    	$date1 = new DateTime($date_start); //inclusive
+    	$date2 = new DateTime($date_end); //exclusive
+    	$diff = $date2->diff($date1);
+    	$period_size = intval($diff->format("%a")) + 1;
+    	 
+    	$summary_bill = array(
+	    	'reg' => 0
+	    	,'reg_nd' => 0
+	    	,'reg_ot' => 0
+	    	,'reg_nd_ot' => 0
+	    	
+	    	,'spec' => 0
+	    	,'spec_nd' => 0
+	    	,'spec_ot' => 0
+	    	,'spec_nd_ot' => 0
+	    	
+	    	,'legal' => 0
+	    	,'legal_nd' => 0
+	    	,'legal_ot' => 0
+	    	,'legal_nd_ot' => 0
+    		,'legal_unattend' => 0
+	    	
+	    	,'rest' => 0
+    		,'rest_nd' => 0
+    		,'rest_ot' => 0
+	    	,'rest_nd_ot' => 0
+    	);
+
+    	$AttendDB = new Messerve_Model_DbTable_Attendance();
+    	
+    	foreach($employees as $evalue) {
+    		$total_hours = 0;
+    		
+    		$select = $AttendDB->select();
+    		
+    		$select
+	    		->setIntegrityCheck(false)
+	    		->from('attendance', array(
+    				'sum_fuel_overage'=>'SUM(fuel_overage)'
+    				, 'sum_reg'=>'SUM(reg)'
+    				, 'sum_reg_nd'=>'SUM(reg_nd)'
+    				, 'sum_reg_ot'=>'SUM(reg_ot)'
+    				, 'sum_reg_nd_ot'=>'SUM(reg_nd_ot)'
+    				, 'sum_sun'=>'SUM(sun)'
+    				, 'sum_sun_nd'=>'SUM(sun_nd)'
+    				, 'sum_sun_ot'=>'SUM(sun_ot)'
+    				, 'sum_sun_nd_ot'=>'SUM(sun_nd_ot)'
+    				, 'sum_spec'=>'SUM(spec)'
+    				, 'sum_spec_nd'=>'SUM(spec_nd)'
+    				, 'sum_spec_ot'=>'SUM(spec_ot)'
+    				, 'sum_spec_nd_ot'=>'SUM(spec_nd_ot)'
+    				, 'sum_legal'=>'SUM(legal)'
+    				, 'sum_legal_nd'=>'SUM(legal_nd)'
+    				, 'sum_legal_ot'=>'SUM(legal_ot)'
+    				, 'sum_legal_nd_ot'=>'SUM(legal_nd_ot)'
+    				, 'sum_legal_unattend'=>'SUM(legal_unattend)'
+	    
+    				, 'sum_rest'=>'SUM(rest)'
+    				, 'sum_rest_nd'=>'SUM(rest_nd)'
+    				, 'sum_rest_ot'=>'SUM(rest_ot)'
+    				, 'sum_rest_nd_ot'=>'SUM(rest_nd_ot)'
+	    
+    				, 'today'=>'SUM(today)'
+    				, 'today_nd'=>'SUM(today_nd)'
+    				, 'today_ot'=>'SUM(today_ot)'
+    				, 'today_nd_ot'=>'SUM(today_nd_ot)'
+	    
+    				, 'tomorrow'=>'SUM(tomorrow)'
+    				, 'tomorrow_nd'=>'SUM(tomorrow_nd)'
+    				, 'tomorrow_ot'=>'SUM(tomorrow_ot)'
+    				, 'tomorrow_nd_ot'=>'SUM(tomorrow_nd_ot)'
+    			)
+    		)
+    		
+	    		->join('employee','employee.id = attendance.employee_id')
+	    		->where('attendance.employee_id = ?', $evalue->getId())
+	    		->where('attendance.group_id = ?', $group_id)
+	    		->where("datetime_start BETWEEN '{$date_start}' AND '{$date_end}'")
+    		;
+    	
+    	
+	    	$attendance = $AttendDB->fetchRow($select);
+    		
+    		if($attendance->rate_id > 0) {
+    			$this_rate = $rates_array[$attendance->rate_id];
+    			// echo "Using employee rate <br />";
+    		} elseif($Group->getRateId() > 0) {
+    			$this_rate = $rates_array[$Group->getRateid()];
+    			// echo "Using group rate <br />";
+    		} else {
+    			die('Process halted:  no rates found for either employee or group.');
+    		}
+    		
+
+    		$AttendanceMap = new Messerve_Model_Mapper_Attendance();
+    	
+    		$first_day = $AttendanceMap->findOneByField(
+    				array('datetime_start','employee_id','group_id')
+    				, array($date_start,$evalue->getId(), $group_id)
+    		);
+    	
+    		if(!$first_day) continue;
+			
+    		$total_hours = $attendance->sum_reg
+	    		+ $attendance->sum_reg_nd
+	    		+ $attendance->sum_reg_ot
+	    		+ $attendance->sum_reg_nd_ot
+	    		+ $attendance->sum_sun
+	    		+ $attendance->sum_sun_nd
+	    		+ $attendance->sum_sun_ot
+	    		+ $attendance->sum_sun_nd_ot
+	    		+ $attendance->sum_spec
+	    		+ $attendance->sum_spec_nd
+	    		+ $attendance->sum_spec_ot
+	    		+ $attendance->sum_spec_nd_ot
+	    		+ $attendance->sum_legal
+	    		+ $attendance->sum_legal_nd
+	    		+ $attendance->sum_legal_ot
+	    		+ $attendance->sum_legal_nd_ot
+	    		+ $attendance->sum_legal_unattend
+	    		+ $attendance->sum_rest
+	    		+ $attendance->sum_rest_nd
+	    		+ $attendance->sum_rest_ot
+	    		+ $attendance->sum_rest_nd_ot
+	    		;    		
+    		
+	    		// $this_ecola = $this->_get_ecola($evalue->getId(), $group_id, $date_start, $date_end,$this_rate->Ecola);
+	    		/*
+	    		$this_ecola = $total_hours >= ($period_size * 8) ?   
+	    			$this_rate->Ecola * $period_size
+	    			: $total_hours * ($this_rate->Ecola / 8);
+	    		*/
+	    		$non_ot = $attendance->sum_reg
+					+ $attendance->sum_reg_nd
+					+ $attendance->sum_sun
+					+ $attendance->sum_sun_nd
+					+ $attendance->sum_spec
+					+ $attendance->sum_spec_nd
+	    			+ $attendance->sum_legal
+					+ $attendance->sum_legal_nd
+					+ $attendance->sum_legal_unattend
+	    			+ $attendance->sum_rest
+					+ $attendance->sum_rest_nd
+				;
+	    		
+	    		$this_ecola = ($non_ot / 8) * $this_rate->Ecola;
+	    		
+	    		$employee_payroll[$evalue->getId()]['pay'] = array(
+    				'reg' => $attendance->sum_reg * $this_rate->Reg
+    				, 'reg_nd' => $attendance->sum_reg_nd * $this_rate->RegNd
+    				
+    				, 'reg_ot' => $attendance->sum_reg_ot * $this_rate->RegOT
+    				, 'reg_nd_ot' => $attendance->sum_reg_nd_ot * $this_rate->RegNdOT
+    	
+    				, 'sun' => $attendance->sum_sun * $this_rate->Sun
+    				, 'sun_nd' => $attendance->sum_sun_nd * $this_rate->SunNd
+    				, 'sun_ot' => $attendance->sum_sun_ot * $this_rate->SunOT
+    				, 'sun_nd_ot' => $attendance->sum_sun_nd_ot * $this_rate->SunNdOt
+    	
+    				, 'spec' => $attendance->sum_spec * $this_rate->Spec
+    				, 'spec_nd' => $attendance->sum_spec_nd * $this_rate->SpecNd
+    				, 'spec_ot' => $attendance->sum_spec_ot * $this_rate->SpecOT
+    				, 'spec_nd_ot' => $attendance->sum_spec_nd_ot * $this_rate->SpecNdOt
+    	
+    				, 'legal' => $attendance->sum_legal * $this_rate->Legal
+    				, 'legal_nd' => $attendance->sum_legal_nd * $this_rate->LegalNd
+    				, 'legal_ot' => $attendance->sum_legal_ot * $this_rate->LegalOT
+    				, 'legal_nd_ot' => $attendance->sum_legal_nd_ot * $this_rate->LegalNdOt
+    				, 'legal_unattend' => $attendance->sum_legal_unattend * $this_rate->LegalUnattend
+    					
+    				, 'rest' => $attendance->sum_rest * $this_rate->Spec
+    				, 'rest_nd' => $attendance->sum_rest_nd * $this_rate->SpecNd
+	    			, 'rest_ot' => $attendance->sum_rest_ot * $this_rate->SpecOT
+    				, 'rest_nd_ot' => $attendance->sum_rest_nd_ot * $this_rate->SpecNdOt
+	    					    				
+    				, 'e_cola' => $this_ecola 
+    		);
+>>>>>>> 9594752331fba4dcf5143788648bbbfd414381b0
 
             // echo ('<br />HERE ' . $this_rate->LegalUnattend . ' -- ' . $attendance->sum_legal_unattend . "//");
             $sss_deduct = $total_hours * ($this_rate->SSSEmployee / 22 / 8);
@@ -2323,6 +2534,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $payroll_array[$employee_number]['salary'] += round($pvalue->getNetPay(), 2);
             } else {
 
+<<<<<<< HEAD
                 $this_row = array(
                     'empno' => $employee_number
                 , 'emplname' => $pvalue->getLastName()
@@ -2357,6 +2569,10 @@ class Payroll_IndexController extends Zend_Controller_Action
         $this_year = date('Y');
 
         foreach ($employees as $evalue) {
+=======
+
+        foreach($employees as $evalue) {
+>>>>>>> 9594752331fba4dcf5143788648bbbfd414381b0
             $Group = new Messerve_Model_Group();
             $Group->find($evalue->getGroupId());
             $Rate = new Messerve_Model_Rate();
@@ -2364,8 +2580,11 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             // preprint($Rate->toArray(),1);
 
+<<<<<<< HEAD
             $pre_jan = $this->_get_work_duration($evalue->getId(), 0, $last_year . '-11-16', $last_year . '-12-31 23:59');
             $post_jan = $this->_get_work_duration($evalue->getId(), 0, $this_year . '-01-01', $this_year . '-11-15 23:59');
+=======
+>>>>>>> 9594752331fba4dcf5143788648bbbfd414381b0
 
             if (!($pre_jan + $post_jan) > 0) continue;
 
@@ -2376,7 +2595,11 @@ class Payroll_IndexController extends Zend_Controller_Action
             } else {
                 echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t0\t0\t{$post_jan}\t{$Rate->getReg()}";
             }*/
+<<<<<<< HEAD
             echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t{$pre_jan}\t{$Rate->getReg()}\t{$post_jan}\t{$Rate->getReg()}";
+=======
+            echo "\n{$evalue->getEmployeeNumber()}\t{$group_name}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t{$pre}\t0\t{$post}\t{$Rate->getReg()}\t{$notes}";
+>>>>>>> 9594752331fba4dcf5143788648bbbfd414381b0
 
             // echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t0\t0\t{$post_jan}\t{$Rate->getReg()}";
 
