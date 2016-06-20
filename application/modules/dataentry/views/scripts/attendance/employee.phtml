@@ -2,7 +2,7 @@
 	<li class="parent"><a href="/dataentry/attendance">Attendance</a></li>
 	<li><a href="/dataentry/attendance/employees?pay_period=<?php 
 		echo $this->pay_period;?>&group_id=<?php echo $this->group_id;?>">
-			<span class="icon icon-gray-arrowleft"></span>  Client/Group
+			<span class="icon icon-gray-arrowleft"></span>  <?php echo $this->group->getName(); ?>
 		</a>
 	</li>
 	<li class="title"><?php echo $this->employee->getFirstname();?> <?php echo $this->employee->getLastname();?></li>

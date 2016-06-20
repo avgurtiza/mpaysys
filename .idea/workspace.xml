@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dadc4ea7-dcae-45f0-a214-eea4dea9a4ab" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/library/Messervelib/Payroll.php" afterPath="$PROJECT_DIR$/library/Messervelib/Payroll.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/dataentry/controllers/AttendanceController.php" afterPath="$PROJECT_DIR$/application/modules/dataentry/controllers/AttendanceController.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/dataentry/views/scripts/attendance/employee.phtml" afterPath="$PROJECT_DIR$/application/modules/dataentry/views/scripts/attendance/employee.phtml" />
     </list>
     <ignored path="Rolling.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -23,21 +24,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Payroll.php" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/library/Messervelib/Payroll.php">
+      <file leaf-file-name="AttendanceController.php" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/application/modules/dataentry/controllers/AttendanceController.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.7948718">
-              <caret line="729" column="17" selection-start-line="729" selection-start-column="17" selection-end-line="729" selection-end-column="17" />
+            <state vertical-scroll-proportion="-0.15517241">
+              <caret line="1072" column="36" selection-start-line="1072" selection-start-column="36" selection-end-line="1072" selection-end-column="36" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="IndexController.php" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
+      <file leaf-file-name="employee.phtml" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/application/modules/dataentry/views/scripts/attendance/employee.phtml">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="129.34483">
-              <caret line="1151" column="23" selection-start-line="1151" selection-start-column="23" selection-end-line="1151" selection-end-column="23" />
+            <state vertical-scroll-proportion="0.09943503">
+              <caret line="4" column="98" selection-start-line="4" selection-start-column="98" selection-end-line="4" selection-end-column="98" />
               <folding />
             </state>
           </provider>
@@ -53,11 +54,12 @@
       <list>
         <option value="$PROJECT_DIR$/public/index.php" />
         <option value="$PROJECT_DIR$/application/configs/application.ini.sample" />
-        <option value="$PROJECT_DIR$/application/modules/dataentry/controllers/AttendanceController.php" />
         <option value="$PROJECT_DIR$/application/layouts/scripts/layout.phtml" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php" />
         <option value="$PROJECT_DIR$/library/Messervelib/Payroll.php" />
+        <option value="$PROJECT_DIR$/application/modules/dataentry/controllers/AttendanceController.php" />
+        <option value="$PROJECT_DIR$/application/modules/dataentry/views/scripts/attendance/employee.phtml" />
       </list>
     </option>
   </component>
@@ -166,7 +168,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="payroll" />
+              <option name="myItemId" value="manager" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -188,7 +190,71 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="payroll" />
+              <option name="myItemId" value="dataentry" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="views" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="scripts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="rolling" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="rolling" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="application" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="modules" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="dataentry" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="views" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="scripts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="attendance" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="rolling" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="rolling" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="application" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="modules" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="dataentry" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -258,9 +324,9 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32944915" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25239617" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25239617" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.17944622" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17944622" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -326,14 +392,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/application/modules/dataentry/views/scripts/attendance/employee.phtml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="67.258064">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/application/layouts/scripts/layout.phtml">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-5.83871">
@@ -382,14 +440,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/application/modules/dataentry/controllers/AttendanceController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.64351004">
-          <caret line="1180" column="40" selection-start-line="1180" selection-start-column="36" selection-end-line="1180" selection-end-column="40" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="129.34483">
@@ -400,8 +450,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/library/Messervelib/Payroll.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.7948718">
-          <caret line="729" column="17" selection-start-line="729" selection-start-column="17" selection-end-line="729" selection-end-column="17" />
+        <state vertical-scroll-proportion="-56.935482">
+          <caret line="719" column="0" selection-start-line="719" selection-start-column="0" selection-end-line="719" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/application/modules/dataentry/controllers/AttendanceController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.15517241">
+          <caret line="1072" column="36" selection-start-line="1072" selection-start-column="36" selection-end-line="1072" selection-end-column="36" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/application/modules/dataentry/views/scripts/attendance/employee.phtml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.09943503">
+          <caret line="4" column="98" selection-start-line="4" selection-start-column="98" selection-end-line="4" selection-end-column="98" />
           <folding />
         </state>
       </provider>

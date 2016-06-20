@@ -952,7 +952,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
 		$group_id = (int) $this->_request->getParam('group_id');
 		$this->view->group_id = $group_id;
-		 
+
 		if($this->_request->isPost()) {
 			// $this->_save_the_day($employee_id, $group_id, $this->_request->getPost());
 		}
@@ -1069,6 +1069,8 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 		// Holidays
 		$Group = new Messerve_Model_Group();
 		$Group->find($group_id);
+
+		$this->view->group = $Group;
 		 
 		$calendars = array();
 		$holidays = array();
