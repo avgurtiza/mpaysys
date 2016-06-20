@@ -1,27 +1,27 @@
 <h3>Imported transactions</h3>
 <table class="data-grind">
-	<tr>
-		<th>Date</th>
-		<th>Employee name</th>
-		<th>Card No.</th>
-		<th>Station name</th>
-		<th>Invoice No.</th>
-		<th>Product</th>
-		<th>Quantity</th>
-		<th>Cost</th>
-	</tr>
-<?php if($this->saved) foreach($this->saved as $svalue) :?>
-	<tr>
-		<td><?php echo $svalue['invoice_date']; ?></td>
-		<td><?php echo $svalue['employee']; ?></td>		
-		<td><?php echo $svalue['gascard']; ?></td>
-		<td><?php echo $svalue['station_name']; ?></td>		
-		<td><?php echo $svalue['invoice_number']; ?></td>		
-		<td><?php echo $svalue['product']; ?></td>		
-		<td><?php echo $svalue['product_quantity']; ?></td>		
-		<td><?php echo $svalue['fuel_cost']; ?></td>		
-	</tr>
-<?php endforeach; ?>
+    <tr>
+        <th>Date</th>
+        <th>Employee name</th>
+        <th>Card No.</th>
+        <th>Station name</th>
+        <th>Invoice No.</th>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Cost</th>
+    </tr>
+    <?php if ($this->saved) foreach ($this->saved as $svalue) : ?>
+        <tr>
+            <td><?php echo $svalue['invoice_date']; ?> : <?php echo $svalue['raw_invoice_date']; ?></td>
+            <td><?php echo $svalue['employee']; ?></td>
+            <td><?php echo $svalue['gascard']; ?></td>
+            <td><?php echo $svalue['station_name']; ?></td>
+            <td><?php echo $svalue['invoice_number']; ?></td>
+            <td><?php echo $svalue['product']; ?></td>
+            <td><?php echo $svalue['product_quantity']; ?></td>
+            <td><?php echo $svalue['fuel_cost']; ?></td>
+        </tr>
+    <?php endforeach; ?>
 </table>
 
 <?php /* if($this->orphans):  ?>
@@ -50,10 +50,10 @@
 <?php endforeach; ?>
 </table>
 
-<?php endif; */?>
+<?php endif; */ ?>
 
 <form method="post" enctype="multipart/form-data">
-File to upload (.csv) <input type="file" name="upload" />
-<br />
-<input type="submit" value="Upload" /> 
+    File to upload (.csv) <input type="file" name="upload"/>
+    <br/>
+    <input type="submit" value="Upload"/>
 </form>
