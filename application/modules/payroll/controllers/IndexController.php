@@ -677,7 +677,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                             if (($dkey == 'reg' || $dkey == 'nd')) {
                                 // E-cola applies to parent group ONLY and is not pro-rated
                                 // $ecola_additions[] = ($dvalue['hours'] / 8) * $ecola;
-                                $ecola_additions[] = $ecola;
+                                $ecola_additions[] = 8 *$ecola;
                             }
 
                             $sss_deductions[] = ($sss / 22 / 8) * $dvalue['hours'];
