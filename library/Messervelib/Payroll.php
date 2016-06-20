@@ -834,7 +834,7 @@ class Messervelib_Payroll
                         ->setDateProcessed(date("Y-m-d H:i:s"))
                         ->save();
                 }
-                
+
                 $holiday_type_tomorrow = "Regular";
                 $pay_rate_prefix = "reg";
 
@@ -1433,27 +1433,19 @@ class Messervelib_Payroll
 
     }
 
-    public function GetEmployeePayroll($employee_id, $group_id, $period_start, $EmployeeModel)
-    { //, $date_start, $date_end
-
-        // echo "<br />$date_start : $date_end";
+    public function GetEmployeePayroll($employee_id, $group_id, $period_start)
+    {
         $PayrollMap = new Messerve_Model_Mapper_AttendancePayroll();
         $payroll_raw = $PayrollMap->fetchList("employee_id = $employee_id
             AND group_id = $group_id
             AND period_start LIKE '$period_start'
             AND attendance_id > 0
             ");
-//             -- AND date BETWEEN '$date_start' AND '$date_end'
 
 
         $payroll = array();
 
         foreach ($payroll_raw as $pvalue) { // TODO:  Construct array properly
-
-            if ($employee_id == 514) {
-                // preprint($EmployeeModel->toArray());
-                // preprint($pvalue->toArray());
-            }
 
             if (json_decode($pvalue->getRateData())) @$payroll[$pvalue->getRateId()]['meta'] = json_decode($pvalue->getRateData());
 
@@ -1480,7 +1472,6 @@ class Messervelib_Payroll
         }
 
 
-        // if($employee_id == '514') { preprint($payroll,1); }
         return $payroll;
     }
 

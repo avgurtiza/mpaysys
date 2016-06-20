@@ -870,22 +870,17 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 			 
 			foreach($dir as $fileInfo) {
 				if($fileInfo->isDot()) {
-					// do nothing
+
 				} else {
-					// preprint($fileInfo);
 					$client_reports[$fileInfo->getMTime()][] = $fileInfo->__toString();
-					// $client_reports[] = $fileInfo->__toString();
 				}
 			}
+
+			krsort($client_reports);
+
+			$client_reports = call_user_func_array('array_merge', $client_reports);
 		}
 
-        	// preprint($client_reports);
-	
-		 
-		krsort($client_reports);
-		 
-		// preprint($client_reports);
-	        $client_reports = call_user_func_array('array_merge', $client_reports);
 
 		$this->view->client_reports = $client_reports;
 
