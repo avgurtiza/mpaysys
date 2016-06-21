@@ -1450,6 +1450,7 @@ class Messervelib_Payroll
                 @$payroll[$pvalue->getRateId()][$pvalue->getHolidayType()]['nd_ot']['hours'] += $pvalue->getNdOtHours();
                 @$payroll[$pvalue->getRateId()][$pvalue->getHolidayType()]['nd_ot']['pay'] += $pvalue->getNdOtPay();
             }
+
         }
 
 

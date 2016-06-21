@@ -474,7 +474,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $rec_copy_data = array(
             'branch' => $Client->getName() . '-' . $Group->getName()
-        , 'riders' => array()
+            , 'riders' => array()
         );
 
         foreach ($this->_employee_payroll as $value) {
@@ -678,14 +678,44 @@ class Payroll_IndexController extends Zend_Controller_Action
                             $page->setFont($mono, 8)->drawText(str_pad(number_format($dvalue['pay'], 2), 8, ' ', STR_PAD_LEFT), $dim_x + 160, $dim_y);
 
                         }
-
                     }
 
                     $dim_y -= 8;
 
                 }
-                $dim_y -= 16;
 
+                // Legal adjustments for attendance less than 8 hours
+                $LegalAttendanceMap = new Messerve_Model_Mapper_Attendance();
+
+                $legal_attendance = $LegalAttendanceMap->fetchListToArray("(attendance.employee_id = '{$Employee->getId()}')
+                    AND (attendance.group_id = {$group_id})
+                    AND datetime_start >= '{$date_start} 00:00'
+                    AND datetime_start <= '{$date_end} 23:59'
+                    AND (legal > 0 OR legal_nd > 0)");
+
+                $legal_ua_hours = 0;
+
+                $legal_ecola_days  = 0;
+
+                foreach($legal_attendance as $legal_day) {
+                    $legal_ua_hours+= $legal_day['reg'];
+                    $legal_ecola_days++;
+                }
+
+                if($legal_ua_hours > 0) {
+                    $sss_deductions[] = ($sss / 22 / 8) * $legal_ua_hours;
+
+                    $legal_ua_pay = ($legal_ua_hours/8) * $pay_rate;
+
+                    $total_no_hours += $legal_ua_hours;
+                    $total_pay += $legal_ua_pay;
+
+                    $page->setFont($font, 8)->drawText("UA REG", $dim_x + 10, $dim_y);
+                    $page->setFont($mono, 8)->drawText(str_pad(number_format($legal_ua_hours, 2), 8, ' ', STR_PAD_LEFT), $dim_x + 110, $dim_y);
+                    $page->setFont($mono, 8)->drawText(str_pad(number_format($legal_ua_pay, 2), 8, ' ', STR_PAD_LEFT), $dim_x + 160, $dim_y);
+                }
+
+                $dim_y -= 16;
             }
 
             $dim_y = 92;
@@ -712,12 +742,21 @@ class Payroll_IndexController extends Zend_Controller_Action
             if($Employee->getGroupId() == $group_id) {
                 $attended_days  = $this->get_cutoff_attended_days($Employee->getId(),$date_start,$date_end);
                 $ecola_addition =  $attended_days * $ecola;
+                $total_pay += $ecola_addition;
 
                 $dim_y -= 8;
-                $page->setFont($font, 8)->drawText('ECOLA (' . $attended_days . ' days)', $dim_x + 220, $dim_y);
+                $page->setFont($font, 8)->drawText('ECOLA (' . $attended_days . ' day/s)', $dim_x + 220, $dim_y);
                 $page->setFont($mono, 8)->drawText(str_pad(number_format($ecola_addition, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
 
-                $total_pay += $ecola_addition;
+                if($legal_ecola_days > 0) {
+                    $legal_ecola_addition = $legal_ecola_days * $ecola;
+                    $dim_y -= 8;
+                    $page->setFont($font, 8)->drawText('ECOLA, Legal add. (' . $legal_ecola_days . ' day/s)', $dim_x + 220, $dim_y);
+                    $page->setFont($mono, 8)->drawText(str_pad(number_format($legal_ecola_addition, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
+                    $total_pay += $legal_ecola_addition;
+                }
+
+                // $legal_ecola_days
             }
 
             $sss_deduction = $this->get_sss_deduction($total_pay);
@@ -1555,7 +1594,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $page = new Zend_Pdf_Page(1008, 612);
 
         $pageHeight = $page->getHeight();
-        $pageWidth = $page->getWidth();
+        // $pageWidth = $page->getWidth();
 
         $dim_x = 32;
         $dim_y = $pageHeight - 25;
@@ -1702,20 +1741,16 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $all_hours = array(
                     $attendance_array['reg']
-                , $attendance_array['reg_nd']
-
-                , $attendance_array['spec']
-                , $attendance_array['spec_nd']
-
-                , $attendance_array['sun']
-                , $attendance_array['sun_nd']
-
-                , $attendance_array['legal']
-                , $attendance_array['legal_nd']
-                , $attendance_array['legal_unattend']
-
-                , $attendance_array['rest']
-                , $attendance_array['rest_nd']
+                    , $attendance_array['reg_nd']
+                    , $attendance_array['spec']
+                    , $attendance_array['spec_nd']
+                    , $attendance_array['sun']
+                    , $attendance_array['sun_nd']
+                    , $attendance_array['legal']
+                    , $attendance_array['legal_nd']
+                    , $attendance_array['legal_unattend']
+                    , $attendance_array['rest']
+                    , $attendance_array['rest_nd']
 
                 );
 
