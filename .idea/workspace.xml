@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="dadc4ea7-dcae-45f0-a214-eea4dea9a4ab" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php" afterPath="$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/library/Messervelib/Payroll.php" afterPath="$PROJECT_DIR$/library/Messervelib/Payroll.php" />
     </list>
     <ignored path="Rolling.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -38,7 +37,7 @@
         <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.61668545">
-              <caret line="1261" column="35" selection-start-line="1261" selection-start-column="35" selection-end-line="1261" selection-end-column="35" />
+              <caret line="1261" column="36" selection-start-line="1261" selection-start-column="36" selection-end-line="1261" selection-end-column="36" />
               <folding />
             </state>
           </provider>
@@ -567,7 +566,7 @@
     <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.61668545">
-          <caret line="1261" column="35" selection-start-line="1261" selection-start-column="35" selection-end-line="1261" selection-end-column="35" />
+          <caret line="1261" column="36" selection-start-line="1261" selection-start-column="36" selection-end-line="1261" selection-end-column="36" />
           <folding />
         </state>
       </provider>

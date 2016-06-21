@@ -1259,7 +1259,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->where('attendance.group_id = ?', $group_id)
                 ->where("datetime_start >= '{$date_start} 00:00' AND datetime_start <= '{$date_end} 23:59'");
 
-            die($select->assemble();
+            die($select->assemble());
 
             $attendance = $AttendDB->fetchRow($select);
 
