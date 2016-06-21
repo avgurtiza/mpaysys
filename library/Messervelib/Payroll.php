@@ -526,25 +526,25 @@ class Messervelib_Payroll
 
             $time_array += array(
                 'nd_start_time' => date('Y-m-d H:i', $night_diff_start)
-            , 'nd_end_time' => date('Y-m-d H:i', $night_diff_end)
-            , 'end_of_shift_time' => date('Y-m-d H:i', $end_of_shift)
+                , 'nd_end_time' => date('Y-m-d H:i', $night_diff_end)
+                , 'end_of_shift_time' => date('Y-m-d H:i', $end_of_shift)
 
-            , 'duration_1' => $duration_1
-            , 'duration_2' => $duration_2
-            , 'duration_3' => $duration_3
+                , 'duration_1' => $duration_1
+                , 'duration_2' => $duration_2
+                , 'duration_3' => $duration_3
 
-            , 'break_duration_1' => $break_duration_1
-            , 'break_duration_2' => $break_duration_2
-            , 'total_break_duration' => $total_break_duration
+                , 'break_duration_1' => $break_duration_1
+                , 'break_duration_2' => $break_duration_2
+                , 'total_break_duration' => $total_break_duration
 
-            , 'work_duration' => $work_duration
-            , 'total_duration' => $total_duration
-            , 'ot_duration' => $ot_duration
+                , 'work_duration' => $work_duration
+                , 'total_duration' => $total_duration
+                , 'ot_duration' => $ot_duration
 
-                // , 'tomorrow'=>$tomorrow
-            , 'tomorrow_nd' => $tomorrow_nd
-            , 'tomorrow_ot' => $tomorrow_ot
-            , 'tomorrow_nd_ot' => $tomorrow_nd_ot
+                    // , 'tomorrow'=>$tomorrow
+                , 'tomorrow_nd' => $tomorrow_nd
+                , 'tomorrow_ot' => $tomorrow_ot
+                , 'tomorrow_nd_ot' => $tomorrow_nd_ot
             );
 
             $time_array['ot_actual_hours'] = $tomorrow_ot + $tomorrow_nd_ot + $nd_ot + $ot;
@@ -597,20 +597,20 @@ class Messervelib_Payroll
                 }
             }
 
-            if ($attendance['type'] == 'regular' && !$holiday_today) {
+            if ($attendance['type'] == 'regular' && !$holiday_today) { //  ** Core calc **
                 if (!$holiday_tomorrow || !$holiday_tomorrow->getType() == 'legal') {
                     $time_array += array(
                         'reg' => $reg + $tomorrow
-                    , 'reg_nd' => $nd + $tomorrow_nd
-                    , 'reg_ot' => $ot + $tomorrow_ot
-                    , 'reg_nd_ot' => $nd_ot + $tomorrow_nd_ot
+                        , 'reg_nd' => $nd + $tomorrow_nd
+                        , 'reg_ot' => $ot + $tomorrow_ot
+                        , 'reg_nd_ot' => $nd_ot + $tomorrow_nd_ot
                     );
                 } else {
                     $time_array += array(
                         'reg' => $reg
-                    , 'reg_nd' => $nd
-                    , 'reg_ot' => $ot + $tomorrow_ot
-                    , 'reg_nd_ot' => $nd_ot
+                        , 'reg_nd' => $nd
+                        , 'reg_ot' => $ot + $tomorrow_ot
+                        , 'reg_nd_ot' => $nd_ot
                     );
                 }
             }
@@ -619,24 +619,24 @@ class Messervelib_Payroll
                 if (!$holiday_tomorrow || !$holiday_tomorrow->getType() == 'legal') {
                     $time_array += array(
                         'spec' => $reg + $tomorrow
-                    , 'spec_nd' => $nd + $tomorrow_nd
-                    , 'spec_ot' => $ot + $tomorrow_ot
-                    , 'spec_nd_ot' => $nd_ot + $tomorrow_nd_ot
+                        , 'spec_nd' => $nd + $tomorrow_nd
+                        , 'spec_ot' => $ot + $tomorrow_ot
+                        , 'spec_nd_ot' => $nd_ot + $tomorrow_nd_ot
                     );
                 } else {
                     $time_array += array(
                         'spec' => $reg
-                    , 'spec_nd' => $nd
-                    , 'spec_ot' => $ot + $tomorrow_ot
-                    , 'spec_nd_ot' => $nd_ot
+                        , 'spec_nd' => $nd
+                        , 'spec_ot' => $ot + $tomorrow_ot
+                        , 'spec_nd_ot' => $nd_ot
                     );
                 }
             } elseif ($attendance['type'] == 'special') {
                 $time_array += array(
                     'spec' => $reg
-                , 'spec_nd' => $nd
-                , 'spec_ot' => $ot + $tomorrow_ot
-                , 'spec_nd_ot' => $nd_ot
+                    , 'spec_nd' => $nd
+                    , 'spec_ot' => $ot + $tomorrow_ot
+                    , 'spec_nd_ot' => $nd_ot
                 );
             }
 
@@ -644,20 +644,19 @@ class Messervelib_Payroll
                 if (!$holiday_tomorrow || !$holiday_tomorrow->getType() == 'legal') {
                     $time_array += array(
                         'rest' => $reg
-                    , 'rest_ot' => $ot
-                    , 'rest_nd' => $nd + $tomorrow_nd
-                    , 'rest_nd_ot' => $nd_ot + $tomorrow_nd_ot
+                        , 'rest_ot' => $ot
+                        , 'rest_nd' => $nd + $tomorrow_nd
+                        , 'rest_nd_ot' => $nd_ot + $tomorrow_nd_ot
                     );
                 } else {
                     $time_array += array(
                         'rest' => $reg
-                    , 'rest_ot' => $ot
-                    , 'rest_nd' => $nd
-                    , 'rest_nd_ot' => $nd_ot
+                        , 'rest_ot' => $ot
+                        , 'rest_nd' => $nd
+                        , 'rest_nd_ot' => $nd_ot
                     );
                 }
             } elseif ($attendance['type'] == 'rest') {
-                // echo  "<br /> Rest ONLY";
                 $time_array += array(
                     'rest' => $reg
                 , 'rest_ot' => $ot + $tomorrow_ot
@@ -724,7 +723,7 @@ class Messervelib_Payroll
 
 
             if (!$holiday_tomorrow && $attendance['type'] == 'rest') {
-                // TODO:  cleanup, or figure out what this placeholder is for.  Might be deprecated due to unuse of restday ot
+                // TODO:  cleanup, or figure out what this placeholder is for.  Might be deprecated due to unuse of rest-day ot
             } else {
                 $time_array += array(
                     'reg' => $tomorrow
@@ -733,17 +732,15 @@ class Messervelib_Payroll
                     , 'reg_nd_ot' => $tomorrow_nd_ot);
             }
 
-
-
-            $time_array = array_merge($time_array, array( // For stats only
+            $time_array = array_merge($time_array, array( // TODO: Why-oh-why
                 'today' => $reg
-            , 'today_ot' => $ot
-            , 'today_nd' => $nd
-            , 'today_nd_ot' => $nd_ot
-            , 'tomorrow' => $tomorrow
-            , 'tomorrow_ot' => $tomorrow_ot
-            , 'tomorrow_nd' => $tomorrow_nd
-            , 'tomorrow_nd_ot' => $tomorrow_nd_ot
+                , 'today_ot' => $ot
+                , 'today_nd' => $nd
+                , 'today_nd_ot' => $nd_ot
+                , 'tomorrow' => $tomorrow
+                , 'tomorrow_ot' => $tomorrow_ot
+                , 'tomorrow_nd' => $tomorrow_nd
+                , 'tomorrow_nd_ot' => $tomorrow_nd_ot
             ));
 
             if ($Attendance->getOtApproved() != 'yes') {
@@ -798,13 +795,7 @@ class Messervelib_Payroll
                 if ($pay_rate_prefix == 'special') $pay_rate_prefix = "spec";
 
                 $PayrollToday = new Messerve_Model_AttendancePayroll();
-                /*
-                        $PayrollToday->getMapper()->findOneByField(
-                            array("attendance_id","date")
-                            , array($Attendance->getId(), substr($Attendance->getDatetimeStart(),0,10))
-                            , $PayrollToday
-                        );
-                */
+
                 $new_date_today = date("Y-m-d", strtotime($Attendance->getDatetimeStart()));
 
                 $rates_today['_prefix'] = $pay_rate_prefix;

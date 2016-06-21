@@ -1187,25 +1187,25 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $summary_bill = array(
             'reg' => 0
-        , 'reg_nd' => 0
-        , 'reg_ot' => 0
-        , 'reg_nd_ot' => 0
+            , 'reg_nd' => 0
+            , 'reg_ot' => 0
+            , 'reg_nd_ot' => 0
 
-        , 'spec' => 0
-        , 'spec_nd' => 0
-        , 'spec_ot' => 0
-        , 'spec_nd_ot' => 0
+            , 'spec' => 0
+            , 'spec_nd' => 0
+            , 'spec_ot' => 0
+            , 'spec_nd_ot' => 0
 
-        , 'legal' => 0
-        , 'legal_nd' => 0
-        , 'legal_ot' => 0
-        , 'legal_nd_ot' => 0
-        , 'legal_unattend' => 0
+            , 'legal' => 0
+            , 'legal_nd' => 0
+            , 'legal_ot' => 0
+            , 'legal_nd_ot' => 0
+            , 'legal_unattend' => 0
 
-        , 'rest' => 0
-        , 'rest_nd' => 0
-        , 'rest_ot' => 0
-        , 'rest_nd_ot' => 0
+            , 'rest' => 0
+            , 'rest_nd' => 0
+            , 'rest_ot' => 0
+            , 'rest_nd_ot' => 0
         );
 
         $AttendDB = new Messerve_Model_DbTable_Attendance();
@@ -1259,6 +1259,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->where('attendance.group_id = ?', $group_id)
                 ->where("datetime_start >= '{$date_start} 00:00' AND datetime_start <= '{$date_end} 23:59'");
 
+            die($select->assemble();
 
             $attendance = $AttendDB->fetchRow($select);
 
@@ -1271,7 +1272,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             } else {
                 die('Process halted:  no rates found for either employee or group.');
             }
-
 
             $AttendanceMap = new Messerve_Model_Mapper_Attendance();
 
@@ -1303,95 +1303,60 @@ class Payroll_IndexController extends Zend_Controller_Action
                 + $attendance->sum_rest_nd
                 + $attendance->sum_rest_ot
                 + $attendance->sum_rest_nd_ot;
-            /*
-            $this_ecola = $total_hours >= ($period_size * 8) ?
-                $this_rate->Ecola * $period_size
-                : $total_hours * ($this_rate->Ecola / 8);
 
-            $non_ot = $attendance->sum_reg
-                + $attendance->sum_reg_nd
-                + $attendance->sum_sun
-                + $attendance->sum_sun_nd
-                + $attendance->sum_spec
-                + $attendance->sum_spec_nd
-                + $attendance->sum_legal
-                + $attendance->sum_legal_nd
-                + $attendance->sum_legal_unattend
-                + $attendance->sum_rest
-                + $attendance->sum_rest_nd;
-
-
-            $this_ecola = ($non_ot / 8) * $this_rate->Ecola;
-            */
-
-            $this_ecola = $this_rate->Ecola * 8 * $attendance->day_count;
-            error_log(print_r($attendance,true) . "\n", 3, '/home/fixstop/debug.log');
 
             $employee_payroll[$evalue->getId()]['pay'] = array(
                 'reg' => $attendance->sum_reg * $this_rate->Reg
-            , 'reg_nd' => $attendance->sum_reg_nd * $this_rate->RegNd
+                , 'reg_nd' => $attendance->sum_reg_nd * $this_rate->RegNd
 
-            , 'reg_ot' => $attendance->sum_reg_ot * $this_rate->RegOT
-            , 'reg_nd_ot' => $attendance->sum_reg_nd_ot * $this_rate->RegNdOT
+                , 'reg_ot' => $attendance->sum_reg_ot * $this_rate->RegOT
+                , 'reg_nd_ot' => $attendance->sum_reg_nd_ot * $this_rate->RegNdOT
 
-            , 'sun' => $attendance->sum_sun * $this_rate->Sun
-            , 'sun_nd' => $attendance->sum_sun_nd * $this_rate->SunNd
-            , 'sun_ot' => $attendance->sum_sun_ot * $this_rate->SunOT
-            , 'sun_nd_ot' => $attendance->sum_sun_nd_ot * $this_rate->SunNdOt
+                , 'sun' => $attendance->sum_sun * $this_rate->Sun
+                , 'sun_nd' => $attendance->sum_sun_nd * $this_rate->SunNd
+                , 'sun_ot' => $attendance->sum_sun_ot * $this_rate->SunOT
+                , 'sun_nd_ot' => $attendance->sum_sun_nd_ot * $this_rate->SunNdOt
 
-            , 'spec' => $attendance->sum_spec * $this_rate->Spec
-            , 'spec_nd' => $attendance->sum_spec_nd * $this_rate->SpecNd
-            , 'spec_ot' => $attendance->sum_spec_ot * $this_rate->SpecOT
-            , 'spec_nd_ot' => $attendance->sum_spec_nd_ot * $this_rate->SpecNdOt
+                , 'spec' => $attendance->sum_spec * $this_rate->Spec
+                , 'spec_nd' => $attendance->sum_spec_nd * $this_rate->SpecNd
+                , 'spec_ot' => $attendance->sum_spec_ot * $this_rate->SpecOT
+                , 'spec_nd_ot' => $attendance->sum_spec_nd_ot * $this_rate->SpecNdOt
 
-            , 'legal' => $attendance->sum_legal * $this_rate->Legal
-            , 'legal_nd' => $attendance->sum_legal_nd * $this_rate->LegalNd
-            , 'legal_ot' => $attendance->sum_legal_ot * $this_rate->LegalOT
-            , 'legal_nd_ot' => $attendance->sum_legal_nd_ot * $this_rate->LegalNdOt
-            , 'legal_unattend' => $attendance->sum_legal_unattend * $this_rate->LegalUnattend
+                , 'legal' => $attendance->sum_legal * $this_rate->Legal
+                , 'legal_nd' => $attendance->sum_legal_nd * $this_rate->LegalNd
+                , 'legal_ot' => $attendance->sum_legal_ot * $this_rate->LegalOT
+                , 'legal_nd_ot' => $attendance->sum_legal_nd_ot * $this_rate->LegalNdOt
+                , 'legal_unattend' => $attendance->sum_legal_unattend * $this_rate->LegalUnattend
 
-            , 'rest' => $attendance->sum_rest * $this_rate->Spec
-            , 'rest_nd' => $attendance->sum_rest_nd * $this_rate->SpecNd
-            , 'rest_ot' => $attendance->sum_rest_ot * $this_rate->SpecOT
-            , 'rest_nd_ot' => $attendance->sum_rest_nd_ot * $this_rate->SpecNdOt
-
-            , 'e_cola' => $this_ecola
+                , 'rest' => $attendance->sum_rest * $this_rate->Spec
+                , 'rest_nd' => $attendance->sum_rest_nd * $this_rate->SpecNd
+                , 'rest_ot' => $attendance->sum_rest_ot * $this_rate->SpecOT
+                , 'rest_nd_ot' => $attendance->sum_rest_nd_ot * $this_rate->SpecNdOt
             );
 
             $sss_deduct = $total_hours * ($this_rate->SSSEmployee / 22 / 8);
 
-            $config = Zend_Registry::get('config');
-
             $employee_payroll[$evalue->getId()]['deductions'] = array(
-                // 'sss'=> ($sss_deduct/2)
                 'sss' => ($sss_deduct)
-            , 'philhealth' => ($this_rate->PhilhealthEmployee / 2)
-            , 'hdmf' => ($this_rate->HDMFEmployee / 2)
-            , 'cash_bond' => ($this_rate->CashBond / 2)
-            , 'insurance' => 25
-            , 'bike_rehab' => 0
-            , 'bike_insurance_reg' => 0
-                // , 'fuel_overage' => $attendance->sum_fuel_overage * $this->_fuelcost
+                , 'philhealth' => ($this_rate->PhilhealthEmployee / 2)
+                , 'hdmf' => ($this_rate->HDMFEmployee / 2)
+                , 'cash_bond' => ($this_rate->CashBond / 2)
+                , 'insurance' => 25
+                , 'bike_rehab' => 0
+                , 'bike_insurance_reg' => 0
             );
-
-            /*
-    		if($attendance->sum_fuel_overage > 0) {
-                $employee_payroll[$evalue->getId()]['deductions']['fuel_overage'] =  $attendance->sum_fuel_overage * $this->_fuelcost;
-            }
-            */
 
             $employer_bill[$evalue->getId()]['info'] = array(
                 'employee_number' => $attendance->employee_number
-            , 'first_name' => $attendance->firstname
-            , 'middle_name' => $attendance->middleinitial
-            , 'last_name' => $attendance->lastname
+                , 'first_name' => $attendance->firstname
+                , 'middle_name' => $attendance->middleinitial
+                , 'last_name' => $attendance->lastname
 
-            , 'tin' => $attendance->tin
-            , 'sss' => $attendance->sss
-            , 'hdmf' => $attendance->hdmf
-            , 'philhealth' => $attendance->philhealth
-            , 'date_employed' => $attendance->dateemployed
-
+                , 'tin' => $attendance->tin
+                , 'sss' => $attendance->sss
+                , 'hdmf' => $attendance->hdmf
+                , 'philhealth' => $attendance->philhealth
+                , 'date_employed' => $attendance->dateemployed
             );
 
             $summary_bill['reg'] += round($attendance->sum_reg, 2);
@@ -1417,89 +1382,65 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $employer_bill[$evalue->getId()]['income'] = array(
                 'reg_hours' => $attendance->sum_reg
-            , 'reg' => $this_rate->Reg
-            , ''
-            , 'reg_nd_hours' => $attendance->sum_reg_nd
-            , 'reg_nd' => $this_rate->RegNd
-            , ''
-            , 'reg_ot_hours' => $attendance->sum_reg_ot
-            , 'reg_ot' => $this_rate->RegOT
-            , ''
-            , 'reg_nd_ot_hours' => $attendance->sum_reg_nd_ot
-            , 'reg_nd_ot' => $this_rate->RegNdOT
-            , ''
-            , 'sun_hours' => $attendance->sum_sun
-            , 'sun' => $this_rate->Sun
-            , ''
-            , 'sun_nd_hours' => $attendance->sum_sun_nd
-            , 'sun_nd' => $this_rate->SunNd
-            , ''
-            , 'sun_ot_hours' => $attendance->sum_sun_ot
-            , 'sun_ot' => $this_rate->SunOT
-            , ''
-            , 'sun_nd_ot_hours' => $attendance->sum_sun_nd_ot
-            , 'sun_nd_ot' => $this_rate->SunNdOt
-            , ''
-            , 'spec_hours' => $attendance->sum_spec
-            , 'spec' => $this_rate->Spec
-            , ''
-            , 'spec_nd_hours' => $attendance->sum_spec_nd
-            , 'spec_nd' => $this_rate->SpecNd
-            , ''
-            , 'spec_ot_hours' => $attendance->sum_spec_ot
-            , 'spec_ot' => $this_rate->SpecOT
-            , ''
-            , 'spec_nd_ot_hours' => $attendance->sum_spec_nd_ot
-            , 'spec_nd_ot' => $this_rate->SpecNdOt
-            , ''
-            , 'legal_hours' => $attendance->sum_legal
-            , 'legal' => $this_rate->Legal
-            , ''
-            , 'legal_nd_hours' => $attendance->sum_legal_nd
-            , 'legal_nd' => $this_rate->LegalNd
-            , ''
-            , 'legal_ot_hours' => $attendance->sum_legal_ot
-            , 'legal_ot' => $this_rate->LegalOT
-            , ''
-            , 'legal_nd_ot_hours' => $attendance->sum_legal_nd_ot
-            , 'legal_nd_ot' => $this_rate->LegalNdOt
-            , ''
-            , 'legal_unattend_hours' => $attendance->sum_legal_unattend
-            , 'legal_unattend' => $this_rate->LegalUnattend
-            , ''
-
-            , 'rest_hours' => $attendance->sum_rest
-            , 'rest' => $this_rate->Rest
-            , ''
-            , 'rest_nd_hours' => $attendance->sum_rest_nd
-            , 'rest_nd' => $this_rate->RestNd
-            , ''
-
-            , 'rest_ot_hours' => $attendance->sum_rest_ot
-            , 'rest_ot' => $this_rate->RestOT
-            , ''
-            , 'rest_nd_ot_hours' => $attendance->sum_rest_nd_ot
-            , 'rest_nd_ot' => $this_rate->RestNdOt
-            , ''
-            , 'ecola_hours' => $total_hours
-            , 'ecola' => ($this_rate->Ecola / 8)
-            , ''
+                , 'reg' => $this_rate->Reg
+                , 'reg_nd_hours' => $attendance->sum_reg_nd
+                , 'reg_nd' => $this_rate->RegNd
+                , 'reg_ot_hours' => $attendance->sum_reg_ot
+                , 'reg_ot' => $this_rate->RegOT
+                , 'reg_nd_ot_hours' => $attendance->sum_reg_nd_ot
+                , 'reg_nd_ot' => $this_rate->RegNdOT
+                , 'sun_hours' => $attendance->sum_sun
+                , 'sun' => $this_rate->Sun
+                , 'sun_nd_hours' => $attendance->sum_sun_nd
+                , 'sun_nd' => $this_rate->SunNd
+                , 'sun_ot_hours' => $attendance->sum_sun_ot
+                , 'sun_ot' => $this_rate->SunOT
+                , 'sun_nd_ot_hours' => $attendance->sum_sun_nd_ot
+                , 'sun_nd_ot' => $this_rate->SunNdOt
+                , 'spec_hours' => $attendance->sum_spec
+                , 'spec' => $this_rate->Spec
+                , 'spec_nd_hours' => $attendance->sum_spec_nd
+                , 'spec_nd' => $this_rate->SpecNd
+                , 'spec_ot_hours' => $attendance->sum_spec_ot
+                , 'spec_ot' => $this_rate->SpecOT
+                , 'spec_nd_ot_hours' => $attendance->sum_spec_nd_ot
+                , 'spec_nd_ot' => $this_rate->SpecNdOt
+                , 'legal_hours' => $attendance->sum_legal
+                , 'legal' => $this_rate->Legal
+                , 'legal_nd_hours' => $attendance->sum_legal_nd
+                , 'legal_nd' => $this_rate->LegalNd
+                , 'legal_ot_hours' => $attendance->sum_legal_ot
+                , 'legal_ot' => $this_rate->LegalOT
+                , 'legal_nd_ot_hours' => $attendance->sum_legal_nd_ot
+                , 'legal_nd_ot' => $this_rate->LegalNdOt
+                , 'legal_unattend_hours' => $attendance->sum_legal_unattend
+                , 'legal_unattend' => $this_rate->LegalUnattend
+                , 'rest_hours' => $attendance->sum_rest
+                , 'rest' => $this_rate->Rest
+                , 'rest_nd_hours' => $attendance->sum_rest_nd
+                , 'rest_nd' => $this_rate->RestNd
+                , 'rest_ot_hours' => $attendance->sum_rest_ot
+                , 'rest_ot' => $this_rate->RestOT
+                , 'rest_nd_ot_hours' => $attendance->sum_rest_nd_ot
+                , 'rest_nd_ot' => $this_rate->RestNdOt
+                , 'ecola_hours' => $total_hours
+                , 'ecola' => ($this_rate->Ecola / 8)
             );
 
 
             $employer_bill[$evalue->getId()]['deductions'] = array(
                 'sss_ee' => ($this_rate->SSSEmployee * -1)
-            , 'sss_er' => ($this_rate->SSSEmployer * -1)
+                , 'sss_er' => ($this_rate->SSSEmployer * -1)
 
-            , 'philhealth_ee' => ($this_rate->PhilhealthEmployee * -1)
-            , 'philhealth_er' => ($this_rate->PhilhealthEmployer * -1)
+                , 'philhealth_ee' => ($this_rate->PhilhealthEmployee * -1)
+                , 'philhealth_er' => ($this_rate->PhilhealthEmployer * -1)
 
-            , 'hdmf_ee' => ($this_rate->HDMFEmployee * -1)
-            , 'hdmf_er' => ($this_rate->HDMFEmployer * -1)
-            , 'ec' => ($this_rate->EC * -1)
+                , 'hdmf_ee' => ($this_rate->HDMFEmployee * -1)
+                , 'hdmf_er' => ($this_rate->HDMFEmployer * -1)
+                , 'ec' => ($this_rate->EC * -1)
 
-            , 'bike_rehab' => 0
-            , 'bike_insurance_reg' => 0
+                , 'bike_rehab' => 0
+                , 'bike_insurance_reg' => 0
             );
 
             if (strtotime($attendance->bike_rehab_end) >= strtotime($date_start)) {
@@ -1537,8 +1478,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                     ->setGasoline(0)
                     ->save();
             }
-
-            $more_income = array();
 
             if ($AddIncome) {
                 $more_income = $AddIncome->toArray();
@@ -1581,22 +1520,6 @@ class Payroll_IndexController extends Zend_Controller_Action
         $this->_employee_payroll = $employee_payroll;
         $this->_employer_bill = $summary_bill;
     }
-
-    /*
-    protected function _get_ecola($employee_id, $group_id, $date_start, $date_end, $ecola_rate) {
-    	$AttendanceMap = new Messerve_Model_Mapper_Attendance();
-    	$where = "employee_id = $employee_id AND group_id = $group_id AND datetime_start BETWEEN '$date_start' AND '$date_end'";
-    	$attendance = $AttendanceMap->fetchList($where,'datetime_start');
-
-    	$ecola = 0;
-
-    	foreach ($attendance as $avalue) {
-    		$ecola += $avalue->getReg() * ($ecola_rate/8);
-    	}
-    	die();
-    }
-    */
-
 
     public function summaryreportAction()
     {
