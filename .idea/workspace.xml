@@ -48,7 +48,7 @@
         <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.62573963">
-              <caret line="2071" column="57" selection-start-line="2071" selection-start-column="57" selection-end-line="2071" selection-end-column="57" />
+              <caret line="2071" column="51" selection-start-line="2071" selection-start-column="51" selection-end-line="2071" selection-end-column="51" />
               <folding />
             </state>
           </provider>
@@ -613,7 +613,7 @@
     <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.62573963">
-          <caret line="2071" column="57" selection-start-line="2071" selection-start-column="57" selection-end-line="2071" selection-end-column="57" />
+          <caret line="2071" column="51" selection-start-line="2071" selection-start-column="51" selection-end-line="2071" selection-end-column="51" />
           <folding />
         </state>
       </provider>
