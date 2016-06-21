@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="dadc4ea7-dcae-45f0-a214-eea4dea9a4ab" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php" afterPath="$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/library/Messervelib/Payroll.php" afterPath="$PROJECT_DIR$/library/Messervelib/Payroll.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Rolling.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -49,8 +47,8 @@
       <file leaf-file-name="IndexController.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.37833828">
-              <caret line="753" column="73" selection-start-line="753" selection-start-column="73" selection-end-line="753" selection-end-column="73" />
+            <state vertical-scroll-proportion="0.62573963">
+              <caret line="2071" column="57" selection-start-line="2071" selection-start-column="57" selection-end-line="2071" selection-end-column="57" />
               <folding />
             </state>
           </provider>
@@ -614,8 +612,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.37833828">
-          <caret line="753" column="73" selection-start-line="753" selection-start-column="73" selection-end-line="753" selection-end-column="73" />
+        <state vertical-scroll-proportion="0.62573963">
+          <caret line="2071" column="57" selection-start-line="2071" selection-start-column="57" selection-end-line="2071" selection-end-column="57" />
           <folding />
         </state>
       </provider>

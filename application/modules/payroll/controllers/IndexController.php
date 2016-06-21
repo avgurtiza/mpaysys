@@ -2069,7 +2069,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             ->where("employee_id = $employee_id
                 AND datetime_start >= '$date_start 00:00'
                 AND datetime_end <= '$date_end 23:59'
-                AND start_1 >= 1");
+                AND (start_1 >= 1 OR legal_unattended > 0)");
 
         $rows = $AttendanceDb->fetchAll($select);
 
