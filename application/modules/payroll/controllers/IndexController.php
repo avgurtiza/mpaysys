@@ -698,7 +698,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $legal_ecola_days  = 0;
 
                 foreach($legal_attendance as $legal_day) {
-                    $legal_ua_hours+= $legal_day['reg'];
+                    $legal_ua_hours+= $legal_day['legal_unattend'];
                     $legal_ecola_days++;
                 }
 

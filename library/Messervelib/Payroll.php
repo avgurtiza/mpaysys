@@ -693,9 +693,9 @@ class Messervelib_Payroll
             }
 
             if ($holiday_tomorrow && $holiday_tomorrow->getType() == 'legal') {
-                $must_correct_legal = true;
 
                 if (($tomorrow + $tomorrow_nd + $tomorrow_ot + $tomorrow_nd_ot) > 0) { // Attendance yesterday?  Make it legal
+                    $must_correct_legal = true;
                     $time_array = array_merge($time_array, array(
                         'legal' => $reg + $tomorrow
                         , 'legal_nd' => $nd + $tomorrow_nd
@@ -710,9 +710,8 @@ class Messervelib_Payroll
                 $legal_deficit = 8 - ($time_array['legal'] + $time_array['legal_nd'] + $time_array['legal_ot'] + $time_array['legal_nd_ot']);
 
                 if($legal_deficit > 0) { // If total legal attendance is less than 8 hours, credit reg hours to rider
-                    $time_array['reg'] = $legal_deficit;
+                    $time_array['legal_unattend'] = $legal_deficit;
                 }
-
             }
 
 
@@ -1414,11 +1413,12 @@ class Messervelib_Payroll
     public function GetEmployeePayroll($employee_id, $group_id, $period_start)
     {
         $PayrollMap = new Messerve_Model_Mapper_AttendancePayroll();
+
         $payroll_raw = $PayrollMap->fetchList("employee_id = $employee_id
             AND group_id = $group_id
             AND period_start LIKE '$period_start'
             AND attendance_id > 0
-            ");
+        ");
 
         $all_days = 0;
 
@@ -1426,7 +1426,7 @@ class Messervelib_Payroll
 
         foreach ($payroll_raw as $pvalue) { // TODO:  Construct array properly
 
-            if (json_decode($pvalue->getRateData())) {
+            if ($pvalue->getRateData() != '') {
                 @$payroll[$pvalue->getRateId()]['meta'] = json_decode($pvalue->getRateData());
             }
 
