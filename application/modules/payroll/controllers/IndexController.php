@@ -436,8 +436,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $group_id = $this->_request->getParam('group_id');
 
-        // die("$date_start : $date_end : $group_id");
-
         $timestamp_start = strtotime($date_start);
         $cutoff_date = date("d", $timestamp_start);
 
@@ -1259,7 +1257,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->where('attendance.group_id = ?', $group_id)
                 ->where("datetime_start >= '{$date_start} 00:00' AND datetime_start <= '{$date_end} 23:59'");
 
-            die($select->assemble());
 
             $attendance = $AttendDB->fetchRow($select);
 

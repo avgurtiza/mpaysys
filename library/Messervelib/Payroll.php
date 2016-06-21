@@ -1187,8 +1187,6 @@ class Messervelib_Payroll
 
         }
 
-        //  die("PREV   $previous_month_hours MAINT $maintenance");
-
         $insurance_deduction = $BOP->getInsuranceDeduction();
         $motorcycle_deduction = $BOP->getMotorcycleDeduction();
 
@@ -1233,7 +1231,6 @@ class Messervelib_Payroll
             $select->where('attendance.group_id = ?', $group_id);
         }
 
-        // die($select->assemble());
         $result = $AttendDB->fetchRow($select);
 
         return (float)$result->total;
@@ -1612,7 +1609,6 @@ class Messervelib_Payroll
 
         $fuel_consumption = $fuel_purchased - ($fuel_per_hour * $monthly_work_duration);
 
-        // die("Worked: $monthly_work_duration, Consumed: $fuel_consumption, Purchased: $fuel_purchased, Allotted: " . $fuel_per_hour * $monthly_work_duration);
         return $fuel_consumption;
 
     }
