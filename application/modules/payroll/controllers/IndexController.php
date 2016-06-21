@@ -396,22 +396,17 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $data[$current_date] = array(
                     'id' => $Attendance->getId()
-                , 'start_1' => $Attendance->getStart1()
-                , 'end_1' => $Attendance->getEnd1()
-                , 'start_2' => $Attendance->getStart2()
-                , 'end_2' => $Attendance->getEnd2()
-                , 'start_3' => $Attendance->getStart3()
-                , 'end_3' => $Attendance->getEnd3()
-                , 'extended_shift' => $Attendance->getExtendedShift()
-                , 'ot_approved' => $Attendance->getOtApproved()
-                , 'ot_approved_hours' => $Attendance->getOtApprovedHours()
-                , 'type' => $Attendance->getType()
+                    , 'start_1' => $Attendance->getStart1()
+                    , 'end_1' => $Attendance->getEnd1()
+                    , 'start_2' => $Attendance->getStart2()
+                    , 'end_2' => $Attendance->getEnd2()
+                    , 'start_3' => $Attendance->getStart3()
+                    , 'end_3' => $Attendance->getEnd3()
+                    , 'extended_shift' => $Attendance->getExtendedShift()
+                    , 'ot_approved' => $Attendance->getOtApproved()
+                    , 'ot_approved_hours' => $Attendance->getOtApprovedHours()
+                    , 'type' => $Attendance->getType()
                 );
-
-
-                if ($Attendance->getOtApproved() == 'yes') {
-                    // $dates[$current_date]->setOtApprovedHours($hours . ':' . $minutes);
-                }
 
                 $current_date = date('Y-m-d', strtotime('+1 day', strtotime($current_date)));
 
@@ -714,13 +709,12 @@ class Payroll_IndexController extends Zend_Controller_Action
             $page->setFont($font, 8)->drawText('Total hours pay', $dim_x + 220, $dim_y);
             $page->setFont($mono, 8)->drawText(str_pad(substr(number_format($total_pay, 3), 0, -1), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
 
-            $ecola_addition = 0;
-
             if($Employee->getGroupId() == $group_id) {
-                $ecola_addition = $this->get_cutoff_attended_days($Employee->getId(),$date_start,$date_end) * $ecola;
+                $attended_days  = $this->get_cutoff_attended_days($Employee->getId(),$date_start,$date_end);
+                $ecola_addition =  $attended_days * $ecola;
 
                 $dim_y -= 8;
-                $page->setFont($font, 8)->drawText('ECOLA', $dim_x + 220, $dim_y);
+                $page->setFont($font, 8)->drawText('ECOLA (' . $attended_days . ' days)', $dim_x + 220, $dim_y);
                 $page->setFont($mono, 8)->drawText(str_pad(number_format($ecola_addition, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
 
                 $total_pay += $ecola_addition;

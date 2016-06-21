@@ -3,7 +3,7 @@
 class Messervelib_Payroll
 {
     protected $_max_regular_hours = null, $_init_night_diff_start, $_init_night_diff_end
-    , $_night_diff_start, $_night_diff_end, $_midnight;
+    , $_night_diff_start, $_night_diff_end, $_midnight, $_date;
     protected $_config;
     protected $_client_rates, $_employee_rates;
 
@@ -36,12 +36,6 @@ class Messervelib_Payroll
         $cutoff_total_duration = 0;
 
         $first_day_id = null; // cache record of first day for fuel calcs
-
-        /*
-        $total_fuel_purchase_l = 0;
-        $client_rates = array();
-        $employee_rates = array();
-        */
 
         foreach ($data as $date => $attendance) {
 
@@ -1238,7 +1232,6 @@ class Messervelib_Payroll
 
     protected function _get_rate_today($date)
     {
-        $rates = array();
 
         $employee_rate = false;
 
@@ -1263,12 +1256,6 @@ class Messervelib_Payroll
             }
         }
         if (!$client_rate) $client_rate['rate'] = $this->_client_rates['default'];
-
-        /*
-        echo "DATE $date";
-        preprint($employee_rate);
-        preprint($client_rate);
-        */
 
         return (array("employee" => $employee_rate, "client" => $client_rate));
     }
