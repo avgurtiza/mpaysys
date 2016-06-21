@@ -159,24 +159,6 @@ class Messervelib_Payroll
                         }
                     }
 
-                    // Has attendance the following day
-                    /*
-                    $AttendanceT = new Messerve_Model_Attendance();
-                    $AttendanceT = $AttendanceT->getMapper()->findByField(
-                        array('employee_id', 'datetime_start')
-                        , array($employee_id, $date_tommorow)
-                    );
-
-                    foreach ($AttendanceT as $avalue) {
-                        if ($avalue->getStart1() > 0) {
-                            if (!$legal_unattended_group > 0) {
-                                $legal_unattended_group = $avalue->getGroupId();
-                                $legal_unattended_viable = true;
-                            }
-                            break;
-                        }
-                    }
-                    */
                     // Check if there is actual legal holiday attendance for other outlets
                     $AttendanceN = new Messerve_Model_Attendance();
                     $AttendanceN = $AttendanceN->getMapper()->findByField(
@@ -659,7 +641,6 @@ class Messervelib_Payroll
             }
 
             if ($attendance['type'] == 'rest' && $holiday_today && !$holiday_today->getType() == 'legal') {
-                // echo  "<br /> Rest OT";
                 if (!$holiday_tomorrow || !$holiday_tomorrow->getType() == 'legal') {
                     $time_array += array(
                         'rest' => $reg
@@ -685,9 +666,6 @@ class Messervelib_Payroll
                 );
             }
 
-
-
-
             if ($holiday_today && $holiday_today->getType() == 'special') {
                 $time_array += array('spec' => $reg, 'spec_nd' => $nd, 'spec_ot' => $ot, 'spec_nd_ot' => $nd_ot);
             }
@@ -698,7 +676,10 @@ class Messervelib_Payroll
                 );
             }
 
+            $must_correct_legal = false;
+
             if ($holiday_today && $holiday_today->getType() == 'legal') {
+                $must_correct_legal = true;
                 if (($tomorrow + $tomorrow_nd + $tomorrow_ot + $tomorrow_nd_ot) > 0) { // Attendance tomorrow?  Make it legal
                     $time_array = array_merge($time_array, array(
                         'legal' => $reg + $tomorrow
@@ -719,6 +700,8 @@ class Messervelib_Payroll
             }
 
             if ($holiday_tomorrow && $holiday_tomorrow->getType() == 'legal') {
+                $must_correct_legal = true;
+
                 if (($tomorrow + $tomorrow_nd + $tomorrow_ot + $tomorrow_nd_ot) > 0) { // Attendance yesterday?  Make it legal
                     $time_array = array_merge($time_array, array(
                         'legal' => $reg + $tomorrow
@@ -730,16 +713,24 @@ class Messervelib_Payroll
                 }
             }
 
+            if($must_correct_legal) {
+                $legal_deficit = 8 - ($time_array['legal'] + $time_array['legal_nd'] + $time_array['legal_ot'] + $time_array['legal_nd_ot']);
+
+                if($legal_deficit > 0) { // If total legal attendance is less than 8 hours, credit reg hours to rider
+                    $time_array['reg'] = $legal_deficit;
+                }
+
+            }
+
 
             if (!$holiday_tomorrow && $attendance['type'] == 'rest') {
                 // TODO:  cleanup, or figure out what this placeholder is for.  Might be deprecated due to unuse of restday ot
-
             } else {
                 $time_array += array(
                     'reg' => $tomorrow
-                , 'reg_nd' => $tomorrow_nd
-                , 'reg_ot' => $tomorrow_ot
-                , 'reg_nd_ot' => $tomorrow_nd_ot);
+                    , 'reg_nd' => $tomorrow_nd
+                    , 'reg_ot' => $tomorrow_ot
+                    , 'reg_nd_ot' => $tomorrow_nd_ot);
             }
 
 
