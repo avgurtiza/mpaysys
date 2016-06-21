@@ -653,9 +653,9 @@ class Messervelib_Payroll
             } elseif ($attendance['type'] == 'rest') {
                 $time_array += array(
                     'rest' => $reg
-                , 'rest_ot' => $ot + $tomorrow_ot
-                , 'rest_nd' => $nd + $tomorrow_nd
-                , 'rest_nd_ot' => $nd_ot + $tomorrow_nd_ot
+                    , 'rest_ot' => $ot + $tomorrow_ot
+                    , 'rest_nd' => $nd + $tomorrow_nd
+                    , 'rest_nd_ot' => $nd_ot + $tomorrow_nd_ot
                 );
             }
 
@@ -707,10 +707,10 @@ class Messervelib_Payroll
             }
 
             if($must_correct_legal) {
-                $legal_deficit = 8 - ($time_array['legal'] + $time_array['legal_nd'] + $time_array['legal_ot'] + $time_array['legal_nd_ot']);
+                $all_legal = $time_array['legal'] + $time_array['legal_nd'] + $time_array['legal_ot'] + $time_array['legal_nd_ot'];
 
-                if($legal_deficit > 0) { // If total legal attendance is less than 8 hours, credit reg hours to rider
-                    $time_array['legal_unattend'] = $legal_deficit;
+                if($all_legal < 8) { // If total legal attendance is less than 8 hours, credit reg hours to rider
+                    $time_array['reg'] = 8 - $all_legal;
                 }
             }
 
@@ -718,11 +718,13 @@ class Messervelib_Payroll
             if (!$holiday_tomorrow && $attendance['type'] == 'rest') {
                 // TODO:  cleanup, or figure out what this placeholder is for.  Might be deprecated due to unuse of rest-day ot
             } else {
+                /*
                 $time_array += array(
                     'reg' => $tomorrow
                     , 'reg_nd' => $tomorrow_nd
                     , 'reg_ot' => $tomorrow_ot
                     , 'reg_nd_ot' => $tomorrow_nd_ot);
+                */
             }
 
             $time_array = array_merge($time_array, array( // TODO: Why-oh-why
@@ -783,6 +785,13 @@ class Messervelib_Payroll
                 if ($holiday_today) {
                     $holiday_type_today = ucfirst($holiday_today->getType());
                     $pay_rate_prefix = strtolower($holiday_today->getType());
+
+
+                }
+
+                if($must_correct_legal) {
+                    $holiday_type_today = 'Legal';
+                    $pay_rate_prefix = 'legal';
                 }
 
                 if ($pay_rate_prefix == 'special') $pay_rate_prefix = "spec";
@@ -809,7 +818,7 @@ class Messervelib_Payroll
                         ->setClientRateId($rates_today['client']['rate']['id'])
                         ->setRateData(json_encode($rates_today))
                         ->setHolidayType($holiday_type_today)
-                        ->setDate($Attendance->getDatetimeStart())
+                        ->setDate($new_date_today)
                         ->setPeriodStart($rate_date_start)
                         ->setRegHours($time_array['today'])
                         ->setOtHours($time_array['today_ot'])
@@ -839,6 +848,11 @@ class Messervelib_Payroll
                 if ($holiday_tomorrow) {
                     $holiday_type_tomorrow = ucfirst($holiday_tomorrow->getType());
                     $pay_rate_prefix = strtolower($holiday_tomorrow->getType());
+                }
+
+                if($must_correct_legal) {
+                    $holiday_type_tomorrow = 'Legal';
+                    $pay_rate_prefix = 'legal';
                 }
 
                 if ($pay_rate_prefix == 'special') $pay_rate_prefix = "spec";
@@ -1452,6 +1466,7 @@ class Messervelib_Payroll
             }
 
         }
+
 
 
         return $payroll;

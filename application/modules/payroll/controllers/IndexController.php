@@ -698,11 +698,16 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $legal_ecola_days  = 0;
 
                 foreach($legal_attendance as $legal_day) {
-                    $legal_ua_hours+= $legal_day['legal_unattend'];
                     $legal_ecola_days++;
+
+                    if($legal_day['reg'] > 0) {
+                        $legal_ua_hours += $legal_day['reg'];
+                    }
+
                 }
 
                 if($legal_ua_hours > 0) {
+
                     $sss_deductions[] = ($sss / 22 / 8) * $legal_ua_hours;
 
                     $legal_ua_pay = ($legal_ua_hours/8) * $pay_rate;
@@ -751,7 +756,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 if($legal_ecola_days > 0) {
                     $legal_ecola_addition = $legal_ecola_days * $ecola;
                     $dim_y -= 8;
-                    $page->setFont($font, 8)->drawText('ECOLA, Legal add. (' . $legal_ecola_days . ' day/s)', $dim_x + 220, $dim_y);
+                    $page->setFont($font, 8)->drawText('ECOLA - Legal (' . $legal_ecola_days . ' day/s)', $dim_x + 220, $dim_y);
                     $page->setFont($mono, 8)->drawText(str_pad(number_format($legal_ecola_addition, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
                     $total_pay += $legal_ecola_addition;
                 }
