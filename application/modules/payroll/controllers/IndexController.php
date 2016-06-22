@@ -699,11 +699,11 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 foreach($legal_attendance as $legal_day) {
                     $legal_ecola_days++;
+                    $legal_day_hours = $legal_day['legal'] + $legal_day['legal_nd'];
 
-                    if($legal_day['reg'] > 0) {
-                        $legal_ua_hours += $legal_day['reg'];
+                    if($legal_day_hours < 8) {
+                        $legal_ua_hours += (8 - $legal_day_hours);
                     }
-
                 }
 
                 if($legal_ua_hours > 0) {
@@ -1459,7 +1459,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , 'rest_nd_ot_hours' => $attendance->sum_rest_nd_ot
                 , 'rest_nd_ot' => $this_rate->RestNdOt
                 , 'ecola_hours' => $total_hours
-                , 'ecola' => ($this_rate->Ecola / 8)
+                , 'ecola' => ($this_rate->Ecola / 8) // Deprecated
             );
 
 

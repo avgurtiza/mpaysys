@@ -660,7 +660,23 @@ class Messervelib_Payroll
             }
 
             if ($holiday_today && $holiday_today->getType() == 'special') {
-                $time_array += array('spec' => $reg, 'spec_nd' => $nd, 'spec_ot' => $ot, 'spec_nd_ot' => $nd_ot);
+                $time_array += array('spec' => $reg, 'spec_nd' => $nd, 'spec_ot' => $ot + $tomorrow_ot, 'spec_nd_ot' => $nd_ot);
+            }
+
+            if ($holiday_today && $holiday_today->getType() == 'legal') {
+                // die('HERE: ' . __LINE__);
+                $time_array += array('legal' => $reg, 'legal_nd' => $nd, 'legal_ot' => $ot
+                , 'legal_nd_ot' => $nd_ot);
+
+                if (!$work_duration > 0) { // Do unattended OT calcs
+                    $time_array += array('legal_unattend' => $this->_max_regular_hours);
+                }
+            }
+
+            if ($holiday_tomorrow && $holiday_tomorrow->getType() == 'legal') {
+                $time_array += array('legal' => $tomorrow, 'legal_nd' => $tomorrow_nd, 'legal_ot' => $tomorrow_ot
+                , 'legal_nd_ot' => $tomorrow_nd_ot
+                );
             }
 
             if ($holiday_tomorrow && $holiday_tomorrow->getType() == 'special') {
@@ -669,62 +685,57 @@ class Messervelib_Payroll
                 );
             }
 
-            $must_correct_legal = false;
-
-            if ($holiday_today && $holiday_today->getType() == 'legal') {
-                $must_correct_legal = true;
-                if (($tomorrow + $tomorrow_nd + $tomorrow_ot + $tomorrow_nd_ot) > 0) { // Attendance tomorrow?  Make it legal
-                    $time_array = array_merge($time_array, array(
-                        'legal' => $reg + $tomorrow
-                        , 'legal_nd' => $nd + $tomorrow_nd
-                        , 'legal_ot' => $ot + $tomorrow_ot
-                        , 'legal_nd_ot' => $nd_ot + $tomorrow_nd_ot
-                        , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Legal both days, reset regular to 0
-                    ));
-                } else {
-                    $time_array = array_merge($time_array, array(
-                        'legal' => $reg
-                        , 'legal_nd' => $nd
-                        , 'legal_ot' => $ot
-                        , 'legal_nd_ot' => $nd_ot
-                        , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Legal both days, reset regular to 0
-                    ));
-                }
-            }
-
-            if ($holiday_tomorrow && $holiday_tomorrow->getType() == 'legal') {
-
-                if (($tomorrow + $tomorrow_nd + $tomorrow_ot + $tomorrow_nd_ot) > 0) { // Attendance yesterday?  Make it legal
-                    $must_correct_legal = true;
-                    $time_array = array_merge($time_array, array(
-                        'legal' => $reg + $tomorrow
-                        , 'legal_nd' => $nd + $tomorrow_nd
-                        , 'legal_ot' => $ot + $tomorrow_ot
-                        , 'legal_nd_ot' => $nd_ot + $tomorrow_nd_ot
-                        , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Legal both days, reset regular to 0
-                    ));
-                }
-            }
-
-            if($must_correct_legal) {
-                $all_legal = $time_array['legal'] + $time_array['legal_nd'] + $time_array['legal_ot'] + $time_array['legal_nd_ot'];
-
-                if($all_legal < 8) { // If total legal attendance is less than 8 hours, credit reg hours to rider
-                    $time_array['reg'] = 8 - $all_legal;
-                }
-            }
-
-
             if (!$holiday_tomorrow && $attendance['type'] == 'rest') {
-                // TODO:  cleanup, or figure out what this placeholder is for.  Might be deprecated due to unuse of rest-day ot
+
             } else {
-                /*
                 $time_array += array(
                     'reg' => $tomorrow
-                    , 'reg_nd' => $tomorrow_nd
-                    , 'reg_ot' => $tomorrow_ot
-                    , 'reg_nd_ot' => $tomorrow_nd_ot);
-                */
+                , 'reg_nd' => $tomorrow_nd
+                , 'reg_ot' => $tomorrow_ot
+                , 'reg_nd_ot' => $tomorrow_nd_ot);
+            }
+
+            if (
+                $holiday_today && $holiday_today->getType() == 'legal'
+                && $holiday_tomorrow && $holiday_tomorrow->getType() == 'legal'
+            ) {
+                $time_array = array_merge($time_array, array(
+                    'legal' => $reg + $tomorrow
+                , 'legal_nd' => $nd + $tomorrow_nd
+                , 'legal_ot' => $ot + $tomorrow_ot
+                , 'legal_nd_ot' => $nd_ot + $tomorrow_nd_ot
+                , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Legal both days, reset regular to 0
+                ));
+            }
+
+            if (
+                $holiday_today && $holiday_today->getType() == 'legal'
+                && $holiday_tomorrow && $holiday_tomorrow->getType() == 'special'
+            ) {
+                echo "LEGAL SPECIAL reg $reg, tomorrow $tomorrow, reg_nd $nd, tomorrow_nd $tomorrow_nd <br />";
+
+                $time_array = array_merge($time_array, array(
+                    'spec' => $tomorrow
+                , 'spec_nd' => $tomorrow_nd
+                , 'spec_ot' => $tomorrow_ot
+                , 'spec_nd_ot' => $tomorrow_nd_ot
+
+                , 'legal' => $reg
+                , 'legal_nd' => $nd
+                , 'legal_ot' => $ot
+                , 'legal_nd_ot' => $nd_ot
+
+                , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Holiday both days, reset regular to 0
+                ));
+            }
+
+            $all_legal = $time_array['legal'] + $time_array['legal_nd'] + $time_array['legal_ot'] + $time_array['legal_nd_ot'];
+
+            if($all_legal > 0) {
+
+                if($all_legal < 8) { // If total legal attendance is less than 8 hours, credit reg hours to rider
+                    $time_array['reg'] += 8 - $all_legal;
+                }
             }
 
             $time_array = array_merge($time_array, array( // TODO: Why-oh-why
@@ -789,10 +800,6 @@ class Messervelib_Payroll
 
                 }
 
-                if($must_correct_legal) {
-                    $holiday_type_today = 'Legal';
-                    $pay_rate_prefix = 'legal';
-                }
 
                 if ($pay_rate_prefix == 'special') $pay_rate_prefix = "spec";
 
@@ -848,11 +855,6 @@ class Messervelib_Payroll
                 if ($holiday_tomorrow) {
                     $holiday_type_tomorrow = ucfirst($holiday_tomorrow->getType());
                     $pay_rate_prefix = strtolower($holiday_tomorrow->getType());
-                }
-
-                if($must_correct_legal) {
-                    $holiday_type_tomorrow = 'Legal';
-                    $pay_rate_prefix = 'legal';
                 }
 
                 if ($pay_rate_prefix == 'special') $pay_rate_prefix = "spec";
