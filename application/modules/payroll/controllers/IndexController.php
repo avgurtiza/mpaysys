@@ -691,7 +691,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                     AND (attendance.group_id = {$group_id})
                     AND datetime_start >= '{$date_start} 00:00'
                     AND datetime_start <= '{$date_end} 23:59'
-                    AND (legal > 0 OR legal_nd > 0)");
+                    AND (legal > 0 OR legal_nd > 0 OR legal_ot > 0 OR legal_nd_ot > 0)");
 
                 $legal_ua_hours = 0;
 
@@ -699,7 +699,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 foreach($legal_attendance as $legal_day) {
                     $legal_ecola_days++;
-                    $legal_day_hours = $legal_day['legal'] + $legal_day['legal_nd'];
+                    $legal_day_hours = $legal_day['legal'] + $legal_day['legal_nd'] + $legal_day['legal_ot'] + $legal_day['legal_nd_ot'];
 
                     if($legal_day_hours < 8) {
                         $legal_ua_hours += (8 - $legal_day_hours);
@@ -1562,7 +1562,8 @@ class Payroll_IndexController extends Zend_Controller_Action
         function round_this($in)
         {
             if (is_numeric($in)) {
-                return round($in, 2);
+                // return round($in, 2);
+                return number_format($in, 2,'.','');
             } else {
                 return $in;
             }
@@ -1854,51 +1855,51 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $now_x = $dim_x + ($i * 22) + 110 + 66;
                 $now_inc = 68;
 
-                $page->setFont($font, 8)->drawText('Total ' . round($total_total_hours, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $page->setFont($font, 8)->drawText('Total ' . round_this($total_total_hours, 2), $dim_x + $now_x, $dim_y, 'UTF8');
                 $now_x += $now_inc;
 
-                $page->setFont($font, 8)->drawText('Reg ' . round($total_reg, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $page->setFont($font, 8)->drawText('Reg ' . round_this($total_reg, 2), $dim_x + $now_x, $dim_y, 'UTF8');
                 $now_x += $now_inc;
 
-                $page->setFont($font, 8)->drawText('RegOT ' . round($total_reg_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $page->setFont($font, 8)->drawText('RegOT ' . round_this($total_reg_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
                 $now_x += $now_inc;
 
-                $page->setFont($font, 8)->drawText('RegND ' . round($total_reg_nd, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $page->setFont($font, 8)->drawText('RegND ' . round_this($total_reg_nd, 2), $dim_x + $now_x, $dim_y, 'UTF8');
                 $now_x += $now_inc;
 
-                $page->setFont($font, 8)->drawText('RegNDOT ' . round($total_reg_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
-                $now_x += $now_inc;
-
-                /* New line */
-                $now_x = $dim_x + ($i * 22) + 110 + 66;
-                $dim_y -= 10;
-
-                $page->setFont($font, 8)->drawText('SunSp ' . round($total_sun, 2), $dim_x + $now_x, $dim_y, 'UTF8');
-                $now_x += $now_inc;
-
-                $page->setFont($font, 8)->drawText('SunSpOT ' . round($total_sun_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
-                $now_x += $now_inc;
-
-                $page->setFont($font, 8)->drawText('SunSpND ' . round($total_sun_nd, 2), $dim_x + $now_x, $dim_y, 'UTF8');
-                $now_x += $now_inc;
-
-                $page->setFont($font, 8)->drawText('SunSpNDOT ' . round($total_sun_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $page->setFont($font, 8)->drawText('RegNDOT ' . round_this($total_reg_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
                 $now_x += $now_inc;
 
                 /* New line */
                 $now_x = $dim_x + ($i * 22) + 110 + 66;
                 $dim_y -= 10;
 
-                $page->setFont($font, 8)->drawText('RestSp ' . round($total_rest, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $page->setFont($font, 8)->drawText('SunSp ' . round_this($total_sun, 2), $dim_x + $now_x, $dim_y, 'UTF8');
                 $now_x += $now_inc;
 
-                $page->setFont($font, 8)->drawText('RestSpOT ' . round($total_rest_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $page->setFont($font, 8)->drawText('SunSpOT ' . round_this($total_sun_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
                 $now_x += $now_inc;
 
-                $page->setFont($font, 8)->drawText('RestSpND ' . round($total_rest_nd, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $page->setFont($font, 8)->drawText('SunSpND ' . round_this($total_sun_nd, 2), $dim_x + $now_x, $dim_y, 'UTF8');
                 $now_x += $now_inc;
 
-                $page->setFont($font, 8)->drawText('RestSpNDOT ' . round($total_rest_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $page->setFont($font, 8)->drawText('SunSpNDOT ' . round_this($total_sun_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $now_x += $now_inc;
+
+                /* New line */
+                $now_x = $dim_x + ($i * 22) + 110 + 66;
+                $dim_y -= 10;
+
+                $page->setFont($font, 8)->drawText('RestSp ' . round_this($total_rest, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $now_x += $now_inc;
+
+                $page->setFont($font, 8)->drawText('RestSpOT ' . round_this($total_rest_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $now_x += $now_inc;
+
+                $page->setFont($font, 8)->drawText('RestSpND ' . round_this($total_rest_nd, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $now_x += $now_inc;
+
+                $page->setFont($font, 8)->drawText('RestSpNDOT ' . round_this($total_rest_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
                 $now_x += $now_inc;
 
 
@@ -1906,19 +1907,19 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $now_x = $dim_x + ($i * 22) + 110 + 66;
                 $dim_y -= 10;
 
-                $page->setFont($font, 8)->drawText('Leg ' . round($total_legal, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $page->setFont($font, 8)->drawText('Leg ' . round_this($total_legal, 2), $dim_x + $now_x, $dim_y, 'UTF8');
                 $now_x += $now_inc;
 
-                $page->setFont($font, 8)->drawText('LegOT ' . round($total_legal_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $page->setFont($font, 8)->drawText('LegOT ' . round_this($total_legal_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
                 $now_x += $now_inc;
 
-                $page->setFont($font, 8)->drawText('LegND ' . round($total_legal_nd, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $page->setFont($font, 8)->drawText('LegND ' . round_this($total_legal_nd, 2), $dim_x + $now_x, $dim_y, 'UTF8');
                 $now_x += $now_inc;
 
-                $page->setFont($font, 8)->drawText('LegNDOT ' . round($total_legal_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $page->setFont($font, 8)->drawText('LegNDOT ' . round_this($total_legal_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
                 $now_x += $now_inc;
 
-                $page->setFont($font, 8)->drawText('Leg UA ' . round($total_legal_unattend, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $page->setFont($font, 8)->drawText('Leg UA ' . round_this($total_legal_unattend, 2), $dim_x + $now_x, $dim_y, 'UTF8');
                 $now_x += $now_inc;
 
                 $dim_y -= 20;

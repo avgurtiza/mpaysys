@@ -768,7 +768,8 @@ class Messervelib_Payroll
 
             foreach ($time_array as $tkey => $tvalue) {
                 if (is_numeric($tvalue)) {
-                    $time_array[$tkey] = round($tvalue, 2);
+                    // $time_array[$tkey] = round($tvalue, 2);
+                    $time_array[$tkey] = number_format($tvalue, 2,'.','');
                 }
             }
 
