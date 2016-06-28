@@ -18,7 +18,7 @@ class Messerve_Form_Attendance extends Zend_Form
         
         $period_options = array();
         
-        for($i = 0; $i <= 6; $i++) {
+        for($i = 0; $i <= 12; $i++) {
         	$this_date = strtotime("-$i months", $start_date);
         	
         	if(date('Ymd') > date('Ym30', $this_date)) {

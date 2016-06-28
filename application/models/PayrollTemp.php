@@ -314,6 +314,9 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
      * @var float
      */
     protected $_BopMaintenance;
+    protected $_LostCard;
+    protected $_Food;
+    protected $_Paternity;
 
 
 
@@ -366,6 +369,9 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
             'bop_motorcycle'=>'BopMotorcycle',
             'bop_insurance'=>'BopInsurance',
             'bop_maintenance'=>'BopMaintenance',
+            'lost_card'=>'LostCard',
+            'food'=>'Food',
+            'paternity'=>'Paternity',
         ));
 
         $this->setParentList(array(
@@ -1297,6 +1303,39 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
     public function getBopMaintenance()
     {
         return $this->_BopMaintenance;
+    }
+
+
+    public function setLostCard($data)
+    {
+        $this->_LostCard = $data;
+        return $this;
+    }
+
+    public function getLostCard()
+    {
+        return $this->_LostCard;
+    }
+
+    public function setFood($data)
+    {
+        $this->_Food = $data;
+        return $this;
+    }
+
+    public function getFood()
+    {
+        return $this->_Food;
+    }
+    public function setPaternity($data)
+    {
+        $this->_Paternity = $data;
+        return $this;
+    }
+
+    public function getPaternity()
+    {
+        return $this->_Paternity;
     }
 
     /**

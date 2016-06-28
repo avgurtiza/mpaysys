@@ -54,6 +54,7 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
             'communication' => $model->getCommunication(),
             'misc_deduction' => $model->getMiscDeduction(),
             'misc_addition' => $model->getMiscAddition(),
+            'paternity' => $model->getPaternity(),
             'gross_pay' => $model->getGrossPay(),
             'deduction_data' => $model->getDeductionData(),
             'is_reliever' => $model->getIsReliever(),
@@ -74,6 +75,8 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
             'bop_motorcycle' => $model->getBopMotorcycle(),
             'bop_insurance' => $model->getBopInsurance(),
             'bop_maintenance' => $model->getBopMaintenance(),
+            'lost_card' => $model->getLostCard(),
+            'food' => $model->getFood(),
         );
 
         return $result;
@@ -261,7 +264,10 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
                   ->setThirteenthMonth($data['thirteenth_month'])
                   ->setBopMotorcycle($data['bop_motorcycle'])
                   ->setBopInsurance($data['bop_insurance'])
-                  ->setBopMaintenance($data['bop_maintenance']);
+                  ->setBopMaintenance($data['bop_maintenance'])
+                  ->setPaternity($data['paternity'])
+                  ->setLostCard($data['lost_card'])
+                  ->setFood($data['food']);
         } elseif ($data instanceof Zend_Db_Table_Row_Abstract || $data instanceof stdClass) {
             $entry->setId($data->id)
                   ->setGroupId($data->group_id)
@@ -304,7 +310,11 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
                   ->setThirteenthMonth($data->thirteenth_month)
                   ->setBopMotorcycle($data->bop_motorcycle)
                   ->setBopInsurance($data->bop_insurance)
-                  ->setBopMaintenance($data->bop_maintenance);
+                  ->setBopMaintenance($data->bop_maintenance)
+                  ->setPaternity($data->paternity)
+                  ->setLostCard($data->lost_card)
+                  ->setFood($data->food)
+            ;
         }
 
         $entry->setMapper($this);

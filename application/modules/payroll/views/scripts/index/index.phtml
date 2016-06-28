@@ -1,5 +1,18 @@
-<h2>Pay period: <?php echo $this->period_covered; ?> to <?php echo $this->period_end	; ?></h2>
+<h2>Pay period: <?php echo $this->period_covered; ?> to <?php echo $this->period_end; ?></h2>
 <dl>
-	<dd><a href="/payroll/index/etps/period_covered/<?php echo $this->period_covered; ?>">ETPS export</a></dd>
-	<dd><a href="/payroll/index/export/period_covered/<?php echo $this->period_covered; ?>">Payroll report</a></dd>
+    <dd><a href="/payroll/index/etps/period_covered/<?php echo $this->period_covered; ?>">ETPS export</a></dd>
+    <dd><a href="/payroll/index/export/period_covered/<?php echo $this->period_covered; ?>">Payroll report</a></dd>
+    <dd>
+        Old payroll reports
+        <div
+            style="margin-left: 1.0em; font-size: 0.8em; height: 200px; overflow-y: auto; border: 1px solid #aaa; padding: 10px; border-radius: 5px; width: 200px;">
+            <dl>
+                <?php foreach ($this->old_periods as $period): ?>
+                    <dd>
+                        <a href="/payroll/index/export/period_covered/<?php echo $period; ?>"><?php echo $period; ?></a>
+                    </dd>
+                <?php endforeach; ?>
+            </dl>
+        </div>
+    </dd>
 </dl>
