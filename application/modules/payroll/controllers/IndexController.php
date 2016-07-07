@@ -2734,6 +2734,8 @@ class Payroll_IndexController extends Zend_Controller_Action
     {
         set_time_limit(0);
 
+        $folder = realpath(APPLICATION_PATH . '/../public/export');
+
         $date = '2015-01-01';
 
         while ($date < '2016-07-01') {
@@ -2767,7 +2769,9 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $writer = PHPExcel_IOFactory::createWriter($Excel, 'Excel5');
 
-            $writer->save('/home/vagrant/Code/projects/rolling/public/export/' . $date . '.xls');
+            $writer->save($folder . '/' . $date . '.xls');
+
+            // $writer->save('/home/vagrant/Code/projects/rolling/public/export/' . $date . '.xls');
 
             $rows = $this->get_range_attendance($date_16, $date_last);
 
@@ -2789,7 +2793,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $writer = PHPExcel_IOFactory::createWriter($Excel, 'Excel5');
 
-            $writer->save('/home/vagrant/Code/projects/rolling/public/export/' . $date_16 . '.xls');
+            $writer->save($folder . '/' . $date_16 . '.xls');
 
             $date = date('Y-m-d', $next_month);
 
