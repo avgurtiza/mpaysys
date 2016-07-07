@@ -2776,7 +2776,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $rows = $this->get_range_attendance($date_16, $date_last);
 
-            $employees = $this->get_range_attendance_data($rows, $date, 2);
+            $employees = $this->get_range_attendance_data($rows, $date_16, 2);
             $headers = ['header'=>[]];
 
             foreach (array_keys(array_values($employees)[0]) as $head) {
