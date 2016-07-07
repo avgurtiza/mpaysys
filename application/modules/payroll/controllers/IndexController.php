@@ -55,7 +55,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $all_periods = array();
 
-        foreach($PayrollTempDb->fetchAll($select) as $period) {
+        foreach ($PayrollTempDb->fetchAll($select) as $period) {
             $all_periods[] = $period->period_covered;
         }
 
@@ -389,7 +389,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $AttendanceMap = new Messerve_Model_Mapper_Attendance();
 
-            $first_day_id = 0;
+            $first_id = 0;
 
             for ($i = 1; $i <= $period_size; $i++) {
                 // echo "$employee_id, $current_date, $group_id <br />";
@@ -412,21 +412,21 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $data[$current_date] = array(
                     'id' => $Attendance->getId()
-                    , 'start_1' => $Attendance->getStart1()
-                    , 'end_1' => $Attendance->getEnd1()
-                    , 'start_2' => $Attendance->getStart2()
-                    , 'end_2' => $Attendance->getEnd2()
-                    , 'start_3' => $Attendance->getStart3()
-                    , 'end_3' => $Attendance->getEnd3()
-                    , 'extended_shift' => $Attendance->getExtendedShift()
-                    , 'ot_approved' => $Attendance->getOtApproved()
-                    , 'ot_approved_hours' => $Attendance->getOtApprovedHours()
-                    , 'type' => $Attendance->getType()
+                , 'start_1' => $Attendance->getStart1()
+                , 'end_1' => $Attendance->getEnd1()
+                , 'start_2' => $Attendance->getStart2()
+                , 'end_2' => $Attendance->getEnd2()
+                , 'start_3' => $Attendance->getStart3()
+                , 'end_3' => $Attendance->getEnd3()
+                , 'extended_shift' => $Attendance->getExtendedShift()
+                , 'ot_approved' => $Attendance->getOtApproved()
+                , 'ot_approved_hours' => $Attendance->getOtApprovedHours()
+                , 'type' => $Attendance->getType()
                 );
 
                 $current_date = date('Y-m-d', strtotime('+1 day', strtotime($current_date)));
 
-                if ($i == 1) $first_day_id = $Attendance->getId();
+                if ($i == 1) $first_id = $Attendance->getId();
             }
 
             $Payroll->save_the_day($Attendance->getEmployeeId(), $group_id, $data); // TODO:  Figure out why this needs to be called twice
@@ -478,9 +478,9 @@ class Payroll_IndexController extends Zend_Controller_Action
         $pdf = new Zend_Pdf();
         $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
         $bold = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_BOLD);
-        $italic =  Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_ITALIC);
+        $italic = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_ITALIC);
         $mono = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_COURIER);
-        $boldmono =  Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_COURIER_BOLD);
+        $boldmono = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_COURIER_BOLD);
 
         $logo = Zend_Pdf_Image::imageWithPath(APPLICATION_PATH . '/../public/images/messerve.png');
 
@@ -490,7 +490,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $rec_copy_data = array(
             'branch' => $Client->getName() . '-' . $Group->getName()
-            , 'riders' => array()
+        , 'riders' => array()
         );
 
         foreach ($this->_employee_payroll as $value) {
@@ -614,10 +614,10 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $rec_copy_data['riders'][$Employee->getId()] = array(
                 'employee_number' => $Employee->getEmployeeNumber()
-                , 'name' => $value['attendance']->lastname . ', '
+            , 'name' => $value['attendance']->lastname . ', '
                     . $value['attendance']->firstname . ' '
                     . $value['attendance']->middleinitial
-                , 'pay_period' => $date_start . ' to ' . $date_end
+            , 'pay_period' => $date_start . ' to ' . $date_end
             );
 
             $dim_y -= 16;
@@ -711,22 +711,22 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $legal_ua_hours = 0;
 
-                $legal_ecola_days  = 0;
+                $legal_ecola_days = 0;
 
-                foreach($legal_attendance as $legal_day) {
+                foreach ($legal_attendance as $legal_day) {
                     $legal_ecola_days++;
-                    $legal_day_hours = $legal_day['legal'] + $legal_day['legal_nd'] + $legal_day['legal_ot'] + $legal_day['legal_nd_ot'];
+                    $legal_hours = $legal_day['legal'] + $legal_day['legal_nd'] + $legal_day['legal_ot'] + $legal_day['legal_nd_ot'];
 
-                    if($legal_day_hours < 8) {
-                        $legal_ua_hours += (8 - $legal_day_hours);
+                    if ($legal_hours < 8) {
+                        $legal_ua_hours += (8 - $legal_hours);
                     }
                 }
 
-                if($legal_ua_hours > 0) {
+                if ($legal_ua_hours > 0) {
 
                     $sss_deductions[] = ($sss / 22 / 8) * $legal_ua_hours;
 
-                    $legal_ua_pay = ($legal_ua_hours/8) * $pay_rate;
+                    $legal_ua_pay = ($legal_ua_hours / 8) * $pay_rate;
 
                     $total_no_hours += $legal_ua_hours;
                     $total_pay += $legal_ua_pay;
@@ -760,16 +760,16 @@ class Payroll_IndexController extends Zend_Controller_Action
             $page->setFont($font, 8)->drawText('Total hours pay', $dim_x + 220, $dim_y);
             $page->setFont($mono, 8)->drawText(str_pad(substr(number_format($total_pay, 3), 0, -1), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
 
-            if($Employee->getGroupId() == $group_id) {
-                $attended_days  = $this->get_cutoff_attended_days($Employee->getId(),$date_start,$date_end);
-                $ecola_addition =  $attended_days * $ecola;
+            if ($Employee->getGroupId() == $group_id) {
+                $attended_days = $this->get_cutoff_attended_days($Employee->getId(), $date_start, $date_end);
+                $ecola_addition = $attended_days * $ecola;
                 $total_pay += $ecola_addition;
 
                 $dim_y -= 8;
                 $page->setFont($font, 8)->drawText('ECOLA (' . $attended_days . ' day/s)', $dim_x + 220, $dim_y);
                 $page->setFont($mono, 8)->drawText(str_pad(number_format($ecola_addition, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
 
-                if($legal_ecola_days > 0) {
+                if ($legal_ecola_days > 0) {
                     $legal_ecola_addition = $legal_ecola_days * $ecola;
                     $dim_y -= 8;
                     $page->setFont($font, 8)->drawText('ECOLA - Legal (' . $legal_ecola_days . ' day/s)', $dim_x + 220, $dim_y);
@@ -1035,9 +1035,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setClientName($Client->getName())
                 ->setGroupName($Group->getName())
                 ->setAccountNumber($Employee->getAccountNumber())
-
                 ->setPaternity($value['more_income']['paternity'])
-
                 ->setGrossPay($total_pay)
                 ->setNetPay($net_pay)
                 ->setEcola($value['pay']['e_cola'])
@@ -1046,10 +1044,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setHdmf($value['deductions']['hdmf'])
                 ->setCashBond($value['deductions']['cash_bond'])
                 ->setInsurance($value['deductions']['insurance'])
-
                 ->setMiscDeduction($total_misc_deduct)
                 ->setDeductionData(json_encode($scheduled_deductions))
-
                 ->setSssLoan($scheduled_deductions_array['sss_loan'])
                 ->setHdmfLoan($scheduled_deductions_array['hdmf_loan'])
                 ->setUniform($scheduled_deductions_array['uniform'])
@@ -1057,16 +1053,12 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setAdjustment($scheduled_deductions_array['adjustment'])
                 ->setMiscellaneous($scheduled_deductions_array['misc'])
                 ->setCommunication($scheduled_deductions_array['communication'])
-
                 ->setLostCard($scheduled_deductions_array['lost_card'])
                 ->setFood($scheduled_deductions_array['food'])
-
                 ->setMiscAddition($value['more_income']['misc_income'])
-
                 ->setBopInsurance($bop_insurance)
                 ->setBopMotorcycle($bop_motorcycle)
                 ->setBopMaintenance($bop_maintenance)
-
                 ->setFuelOverage($fuel_overage)
                 ->setFuelAddition($value['more_income']['gasoline'])
                 ->setFuelDeduction($fuel_deduction)
@@ -1246,25 +1238,25 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $summary_bill = array(
             'reg' => 0
-            , 'reg_nd' => 0
-            , 'reg_ot' => 0
-            , 'reg_nd_ot' => 0
+        , 'reg_nd' => 0
+        , 'reg_ot' => 0
+        , 'reg_nd_ot' => 0
 
-            , 'spec' => 0
-            , 'spec_nd' => 0
-            , 'spec_ot' => 0
-            , 'spec_nd_ot' => 0
+        , 'spec' => 0
+        , 'spec_nd' => 0
+        , 'spec_ot' => 0
+        , 'spec_nd_ot' => 0
 
-            , 'legal' => 0
-            , 'legal_nd' => 0
-            , 'legal_ot' => 0
-            , 'legal_nd_ot' => 0
-            , 'legal_unattend' => 0
+        , 'legal' => 0
+        , 'legal_nd' => 0
+        , 'legal_ot' => 0
+        , 'legal_nd_ot' => 0
+        , 'legal_unattend' => 0
 
-            , 'rest' => 0
-            , 'rest_nd' => 0
-            , 'rest_ot' => 0
-            , 'rest_nd_ot' => 0
+        , 'rest' => 0
+        , 'rest_nd' => 0
+        , 'rest_ot' => 0
+        , 'rest_nd_ot' => 0
         );
 
         $AttendDB = new Messerve_Model_DbTable_Attendance();
@@ -1278,39 +1270,39 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setIntegrityCheck(false)
                 ->from('attendance', array(
                         'sum_fuel_overage' => 'SUM(fuel_overage)'
-                        , 'sum_reg' => 'SUM(reg)'
-                        , 'sum_reg_nd' => 'SUM(reg_nd)'
-                        , 'sum_reg_ot' => 'SUM(reg_ot)'
-                        , 'sum_reg_nd_ot' => 'SUM(reg_nd_ot)'
-                        , 'sum_sun' => 'SUM(sun)'
-                        , 'sum_sun_nd' => 'SUM(sun_nd)'
-                        , 'sum_sun_ot' => 'SUM(sun_ot)'
-                        , 'sum_sun_nd_ot' => 'SUM(sun_nd_ot)'
-                        , 'sum_spec' => 'SUM(spec)'
-                        , 'sum_spec_nd' => 'SUM(spec_nd)'
-                        , 'sum_spec_ot' => 'SUM(spec_ot)'
-                        , 'sum_spec_nd_ot' => 'SUM(spec_nd_ot)'
-                        , 'sum_legal' => 'SUM(legal)'
-                        , 'sum_legal_nd' => 'SUM(legal_nd)'
-                        , 'sum_legal_ot' => 'SUM(legal_ot)'
-                        , 'sum_legal_nd_ot' => 'SUM(legal_nd_ot)'
-                        , 'sum_legal_unattend' => 'SUM(legal_unattend)'
+                    , 'sum_reg' => 'SUM(reg)'
+                    , 'sum_reg_nd' => 'SUM(reg_nd)'
+                    , 'sum_reg_ot' => 'SUM(reg_ot)'
+                    , 'sum_reg_nd_ot' => 'SUM(reg_nd_ot)'
+                    , 'sum_sun' => 'SUM(sun)'
+                    , 'sum_sun_nd' => 'SUM(sun_nd)'
+                    , 'sum_sun_ot' => 'SUM(sun_ot)'
+                    , 'sum_sun_nd_ot' => 'SUM(sun_nd_ot)'
+                    , 'sum_spec' => 'SUM(spec)'
+                    , 'sum_spec_nd' => 'SUM(spec_nd)'
+                    , 'sum_spec_ot' => 'SUM(spec_ot)'
+                    , 'sum_spec_nd_ot' => 'SUM(spec_nd_ot)'
+                    , 'sum_legal' => 'SUM(legal)'
+                    , 'sum_legal_nd' => 'SUM(legal_nd)'
+                    , 'sum_legal_ot' => 'SUM(legal_ot)'
+                    , 'sum_legal_nd_ot' => 'SUM(legal_nd_ot)'
+                    , 'sum_legal_unattend' => 'SUM(legal_unattend)'
 
-                        , 'sum_rest' => 'SUM(rest)'
-                        , 'sum_rest_nd' => 'SUM(rest_nd)'
-                        , 'sum_rest_ot' => 'SUM(rest_ot)'
-                        , 'sum_rest_nd_ot' => 'SUM(rest_nd_ot)'
+                    , 'sum_rest' => 'SUM(rest)'
+                    , 'sum_rest_nd' => 'SUM(rest_nd)'
+                    , 'sum_rest_ot' => 'SUM(rest_ot)'
+                    , 'sum_rest_nd_ot' => 'SUM(rest_nd_ot)'
 
-                        , 'today' => 'SUM(today)'
-                        , 'today_nd' => 'SUM(today_nd)'
-                        , 'today_ot' => 'SUM(today_ot)'
-                        , 'today_nd_ot' => 'SUM(today_nd_ot)'
+                    , 'today' => 'SUM(today)'
+                    , 'tond' => 'SUM(tond)'
+                    , 'toot' => 'SUM(toot)'
+                    , 'tond_ot' => 'SUM(tond_ot)'
 
-                        , 'tomorrow' => 'SUM(tomorrow)'
-                        , 'tomorrow_nd' => 'SUM(tomorrow_nd)'
-                        , 'tomorrow_ot' => 'SUM(tomorrow_ot)'
-                        , 'tomorrow_nd_ot' => 'SUM(tomorrow_nd_ot)'
-                        , 'day_count'=> 'COUNT(*)'
+                    , 'tomorrow' => 'SUM(tomorrow)'
+                    , 'tomorrow_nd' => 'SUM(tomorrow_nd)'
+                    , 'tomorrow_ot' => 'SUM(tomorrow_ot)'
+                    , 'tomorrow_nd_ot' => 'SUM(tomorrow_nd_ot)'
+                    , 'count' => 'COUNT(*)'
                     )
                 )
                 ->join('employee', 'employee.id = attendance.employee_id')
@@ -1365,56 +1357,56 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $employee_payroll[$evalue->getId()]['pay'] = array(
                 'reg' => $attendance->sum_reg * $this_rate->Reg
-                , 'reg_nd' => $attendance->sum_reg_nd * $this_rate->RegNd
+            , 'reg_nd' => $attendance->sum_reg_nd * $this_rate->RegNd
 
-                , 'reg_ot' => $attendance->sum_reg_ot * $this_rate->RegOT
-                , 'reg_nd_ot' => $attendance->sum_reg_nd_ot * $this_rate->RegNdOT
+            , 'reg_ot' => $attendance->sum_reg_ot * $this_rate->RegOT
+            , 'reg_nd_ot' => $attendance->sum_reg_nd_ot * $this_rate->RegNdOT
 
-                , 'sun' => $attendance->sum_sun * $this_rate->Sun
-                , 'sun_nd' => $attendance->sum_sun_nd * $this_rate->SunNd
-                , 'sun_ot' => $attendance->sum_sun_ot * $this_rate->SunOT
-                , 'sun_nd_ot' => $attendance->sum_sun_nd_ot * $this_rate->SunNdOt
+            , 'sun' => $attendance->sum_sun * $this_rate->Sun
+            , 'sun_nd' => $attendance->sum_sun_nd * $this_rate->SunNd
+            , 'sun_ot' => $attendance->sum_sun_ot * $this_rate->SunOT
+            , 'sun_nd_ot' => $attendance->sum_sun_nd_ot * $this_rate->SunNdOt
 
-                , 'spec' => $attendance->sum_spec * $this_rate->Spec
-                , 'spec_nd' => $attendance->sum_spec_nd * $this_rate->SpecNd
-                , 'spec_ot' => $attendance->sum_spec_ot * $this_rate->SpecOT
-                , 'spec_nd_ot' => $attendance->sum_spec_nd_ot * $this_rate->SpecNdOt
+            , 'spec' => $attendance->sum_spec * $this_rate->Spec
+            , 'spec_nd' => $attendance->sum_spec_nd * $this_rate->SpecNd
+            , 'spec_ot' => $attendance->sum_spec_ot * $this_rate->SpecOT
+            , 'spec_nd_ot' => $attendance->sum_spec_nd_ot * $this_rate->SpecNdOt
 
-                , 'legal' => $attendance->sum_legal * $this_rate->Legal
-                , 'legal_nd' => $attendance->sum_legal_nd * $this_rate->LegalNd
-                , 'legal_ot' => $attendance->sum_legal_ot * $this_rate->LegalOT
-                , 'legal_nd_ot' => $attendance->sum_legal_nd_ot * $this_rate->LegalNdOt
-                , 'legal_unattend' => $attendance->sum_legal_unattend * $this_rate->LegalUnattend
+            , 'legal' => $attendance->sum_legal * $this_rate->Legal
+            , 'legal_nd' => $attendance->sum_legal_nd * $this_rate->LegalNd
+            , 'legal_ot' => $attendance->sum_legal_ot * $this_rate->LegalOT
+            , 'legal_nd_ot' => $attendance->sum_legal_nd_ot * $this_rate->LegalNdOt
+            , 'legal_unattend' => $attendance->sum_legal_unattend * $this_rate->LegalUnattend
 
-                , 'rest' => $attendance->sum_rest * $this_rate->Spec
-                , 'rest_nd' => $attendance->sum_rest_nd * $this_rate->SpecNd
-                , 'rest_ot' => $attendance->sum_rest_ot * $this_rate->SpecOT
-                , 'rest_nd_ot' => $attendance->sum_rest_nd_ot * $this_rate->SpecNdOt
+            , 'rest' => $attendance->sum_rest * $this_rate->Spec
+            , 'rest_nd' => $attendance->sum_rest_nd * $this_rate->SpecNd
+            , 'rest_ot' => $attendance->sum_rest_ot * $this_rate->SpecOT
+            , 'rest_nd_ot' => $attendance->sum_rest_nd_ot * $this_rate->SpecNdOt
             );
 
             $sss_deduct = $total_hours * ($this_rate->SSSEmployee / 22 / 8);
 
             $employee_payroll[$evalue->getId()]['deductions'] = array(
                 'sss' => ($sss_deduct)
-                , 'philhealth' => ($this_rate->PhilhealthEmployee / 2)
-                , 'hdmf' => ($this_rate->HDMFEmployee / 2)
-                , 'cash_bond' => ($this_rate->CashBond / 2)
-                , 'insurance' => 25
-                , 'bike_rehab' => 0
-                , 'bike_insurance_reg' => 0
+            , 'philhealth' => ($this_rate->PhilhealthEmployee / 2)
+            , 'hdmf' => ($this_rate->HDMFEmployee / 2)
+            , 'cash_bond' => ($this_rate->CashBond / 2)
+            , 'insurance' => 25
+            , 'bike_rehab' => 0
+            , 'bike_insurance_reg' => 0
             );
 
             $employer_bill[$evalue->getId()]['info'] = array(
                 'employee_number' => $attendance->employee_number
-                , 'first_name' => $attendance->firstname
-                , 'middle_name' => $attendance->middleinitial
-                , 'last_name' => $attendance->lastname
+            , 'first_name' => $attendance->firstname
+            , 'middle_name' => $attendance->middleinitial
+            , 'last_name' => $attendance->lastname
 
-                , 'tin' => $attendance->tin
-                , 'sss' => $attendance->sss
-                , 'hdmf' => $attendance->hdmf
-                , 'philhealth' => $attendance->philhealth
-                , 'date_employed' => $attendance->dateemployed
+            , 'tin' => $attendance->tin
+            , 'sss' => $attendance->sss
+            , 'hdmf' => $attendance->hdmf
+            , 'philhealth' => $attendance->philhealth
+            , 'date_employed' => $attendance->dateemployed
             );
 
             $summary_bill['reg'] += round($attendance->sum_reg, 2);
@@ -1440,65 +1432,65 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $employer_bill[$evalue->getId()]['income'] = array(
                 'reg_hours' => $attendance->sum_reg
-                , 'reg' => $this_rate->Reg
-                , 'reg_nd_hours' => $attendance->sum_reg_nd
-                , 'reg_nd' => $this_rate->RegNd
-                , 'reg_ot_hours' => $attendance->sum_reg_ot
-                , 'reg_ot' => $this_rate->RegOT
-                , 'reg_nd_ot_hours' => $attendance->sum_reg_nd_ot
-                , 'reg_nd_ot' => $this_rate->RegNdOT
-                , 'sun_hours' => $attendance->sum_sun
-                , 'sun' => $this_rate->Sun
-                , 'sun_nd_hours' => $attendance->sum_sun_nd
-                , 'sun_nd' => $this_rate->SunNd
-                , 'sun_ot_hours' => $attendance->sum_sun_ot
-                , 'sun_ot' => $this_rate->SunOT
-                , 'sun_nd_ot_hours' => $attendance->sum_sun_nd_ot
-                , 'sun_nd_ot' => $this_rate->SunNdOt
-                , 'spec_hours' => $attendance->sum_spec
-                , 'spec' => $this_rate->Spec
-                , 'spec_nd_hours' => $attendance->sum_spec_nd
-                , 'spec_nd' => $this_rate->SpecNd
-                , 'spec_ot_hours' => $attendance->sum_spec_ot
-                , 'spec_ot' => $this_rate->SpecOT
-                , 'spec_nd_ot_hours' => $attendance->sum_spec_nd_ot
-                , 'spec_nd_ot' => $this_rate->SpecNdOt
-                , 'legal_hours' => $attendance->sum_legal
-                , 'legal' => $this_rate->Legal
-                , 'legal_nd_hours' => $attendance->sum_legal_nd
-                , 'legal_nd' => $this_rate->LegalNd
-                , 'legal_ot_hours' => $attendance->sum_legal_ot
-                , 'legal_ot' => $this_rate->LegalOT
-                , 'legal_nd_ot_hours' => $attendance->sum_legal_nd_ot
-                , 'legal_nd_ot' => $this_rate->LegalNdOt
-                , 'legal_unattend_hours' => $attendance->sum_legal_unattend
-                , 'legal_unattend' => $this_rate->LegalUnattend
-                , 'rest_hours' => $attendance->sum_rest
-                , 'rest' => $this_rate->Rest
-                , 'rest_nd_hours' => $attendance->sum_rest_nd
-                , 'rest_nd' => $this_rate->RestNd
-                , 'rest_ot_hours' => $attendance->sum_rest_ot
-                , 'rest_ot' => $this_rate->RestOT
-                , 'rest_nd_ot_hours' => $attendance->sum_rest_nd_ot
-                , 'rest_nd_ot' => $this_rate->RestNdOt
-                , 'ecola_hours' => $total_hours
-                , 'ecola' => ($this_rate->Ecola / 8) // Deprecated
+            , 'reg' => $this_rate->Reg
+            , 'reg_nd_hours' => $attendance->sum_reg_nd
+            , 'reg_nd' => $this_rate->RegNd
+            , 'reg_ot_hours' => $attendance->sum_reg_ot
+            , 'reg_ot' => $this_rate->RegOT
+            , 'reg_nd_ot_hours' => $attendance->sum_reg_nd_ot
+            , 'reg_nd_ot' => $this_rate->RegNdOT
+            , 'sun_hours' => $attendance->sum_sun
+            , 'sun' => $this_rate->Sun
+            , 'sun_nd_hours' => $attendance->sum_sun_nd
+            , 'sun_nd' => $this_rate->SunNd
+            , 'sun_ot_hours' => $attendance->sum_sun_ot
+            , 'sun_ot' => $this_rate->SunOT
+            , 'sun_nd_ot_hours' => $attendance->sum_sun_nd_ot
+            , 'sun_nd_ot' => $this_rate->SunNdOt
+            , 'spec_hours' => $attendance->sum_spec
+            , 'spec' => $this_rate->Spec
+            , 'spec_nd_hours' => $attendance->sum_spec_nd
+            , 'spec_nd' => $this_rate->SpecNd
+            , 'spec_ot_hours' => $attendance->sum_spec_ot
+            , 'spec_ot' => $this_rate->SpecOT
+            , 'spec_nd_ot_hours' => $attendance->sum_spec_nd_ot
+            , 'spec_nd_ot' => $this_rate->SpecNdOt
+            , 'legal_hours' => $attendance->sum_legal
+            , 'legal' => $this_rate->Legal
+            , 'legal_nd_hours' => $attendance->sum_legal_nd
+            , 'legal_nd' => $this_rate->LegalNd
+            , 'legal_ot_hours' => $attendance->sum_legal_ot
+            , 'legal_ot' => $this_rate->LegalOT
+            , 'legal_nd_ot_hours' => $attendance->sum_legal_nd_ot
+            , 'legal_nd_ot' => $this_rate->LegalNdOt
+            , 'legal_unattend_hours' => $attendance->sum_legal_unattend
+            , 'legal_unattend' => $this_rate->LegalUnattend
+            , 'rest_hours' => $attendance->sum_rest
+            , 'rest' => $this_rate->Rest
+            , 'rest_nd_hours' => $attendance->sum_rest_nd
+            , 'rest_nd' => $this_rate->RestNd
+            , 'rest_ot_hours' => $attendance->sum_rest_ot
+            , 'rest_ot' => $this_rate->RestOT
+            , 'rest_nd_ot_hours' => $attendance->sum_rest_nd_ot
+            , 'rest_nd_ot' => $this_rate->RestNdOt
+            , 'ecola_hours' => $total_hours
+            , 'ecola' => ($this_rate->Ecola / 8) // Deprecated
             );
 
 
             $employer_bill[$evalue->getId()]['deductions'] = array(
                 'sss_ee' => ($this_rate->SSSEmployee * -1)
-                , 'sss_er' => ($this_rate->SSSEmployer * -1)
+            , 'sss_er' => ($this_rate->SSSEmployer * -1)
 
-                , 'philhealth_ee' => ($this_rate->PhilhealthEmployee * -1)
-                , 'philhealth_er' => ($this_rate->PhilhealthEmployer * -1)
+            , 'philhealth_ee' => ($this_rate->PhilhealthEmployee * -1)
+            , 'philhealth_er' => ($this_rate->PhilhealthEmployer * -1)
 
-                , 'hdmf_ee' => ($this_rate->HDMFEmployee * -1)
-                , 'hdmf_er' => ($this_rate->HDMFEmployer * -1)
-                , 'ec' => ($this_rate->EC * -1)
+            , 'hdmf_ee' => ($this_rate->HDMFEmployee * -1)
+            , 'hdmf_er' => ($this_rate->HDMFEmployer * -1)
+            , 'ec' => ($this_rate->EC * -1)
 
-                , 'bike_rehab' => 0
-                , 'bike_insurance_reg' => 0
+            , 'bike_rehab' => 0
+            , 'bike_insurance_reg' => 0
             );
 
             if (strtotime($attendance->bike_rehab_end) >= strtotime($date_start)) {
@@ -1586,7 +1578,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         {
             if (is_numeric($in)) {
                 // return round($in, 2);
-                return number_format($in, 2,'.','');
+                return number_format($in, 2, '.', '');
             } else {
                 return $in;
             }
@@ -1648,11 +1640,11 @@ class Payroll_IndexController extends Zend_Controller_Action
         $diff = $date2->diff($date1);
         $period_size = intval($diff->format("%a")) + 1;
 
-        $day_date = (int)substr($date_start, -2, 2);
+        $date = (int)substr($date_start, -2, 2);
 
         for ($i = 1; $i <= $period_size; $i++) {
-            $page->setFont($bold, 8)->drawText($day_date, $dim_x + ($i * 25) + 150, $dim_y, 'UTF8');
-            $day_date++;
+            $page->setFont($bold, 8)->drawText($date, $dim_x + ($i * 25) + 150, $dim_y, 'UTF8');
+            $date++;
         }
 
         $now_x = $dim_x + ($i * 22) + 110;
@@ -1734,7 +1726,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $AttendanceMap = new Messerve_Model_Mapper_Attendance();
 
-            $first_day_id = 0;
+            $first_id = 0;
 
             $current_date = $date_start;
 
@@ -1764,22 +1756,22 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $current_date = date('Y-m-d', strtotime('+1 day', strtotime($current_date)));
 
-                if ($i == 1) $first_day_id = $Attendance->getId();
+                if ($i == 1) $first_id = $Attendance->getId();
 
                 $attendance_array = $Attendance->toArray();
 
                 $all_hours = array(
                     $attendance_array['reg']
-                    , $attendance_array['reg_nd']
-                    , $attendance_array['spec']
-                    , $attendance_array['spec_nd']
-                    , $attendance_array['sun']
-                    , $attendance_array['sun_nd']
-                    , $attendance_array['legal']
-                    , $attendance_array['legal_nd']
-                    , $attendance_array['legal_unattend']
-                    , $attendance_array['rest']
-                    , $attendance_array['rest_nd']
+                , $attendance_array['reg_nd']
+                , $attendance_array['spec']
+                , $attendance_array['spec_nd']
+                , $attendance_array['sun']
+                , $attendance_array['sun_nd']
+                , $attendance_array['legal']
+                , $attendance_array['legal_nd']
+                , $attendance_array['legal_unattend']
+                , $attendance_array['rest']
+                , $attendance_array['rest_nd']
 
                 );
 
@@ -2089,7 +2081,8 @@ class Payroll_IndexController extends Zend_Controller_Action
         die();
     }
 
-    protected function get_cutoff_attended_days($employee_id, $date_start, $date_end) {
+    protected function get_cutoff_attended_days($employee_id, $date_start, $date_end)
+    {
         $AttendanceDb = new Messerve_Model_DbTable_Attendance();
 
         $select = $AttendanceDb->select();
@@ -2102,7 +2095,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $rows = $AttendanceDb->fetchAll($select);
 
-        return($rows[0]->amount);
+        return ($rows[0]->amount);
     }
 
     public function philhealthexportAction()
@@ -2145,7 +2138,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $period_covered = $this->_request->getParam('period_covered');
 
-        header('Content-type: text/csv'); header('Content-Disposition: attachment; filename="Payroll_report-' . $period_covered . '.csv"');
+        header('Content-type: text/csv');
+        header('Content-Disposition: attachment; filename="Payroll_report-' . $period_covered . '.csv"');
 
 
         $PayrollMap = new Messerve_Model_Mapper_PayrollTemp();
@@ -2169,54 +2163,54 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $this_row = array(
                 'Period covered' => $pvalue->getPeriodCovered()
-                , 'Client name' => $pvalue->getClientName()
-                , 'Group name' => strtoupper($pvalue->getGroupName())
-                , 'Employee type' => $employee_type
-                , 'Employee number' => $pvalue->getEmployeeNumber()
-                , 'Last name' => $pvalue->getLastName()
-                , 'First name' => $pvalue->getFirstName()
-                , 'Middle name' => $pvalue->getMiddleName()
-                , 'Account number' => $pvalue->getAccountNumber()
-                , 'Ecola' => number_format(round($pvalue->getEcola(), 2), 2)
-                , 'Incentives' => number_format(round($pvalue->getIncentives(), 2), 2)
-                , 'BOP maintenance' => $pvalue->getBopMaintenance()
-                , '13th month pay' => number_format(round($pvalue->getThirteenthMonth(), 2), 2)
-                , 'Fuel addition' => number_format(round($pvalue->getFuelAddition(), 2), 2)
-                , 'Misc addition' => number_format(round($pvalue->getMiscAddition(), 2), 2)
-                , 'Paternity' => number_format(round($pvalue->getPaternity(), 2), 2)
+            , 'Client name' => $pvalue->getClientName()
+            , 'Group name' => strtoupper($pvalue->getGroupName())
+            , 'Employee type' => $employee_type
+            , 'Employee number' => $pvalue->getEmployeeNumber()
+            , 'Last name' => $pvalue->getLastName()
+            , 'First name' => $pvalue->getFirstName()
+            , 'Middle name' => $pvalue->getMiddleName()
+            , 'Account number' => $pvalue->getAccountNumber()
+            , 'Ecola' => number_format(round($pvalue->getEcola(), 2), 2)
+            , 'Incentives' => number_format(round($pvalue->getIncentives(), 2), 2)
+            , 'BOP maintenance' => $pvalue->getBopMaintenance()
+            , '13th month pay' => number_format(round($pvalue->getThirteenthMonth(), 2), 2)
+            , 'Fuel addition' => number_format(round($pvalue->getFuelAddition(), 2), 2)
+            , 'Misc addition' => number_format(round($pvalue->getMiscAddition(), 2), 2)
+            , 'Paternity' => number_format(round($pvalue->getPaternity(), 2), 2)
 
-                , 'Gross pay' => number_format(round($pvalue->getGrossPay(), 2), 2)
-                , 'SSS' => number_format(round($pvalue->getSss() * -1, 2), 2)
-                , 'Philhealth' => number_format(round($pvalue->getPhilhealth() * -1, 2), 2)
-                , 'HDMF' => number_format(round($pvalue->getHdmf() * -1, 2), 2)
-                , 'Cash bond' => number_format(round($pvalue->getCashBond() * -1, 2), 2)
-                , 'Insurance' => number_format(round($pvalue->getInsurance() * -1, 2), 2)
+            , 'Gross pay' => number_format(round($pvalue->getGrossPay(), 2), 2)
+            , 'SSS' => number_format(round($pvalue->getSss() * -1, 2), 2)
+            , 'Philhealth' => number_format(round($pvalue->getPhilhealth() * -1, 2), 2)
+            , 'HDMF' => number_format(round($pvalue->getHdmf() * -1, 2), 2)
+            , 'Cash bond' => number_format(round($pvalue->getCashBond() * -1, 2), 2)
+            , 'Insurance' => number_format(round($pvalue->getInsurance() * -1, 2), 2)
                 // , 'Misc deduction'=>number_format(round($pvalue->getMiscDeduction() * -1,2),2)
 
-                , 'SSS loan' => number_format(round($pvalue->getSSSLoan() * -1, 2), 2)
-                , 'HDMF loan' => number_format(round($pvalue->getHDMFLoan() * -1, 2), 2)
-                , 'Accident' => number_format(round($pvalue->getAccident() * -1, 2), 2)
-                , 'Uniform' => number_format(round($pvalue->getUniform() * -1, 2), 2)
-                , 'Adjustment' => number_format(round($pvalue->getAdjustment() * -1, 2), 2)
-                , 'Miscellaneous' => number_format(round($pvalue->getMiscellaneous() * -1, 2), 2)
-                , 'Communication' => number_format(round($pvalue->getCommunication() * -1, 2), 2)
-                , 'Fuel overage'=>number_format(round($pvalue->getFuelOverage() * -1,2),2)
+            , 'SSS loan' => number_format(round($pvalue->getSSSLoan() * -1, 2), 2)
+            , 'HDMF loan' => number_format(round($pvalue->getHDMFLoan() * -1, 2), 2)
+            , 'Accident' => number_format(round($pvalue->getAccident() * -1, 2), 2)
+            , 'Uniform' => number_format(round($pvalue->getUniform() * -1, 2), 2)
+            , 'Adjustment' => number_format(round($pvalue->getAdjustment() * -1, 2), 2)
+            , 'Miscellaneous' => number_format(round($pvalue->getMiscellaneous() * -1, 2), 2)
+            , 'Communication' => number_format(round($pvalue->getCommunication() * -1, 2), 2)
+            , 'Fuel overage' => number_format(round($pvalue->getFuelOverage() * -1, 2), 2)
 
-                , 'Fuel deduction' => number_format(round($pvalue->getFuelDeduction() * -1, 2), 2)
-                , 'BOP motorcycle' => $pvalue->getBopMotorcycle() * -1
-                , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1
+            , 'Fuel deduction' => number_format(round($pvalue->getFuelDeduction() * -1, 2), 2)
+            , 'BOP motorcycle' => $pvalue->getBopMotorcycle() * -1
+            , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1
 
-                , 'Lost card'=>number_format(round($pvalue->lost_card * -1,2),2)
-                , 'Food'=>number_format(round($pvalue->food * -1,2),2)
+            , 'Lost card' => number_format(round($pvalue->lost_card * -1, 2), 2)
+            , 'Food' => number_format(round($pvalue->food * -1, 2), 2)
 
-                , 'Net pay' => number_format(round($pvalue->getNetPay(), 2), 2)
-                , 'Fuel hours' => number_format(round($pvalue->getFuelHours(), 2), 2)
-                , 'Fuel allotment' => number_format(round($pvalue->getFuelAllotment(), 2), 2)
-                , 'Fuel purchased' => number_format(round($pvalue->getFuelUsage(), 2), 2)
-                , 'Fuel overage L' => number_format(round($pvalue->getFuelUsage() - $pvalue->getFuelAllotment(), 2), 2)
-                , 'Fuel price' => number_format(round($pvalue->getFuelPrice(), 2), 2)
-                , 'SSS deductions (Table/Calculated)' => $payroll_meta->sss_pair[0] . ' / ' . $payroll_meta->sss_pair[1]
-                , 'SSS More data' => @$payroll_meta->sss_debug
+            , 'Net pay' => number_format(round($pvalue->getNetPay(), 2), 2)
+            , 'Fuel hours' => number_format(round($pvalue->getFuelHours(), 2), 2)
+            , 'Fuel allotment' => number_format(round($pvalue->getFuelAllotment(), 2), 2)
+            , 'Fuel purchased' => number_format(round($pvalue->getFuelUsage(), 2), 2)
+            , 'Fuel overage L' => number_format(round($pvalue->getFuelUsage() - $pvalue->getFuelAllotment(), 2), 2)
+            , 'Fuel price' => number_format(round($pvalue->getFuelPrice(), 2), 2)
+            , 'SSS deductions (Table/Calculated)' => $payroll_meta->sss_pair[0] . ' / ' . $payroll_meta->sss_pair[1]
+            , 'SSS More data' => @$payroll_meta->sss_debug
 
             );
 
@@ -2349,8 +2343,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             )
             ->join('employee', 'employee.id = attendance.employee_id')
             ->where('attendance.employee_id = ?', $employee_id)
-            ->where("datetime_start >= '{$date_start} 00:00' AND datetime_start <= '{$date_end} 23:59'");
-        ;
+            ->where("datetime_start >= '{$date_start} 00:00' AND datetime_start <= '{$date_end} 23:59'");;
 
         if ($group_id > 0) {
             $select->where('attendance.group_id = ?', $group_id);
@@ -2375,6 +2368,435 @@ class Payroll_IndexController extends Zend_Controller_Action
         $calculated_sss = $multiplier * $total_pay;
 
         return array($table_sss, $calculated_sss);
+    }
+
+
+    public function philhealthAction()
+    {
+        $this->_helper->layout()->disableLayout();
+
+        $period_covered = $this->_request->getParam('period_covered');
+        $first_cutoff = date('Y-m-01', strtotime($period_covered));
+
+        header('Content-type: text/csv');
+        header('Content-Disposition: attachment; filename="Philhealth_report-' . $first_cutoff . '-' . $period_covered . '.csv"');
+
+
+        $PayrollMap = new Messerve_Model_Mapper_PayrollTemp();
+        $payroll = $PayrollMap->fetchList("(period_covered = '{$period_covered}' OR period_covered = '{$first_cutoff}')
+            AND is_reliever = 'no'"
+            , array("period_covered", "lastname", "firstname", "employee_number"));
+
+        $payroll_array = array();
+
+
+        foreach ($payroll as $pvalue) {
+            if (!array_key_exists($pvalue->employee_id, $payroll_array)) {
+                $Employee = new Messerve_Model_Employee();
+                $Employee->find($pvalue->employee_id);
+
+                $payroll_array[$pvalue->employee_id] = array(
+                    'Employee number' => $pvalue->employee_number
+                , 'Last name' => $pvalue->lastname
+                , 'First name' => $pvalue->firstname
+                , 'Middle name' => $pvalue->middlename
+                , 'Birth date' => ''
+                , 'Philhealth no' => $Employee->getPhilhealth()
+                , '1st half' => 0
+                , '2nd half' => 0
+                , 'Total deduction' => 0
+                , 'EE' => 0
+                , 'ER' => 0
+                , 'Total' => 0
+                );
+            }
+
+            if ($pvalue->period_covered == $first_cutoff) { // First cut-off
+                $payroll_array[$pvalue->employee_id]['1st half'] = $pvalue->philhealth;
+                // $payroll_array[$pvalue->employee_id]['Payroll_data_1']  = $pvalue->toArray();
+            } else { // Second cut-off
+                $payroll_array[$pvalue->employee_id]['2nd half'] = $pvalue->philhealth;
+                // $payroll_array[$pvalue->employee_id]['Payroll_data_2']  = $pvalue->toArray();
+            }
+        }
+
+        foreach ($payroll_array as $key => $value) {
+            $total_employee_share = $payroll_array[$key]['1st half'] + $payroll_array[$key]['2nd half'];
+            $payroll_array[$key]['Total deduction'] = $total_employee_share;
+            $payroll_array[$key]['EE'] = $total_employee_share;
+            $payroll_array[$key]['ER'] = $total_employee_share;
+            $payroll_array[$key]['Total'] = $payroll_array[$key]['EE'] + $payroll_array[$key]['ER'];
+        }
+
+
+        $this->view->payroll = $payroll_array;
+    }
+
+    public function hdmfAction()
+    {
+        $this->_helper->layout()->disableLayout();
+
+        $period_covered = $this->_request->getParam('period_covered');
+        $first_cutoff = date('Y-m-01', strtotime($period_covered));
+
+        header('Content-type: text/csv');
+        header('Content-Disposition: attachment; filename="HDMF_report-' . $first_cutoff . '-' . $period_covered . '.csv"');
+
+
+        $PayrollMap = new Messerve_Model_Mapper_PayrollTemp();
+        $payroll = $PayrollMap->fetchList("(period_covered = '{$period_covered}' OR period_covered = '{$first_cutoff}')
+            AND is_reliever = 'no'"
+            , array("period_covered", "lastname", "firstname", "employee_number"));
+
+        $payroll_array = array();
+
+        foreach ($payroll as $pvalue) {
+            if (!array_key_exists($pvalue->employee_id, $payroll_array)) {
+                $Employee = new Messerve_Model_Employee();
+                $Employee->find($pvalue->employee_id);
+
+                $payroll_array[$pvalue->employee_id] = array(
+                    'Employee number' => $pvalue->employee_number
+                , 'Last name' => $pvalue->lastname
+                , 'First name' => $pvalue->firstname
+                , 'Middle name' => $pvalue->middlename
+                , 'Birth date' => ''
+                , 'HDMF no' => $Employee->getHdmf()
+                , '1st half' => 0
+                , '2nd half' => 0
+                , 'Total deduction' => 0
+                , 'EE' => 0
+                , 'ER' => 0
+                , 'Total' => 0
+                );
+            }
+
+            if ($pvalue->period_covered == $first_cutoff) { // First cut-off
+                $payroll_array[$pvalue->employee_id]['1st half'] = $pvalue->hdmf;
+            } else { // Second cut-off
+                $payroll_array[$pvalue->employee_id]['2nd half'] = $pvalue->hdmf;
+            }
+        }
+
+        foreach ($payroll_array as $key => $value) {
+            $total_employee_share = $payroll_array[$key]['1st half'] + $payroll_array[$key]['2nd half'];
+            $payroll_array[$key]['Total deduction'] = $total_employee_share;
+            $payroll_array[$key]['EE'] = $total_employee_share;
+            $payroll_array[$key]['ER'] = $total_employee_share;
+            $payroll_array[$key]['Total'] = $payroll_array[$key]['EE'] + $payroll_array[$key]['ER'];
+        }
+
+        $this->view->payroll = $payroll_array;
+    }
+
+    public function sssAction()
+    {
+        $this->_helper->layout()->disableLayout();
+
+        $period_covered = $this->_request->getParam('period_covered');
+        $first_cutoff = date('Y-m-01', strtotime($period_covered));
+
+        header('Content-type: text/csv');
+        header('Content-Disposition: attachment; filename="SSS_report-' . $first_cutoff . '-' . $period_covered . '.csv"');
+
+
+        $PayrollMap = new Messerve_Model_Mapper_PayrollTemp();
+        $payroll = $PayrollMap->fetchList("(period_covered = '{$period_covered}' OR period_covered = '{$first_cutoff}')
+            AND is_reliever = 'no'"
+            , array("period_covered", "lastname", "firstname", "employee_number"));
+
+        $payroll_array = array();
+
+        foreach ($payroll as $pvalue) {
+            if (!array_key_exists($pvalue->employee_id, $payroll_array)) {
+                $Employee = new Messerve_Model_Employee();
+                $Employee->find($pvalue->employee_id);
+
+                $payroll_array[$pvalue->employee_id] = array(
+                    'Employee number' => $pvalue->employee_number
+                , 'Last name' => $pvalue->lastname
+                , 'First name' => $pvalue->firstname
+                , 'Middle name' => $pvalue->middlename
+                , 'Birth date' => ''
+                , 'SSS no' => $Employee->getSss()
+                , '1st half' => 0
+                , '2nd half' => 0
+                , 'Total deduction' => 0
+                , 'EE' => 0
+                , 'ER' => 0
+                , 'Total' => 0
+                , 'Total gross pay' => 0
+                , 'Gross pay 1' => 0
+                , 'Gross pay 2' => 0
+                );
+            }
+
+            if ($pvalue->period_covered == $first_cutoff) { // First cut-off
+                $payroll_array[$pvalue->employee_id]['1st half'] = $pvalue->sss;
+                $payroll_array[$pvalue->employee_id]['Gross pay 1'] = $pvalue->gross_pay;
+            } else { // Second cut-off
+                $payroll_array[$pvalue->employee_id]['2nd half'] = $pvalue->sss;
+                $payroll_array[$pvalue->employee_id]['Gross pay 2'] = $pvalue->gross_pay;
+            }
+        }
+
+        foreach ($payroll_array as $key => $value) {
+            $total_employee_share = $payroll_array[$key]['1st half'] + $payroll_array[$key]['2nd half'];
+            $total_gross_pay = $payroll_array[$key]['Gross pay 1'] + $payroll_array[$key]['Gross pay 2'];
+
+            $payroll_array[$key]['Total deduction'] = $total_employee_share;
+            $payroll_array[$key]['Total gross pay'] = $total_gross_pay;
+
+            // $payroll_array[$key]['EE'] = $total_employee_share;
+            // $payroll_array[$key]['ER'] = $total_employee_share;
+            // $payroll_array[$key]['Total'] = $payroll_array[$key]['EE'] + $payroll_array[$key]['ER'];
+        }
+
+        $this->view->payroll = $payroll_array;
+    }
+
+    // TODO:  DRY sss, hdmf, philhealth reports
+
+    protected function get_range_attendance($date_start, $date_end)
+    {
+        $DB = new Messerve_Model_DbTable_Attendance();
+        $db = $DB->getAdapter();
+
+        $sql = "SELECT
+                c.name as client_name, g.code as group_code
+                , r.name as RiderRate
+                , r.reg as RiderReg
+                , r2.name as GroupRate
+                , r2.reg GroupReg
+                , e.rate_id, e.`firstname`, e.`middleinitial`, e.`lastname`
+                , e.employee_number as empno
+                , a.*
+                from attendance a
+                INNER JOIN employee e ON a.employee_id = e.id
+                INNER JOIN `group` g ON g.id = e.group_id
+                INNER JOIN `client` c ON c.id = g.client_id
+                LEFT OUTER JOIN rate r on r.id = e.rate_id
+                LEFT OUTER JOIN `rate` r2 ON r.id = g.rate_id
+
+                WHERE
+                datetime_start >= '$date_start'
+                AND datetime_start < '$date_end'
+                AND end_1 > 0
+                ORDER BY employee_id, datetime_start
+                ";
+
+        // die($sql);
+        $rows = $db->fetchAll($sql);
+
+        unset($db);
+
+        return $rows;
+    }
+
+    protected function get_range_attendance_data($rows, $date, $period = 1)
+    {
+
+        $first_cutoff = [
+            '01' => 0
+            , '02' => 0
+            , '03' => 0
+            , '04' => 0
+            , '05' => 0
+            , '06' => 0
+            , '07' => 0
+            , '08' => 0
+            , '09' => 0
+            , '10' => 0
+            , '11' => 0
+            , '12' => 0
+            , '13' => 0
+            , '14' => 0
+            , '15' => 0
+        ];
+
+        $second_cutoff = [
+            '16' => 0
+            , '17' => 0
+            , '18' => 0
+            , '19' => 0
+            , '20' => 0
+            , '21' => 0
+            , '22' => 0
+            , '23' => 0
+            , '24' => 0
+            , '25' => 0
+            , '26' => 0
+            , '27' => 0
+            , '28' => 0
+            , '29' => 0
+            , '30' => 0
+            , '31' => 0
+        ];
+
+        $cut_off_dates = $first_cutoff;
+
+        if($period == 2) {
+            $cut_off_dates = $second_cutoff;
+        }
+
+        $employees = [];
+
+        foreach ($rows as $row) {
+            if (!isset($employees[$row['employee_id']])) {
+
+                $employee_id = $row['employee_id'];
+
+                $employees[$employee_id] = [
+                        'period' => $date
+                        , 'client_name' => $row['client_name']
+                        , 'group_name' => $row['group_code']
+                        , 'empno' => $row['empno']
+                        , 'lastname' => $row['lastname']
+                        , 'middlename' => $row['middleinitial']
+                        , 'firstname' => $row['firstname']
+                    ]
+                    + $cut_off_dates +
+                    [
+                        'cutoff_total' => 0
+                        , 'reg_total' => 0
+                        , 'reg_nd_total' => 0
+                        , 'reg_ot_total' => 0
+                        , 'reg_nd_ot_total' => 0
+
+                        , 'sun_total' => 0
+                        , 'sun_nd_total' => 0
+                        , 'sun_ot_total' => 0
+                        , 'sun_nd_ot_total' => 0
+
+                        , 'spec_total' => 0
+                        , 'spec_nd_total' => 0
+                        , 'spec_ot_total' => 0
+                        , 'spec_nd_ot_total' => 0
+
+                        , 'legal_total' => 0
+                        , 'legal_nd_total' => 0
+                        , 'legal_ot_total' => 0
+                        , 'legal_nd_ot_total' => 0
+                        , 'legal_unattend' => 0
+
+                        , 'rest_total' => 0
+                        , 'rest_nd_total' => 0
+                        , 'rest_ot_total' => 0
+                        , 'rest_nd_ot_total' => 0
+                    ];
+            }
+
+            $today = date('d', strtotime($row['datetime_start']));
+
+            $todays_hours = array_sum([
+                $row['reg'], $row['reg_ot'], $row['reg_nd'], $row['reg_nd_ot']
+                , $row['sun'], $row['sun_ot'], $row['sun_nd'], $row['sun_nd_ot']
+                , $row['spec'], $row['spec_ot'], $row['spec_nd'], $row['spec_nd_ot']
+                , $row['legal'], $row['legal_ot'], $row['legal_nd'], $row['legal_nd_ot'], $row['legal_unattend']
+                , $row['rest'], $row['rest_ot'], $row['rest_nd'], $row['rest_nd_ot']
+            ]);
+
+            $employees[$employee_id]['reg_total'] += $row['reg'];
+            $employees[$employee_id]['reg_nd_total'] += $row['reg_nd'];
+            $employees[$employee_id]['reg_ot_total'] += $row['reg_ot'];
+            $employees[$employee_id]['reg_nd_ot_total'] += $row['reg_nd_ot'];
+
+            $employees[$employee_id]['sun_total'] += $row['sun'];
+            $employees[$employee_id]['sun_nd_total'] += $row['sun_nd'];
+            $employees[$employee_id]['sun_ot_total'] += $row['sun_ot'];
+            $employees[$employee_id]['sun_nd_ot_total'] += $row['sun_nd_ot'];
+
+            $employees[$employee_id]['spec_total'] += $row['spec'];
+            $employees[$employee_id]['spec_nd_total'] += $row['spec_nd'];
+            $employees[$employee_id]['spec_ot_total'] += $row['spec_ot'];
+            $employees[$employee_id]['spec_nd_ot_total'] += $row['spec_nd_ot'];
+
+            $employees[$employee_id]['legal_total'] += $row['legal'];
+            $employees[$employee_id]['legal_nd_total'] += $row['legal_nd'];
+            $employees[$employee_id]['legal_ot_total'] += $row['legal_ot'];
+            $employees[$employee_id]['legal_nd_ot_total'] += $row['legal_nd_ot'];
+            $employees[$employee_id]['legal_unattend'] += $row['legal_unattend'];
+
+            $employees[$employee_id]['rest_total'] += $row['rest'];
+            $employees[$employee_id]['rest_nd_total'] += $row['rest_nd'];
+            $employees[$employee_id]['rest_ot_total'] += $row['rest_ot'];
+            $employees[$employee_id]['rest_nd_ot_total'] += $row['rest_nd_ot'];
+
+            $employees[$employee_id][$today] = $todays_hours;
+            $employees[$employee_id]['cutoff_total'] += $todays_hours;
+
+        }
+
+        return $employees;
+    }
+
+    public function retrolegalAction()
+    {
+        set_time_limit(0);
+
+        $date = '2015-01-01';
+
+        while ($date < '2016-07-01') {
+
+            $date_15 = date('Y-m-15', strtotime($date));
+            $date_16 = date('Y-m-16', strtotime($date));
+
+            $next_month = strtotime('next month', strtotime($date));
+            $date_last = date('Y-m-d', strtotime("yesterday", $next_month));
+
+            echo "$date - $date_15 / $date_16 - $date_last <br>";
+
+
+            $rows = $this->get_range_attendance($date, $date_15);
+
+            $employees = $this->get_range_attendance_data($rows, $date);
+            $headers = ['header'=>[]];
+
+            foreach (array_keys(array_values($employees)[0]) as $head) {
+                $headers['header'][$head] = $head;
+            }
+
+            $Excel = new PHPExcel();
+
+            // Rename worksheet
+            $Excel->getActiveSheet()->setTitle('Oh hai');
+            // Set active sheet index to the first sheet, so Excel opens this as the first sheet
+            $Excel->setActiveSheetIndex(0);
+
+            $Excel->getActiveSheet()->fromArray($headers + $employees, null, 'A1');
+
+            $writer = PHPExcel_IOFactory::createWriter($Excel, 'Excel5');
+
+            $writer->save('/home/vagrant/Code/projects/rolling/public/export/' . $date . '.xls');
+
+            $rows = $this->get_range_attendance($date_16, $date_last);
+
+            $employees = $this->get_range_attendance_data($rows, $date, 2);
+            $headers = ['header'=>[]];
+
+            foreach (array_keys(array_values($employees)[0]) as $head) {
+                $headers['header'][$head] = $head;
+            }
+
+            $Excel = new PHPExcel();
+
+            // Rename worksheet
+            $Excel->getActiveSheet()->setTitle('Oh hai');
+            // Set active sheet index to the first sheet, so Excel opens this as the first sheet
+            $Excel->setActiveSheetIndex(0);
+
+            $Excel->getActiveSheet()->fromArray($headers + $employees, null, 'A1');
+
+            $writer = PHPExcel_IOFactory::createWriter($Excel, 'Excel5');
+
+            $writer->save('/home/vagrant/Code/projects/rolling/public/export/' . $date_16 . '.xls');
+
+            $date = date('Y-m-d', $next_month);
+
+
+            // echo "$date<br>";
+        }
+        die('OH HAI');
     }
 }
 
