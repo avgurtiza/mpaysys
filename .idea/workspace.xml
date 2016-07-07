@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="dadc4ea7-dcae-45f0-a214-eea4dea9a4ab" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php" afterPath="$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php" />
-    </list>
+    <list default="true" id="dadc4ea7-dcae-45f0-a214-eea4dea9a4ab" name="Default" comment="" />
     <ignored path="Rolling.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path=".idea/dataSources.local.xml" />
@@ -27,8 +25,8 @@
       <file leaf-file-name="IndexController.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.49717513">
-              <caret line="2778" column="73" selection-start-line="2778" selection-start-column="73" selection-end-line="2778" selection-end-column="73" />
+            <state vertical-scroll-proportion="4.4">
+              <caret line="2779" column="38" selection-start-line="2779" selection-start-column="38" selection-end-line="2779" selection-end-column="38" />
               <folding>
                 <marker date="1467890844000" expanded="true" signature="103812:104706" placeholder="SELECT c.nam..." />
               </folding>
@@ -883,8 +881,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.49717513">
-          <caret line="2778" column="73" selection-start-line="2778" selection-start-column="73" selection-end-line="2778" selection-end-column="73" />
+        <state vertical-scroll-proportion="4.4">
+          <caret line="2779" column="38" selection-start-line="2779" selection-start-column="38" selection-end-line="2779" selection-end-column="38" />
           <folding>
             <marker date="1467890844000" expanded="true" signature="103812:104706" placeholder="SELECT c.nam..." />
           </folding>
