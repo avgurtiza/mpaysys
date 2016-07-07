@@ -2734,6 +2734,7 @@ class Payroll_IndexController extends Zend_Controller_Action
     {
         set_time_limit(0);
 
+
         $folder = realpath(APPLICATION_PATH . '/../public/export');
 
         $date = '2015-01-01';
