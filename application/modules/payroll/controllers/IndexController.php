@@ -523,7 +523,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , array($Employee->getId(), $date_start . ' 00:00:00', $group_id)
             );
 
-
             // Process scheduled deductions
             $bop_motorcycle = 0;
             $bop_insurance = 0;
@@ -554,7 +553,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                         } else {
                             $scheduled_deductions_array[$DeductionSchedule->getType()] = $rdvalue->getAmount();
                         }
-                        // $scheduled_deductions_array[$DeductionSchedule->getType()] = $rdvalue->getAmount();
                     }
 
                     // BOP deductions
@@ -576,8 +574,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $bop_motorcycle = $BOPAttendance->getMotorcycleDeduction();
                     $bop_insurance = $BOPAttendance->getInsuranceDeduction();
-
-
                 }
             }
 
@@ -610,7 +606,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $reliever_text = $group_id == $Employee->getGroupId() ? '' : ' (Reliever)';
             $page->setFont($bold, 8)->drawText($Client->getName() . '-' . $Group->getName() . $reliever_text, $dim_x + 340, $dim_y, 'UTF-8');
-
 
             $rec_copy_data['riders'][$Employee->getId()] = array(
                 'employee_number' => $Employee->getEmployeeNumber()
@@ -777,7 +772,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $total_pay += $legal_ecola_addition;
                 }
 
-                // $legal_ecola_days
             }
 
             $sss_deduction = $this->get_sss_deduction($total_pay);
@@ -807,13 +801,11 @@ class Payroll_IndexController extends Zend_Controller_Action
                     , "employee_id = " . $Employee->getId())
                 );
 
-
                 if (count($sss_result) > 0) {
                     foreach ($sss_result as $srvalue) {
                         $prev_sss += $srvalue["sss"];
                         $prev_gross_pay = $srvalue["gross_pay"];
                     }
-
 
                     $monthly_pay = $total_pay + $prev_gross_pay;
                     $monthly_sss_array = $this->get_sss_deduction($monthly_pay);
@@ -831,7 +823,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 }
 
             }
-
 
             if (isset($value['more_income'])) {
                 if ($value['more_income']['misc_income'] > 0) {
@@ -908,6 +899,15 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $dim_y -= 8;
 
+            // Adjustment for Philhealth
+            if ($total_pay > 7000 && $total_pay <= 50000) {
+                $value['deductions']['philhealth'] = round($total_pay * 1.5, 2);
+            }
+
+            if ($total_pay > 50000) {
+                $value['deductions']['philhealth'] = 750;
+            }
+
             foreach ($value['deductions'] as $pkey => $pvalue) {
 
                 if ($pvalue > 0) {
@@ -942,19 +942,13 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $page->setFont($mono, 8)->drawText(str_pad($Attendance->getFuelConsumed(), 10, ' ', STR_PAD_LEFT), $dim_x + 440, $dim_y);
 
                     $dim_y -= 8;
-                    /*
-                    $page->setFont($font, 8)->drawText(' - Price/L', $dim_x + 380, $dim_y);
-                    $page->setFont($mono, 8)->drawText(str_pad($Attendance->getFuelCost(), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
-                    */
                 }
-                // $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['gasoline'],2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
 
             }
             $dim_y -= 10;
 
             // Scheduled deductions
             if (count($scheduled_deductions) > 0) {
-                // preprint($scheduled_deductions);
                 foreach ($scheduled_deductions as $sdvalue) {
                     if ($sdvalue['amount'] > 0) {
                         $total_deduct += $sdvalue['amount'];
@@ -992,7 +986,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $dim_y = 128;
             $dim_y -= 8;
-            // $page->setFont($font, 10)->drawText('Total deductions', $dim_x, $dim_y);
             $page->setFont($mono, 8)->drawText(str_pad(number_format($total_deduct, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
 
             $dim_y = 82;
@@ -1023,7 +1016,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $scheduled_deductions["sss_pair"] = $sss_deduction;
             $scheduled_deductions["sss_debug"] = $sss_debug;
-
 
             $PayrollTemp->setEmployeeId($Employee->getId())
                 ->setGroupId($group_id)
@@ -1294,9 +1286,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                     , 'sum_rest_nd_ot' => 'SUM(rest_nd_ot)'
 
                     , 'today' => 'SUM(today)'
-                    , 'tond' => 'SUM(tond)'
-                    , 'toot' => 'SUM(toot)'
-                    , 'tond_ot' => 'SUM(tond_ot)'
+                    , 'today_nd' => 'SUM(today_nd)'
+                    , 'today_ot' => 'SUM(today_ot)'
+                    , 'today_nd_ot' => 'SUM(today_nd_ot)'
 
                     , 'tomorrow' => 'SUM(tomorrow)'
                     , 'tomorrow_nd' => 'SUM(tomorrow_nd)'
@@ -2635,7 +2627,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $cut_off_dates = $first_cutoff;
 
-        if($period == 2) {
+        if ($period == 2) {
             $cut_off_dates = $second_cutoff;
         }
 
@@ -2753,7 +2745,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $rows = $this->get_range_attendance($date, $date_15);
 
             $employees = $this->get_range_attendance_data($rows, $date);
-            $headers = ['header'=>[]];
+            $headers = ['header' => []];
 
             foreach (array_keys(array_values($employees)[0]) as $head) {
                 $headers['header'][$head] = $head;
@@ -2777,7 +2769,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $rows = $this->get_range_attendance($date_16, $date_last);
 
             $employees = $this->get_range_attendance_data($rows, $date_16, 2);
-            $headers = ['header'=>[]];
+            $headers = ['header' => []];
 
             foreach (array_keys(array_values($employees)[0]) as $head) {
                 $headers['header'][$head] = $head;
