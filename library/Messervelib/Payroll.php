@@ -20,7 +20,6 @@ class Messervelib_Payroll
     public function save_the_day($employee_id, $group_id, $data)
     {
         $config = Zend_Registry::get('config');
-        // $overage = $config->messerve->fueloverage;
 
         $Employee = new Messerve_Model_Employee();
 
@@ -664,7 +663,6 @@ class Messervelib_Payroll
             }
 
             if ($holiday_today && $holiday_today->getType() == 'legal') {
-                // die('HERE: ' . __LINE__);
                 $time_array += array('legal' => $reg, 'legal_nd' => $nd, 'legal_ot' => $ot
                 , 'legal_nd_ot' => $nd_ot);
 
@@ -712,7 +710,7 @@ class Messervelib_Payroll
                 $holiday_today && $holiday_today->getType() == 'legal'
                 && $holiday_tomorrow && $holiday_tomorrow->getType() == 'special'
             ) {
-                echo "LEGAL SPECIAL reg $reg, tomorrow $tomorrow, reg_nd $nd, tomorrow_nd $tomorrow_nd <br />";
+                // echo "LEGAL SPECIAL reg $reg, tomorrow $tomorrow, reg_nd $nd, tomorrow_nd $tomorrow_nd <br />";
 
                 $time_array = array_merge($time_array, array(
                     'spec' => $tomorrow
@@ -732,9 +730,8 @@ class Messervelib_Payroll
             $all_legal = $time_array['legal'] + $time_array['legal_nd'] + $time_array['legal_ot'] + $time_array['legal_nd_ot'];
 
             if($all_legal > 0) {
-
                 if($all_legal < 8) { // If total legal attendance is less than 8 hours, credit reg hours to rider
-                    $time_array['reg'] += 8 - $all_legal;
+                    // $time_array['reg'] += 8 - $all_legal; // Removed since DOLE audit is junk 2016-07-19
                 }
             }
 

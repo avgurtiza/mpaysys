@@ -125,6 +125,7 @@ class Messerve_Form_EditEmployee extends Zend_Form
                 ->addFilter(new Zend_Filter_StringTrim())
         );
 
+        /*
         $this->addElement(
         		$this->createElement('select', 'rate_id')
         		->setLabel('Rate')
@@ -132,6 +133,7 @@ class Messerve_Form_EditEmployee extends Zend_Form
         		->addValidator(new Zend_Validate_Int())
         		->addFilter(new Zend_Filter_StringTrim())
         );
+        */
         
         $this->addElement(
             $this->createElement('text', 'dateemployed')

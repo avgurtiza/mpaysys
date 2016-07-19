@@ -68,12 +68,14 @@ class Manager_EmployeeController extends Zend_Controller_Action
         $this->view->groups = $groups_array;
 
     	$group_select->setMultiOptions($groups_array);
-    	
+
+		/*
     	$rate_select = $form->getElement('rate_id');
     	 
     	$rate_array = $this->_getRates();
     	 
     	$rate_select->setMultiOptions(array('0'=>'') + $rate_array);
+		*/
 
     	$bop_select = $form->getElement('bop_id');
     	 

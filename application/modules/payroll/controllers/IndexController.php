@@ -315,14 +315,11 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         function romanic_number($integer, $upcase = true)
         {
-            $table = array('M'=>1000, 'CM'=>900, 'D'=>500, 'CD'=>400, 'C'=>100, 'XC'=>90, 'L'=>50, 'XL'=>40, 'X'=>10, 'IX'=>9, 'V'=>5, 'IV'=>4, 'I'=>1);
+            $table = array('M' => 1000, 'CM' => 900, 'D' => 500, 'CD' => 400, 'C' => 100, 'XC' => 90, 'L' => 50, 'XL' => 40, 'X' => 10, 'IX' => 9, 'V' => 5, 'IV' => 4, 'I' => 1);
             $return = '';
-            while($integer > 0)
-            {
-                foreach($table as $rom=>$arb)
-                {
-                    if($integer >= $arb)
-                    {
+            while ($integer > 0) {
+                foreach ($table as $rom => $arb) {
+                    if ($integer >= $arb) {
                         $integer -= $arb;
                         $return .= $rom;
                         break;
@@ -332,14 +329,13 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             return $return;
         }
+
         $i = 0;
 
         foreach ($total_bill as $key => $value) {
             $i++;
 
-
-
-            $page->setFont($font, $bill_font_size)->drawText(str_pad(romanic_number($i,true), 5, ' ', STR_PAD_RIGHT), $dim_x - 28, $dim_y);
+            $page->setFont($font, $bill_font_size)->drawText(str_pad(romanic_number($i, true), 5, ' ', STR_PAD_RIGHT), $dim_x - 28, $dim_y);
 
             $page->setFont($font, $bill_font_size)->drawText($hours_label[$key], $dim_x, $dim_y);
 
@@ -444,7 +440,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         // echo $filename;
         $this->_redirect($_SERVER['HTTP_REFERER'] . '#billing');
     }
-    
+
     protected function _process_client_report()
     {
 
@@ -984,6 +980,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $dim_y -= 8;
 
             // Adjustment for Philhealth
+            /*
             if ($total_pay > 7000 && $total_pay <= 50000) {
                 $value['deductions']['philhealth'] = round($total_pay * 1.5, 2);
             }
@@ -991,6 +988,9 @@ class Payroll_IndexController extends Zend_Controller_Action
             if ($total_pay > 50000) {
                 $value['deductions']['philhealth'] = 750;
             }
+            */
+
+            $value['deductions']['philhealth'] = $this->get_philhealth_deduction($total_pay);
 
             foreach ($value['deductions'] as $pkey => $pvalue) {
 
@@ -2125,37 +2125,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
     }
 
-    public function hdmfexportAction()
-    {
-        // TODO: remove relievers
-        $this->_compute();
-        $percov = substr(str_replace('-', '', $this->_request->getParam('date_start')), 0, -2);
-
-        header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
-        header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
-        header('Content-type: text/csv');
-        // header('Content-type: text/plain');
-        header('Content-Disposition: attachment; filename="hdmf_export.csv"');
-
-
-        foreach ($this->_employee_payroll as $value) {
-            echo '""' // Series number
-                . ', "' . $value['attendance']->hdmf . '"'
-                . ',""' // Account number
-                . ',"F1-Pag-IBIG 1"'
-                . ',"' . strtoupper($value['attendance']->lastname) . '"'
-                . ',"' . strtoupper($value['attendance']->firstname) . '"'
-                . ',""' // Extension
-                . ',"' . strtoupper($value['attendance']->middleinitial) . '"'
-                . ',"' . $percov . '"' // Percov
-                . ',"100.00"' // EE share
-                . ',"100.00"' // ER share
-                . ',""' // Remarks
-                . "\n";
-        }
-
-        die();
-    }
 
     protected function get_cutoff_attended_days($employee_id, $date_start, $date_end)
     {
@@ -2172,40 +2141,6 @@ class Payroll_IndexController extends Zend_Controller_Action
         $rows = $AttendanceDb->fetchAll($select);
 
         return ($rows[0]->amount);
-    }
-
-    public function philhealthexportAction()
-    {
-        // TODO: remove relievers
-        $this->_compute();
-        $percov = substr(str_replace('-', '', $this->_request->getParam('date_start')), 0, -2);
-
-        header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
-        header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
-        header('Content-type: text/csv');
-        header('Content-Disposition: attachment; filename="philhealth_export.csv"');
-
-        foreach ($this->_employee_payroll as $value) {
-            $sum = array_sum($value['pay']) - $value['pay']['ecola'];
-
-            echo '"' . strtoupper($value['attendance']->lastname) . '"'
-                . ',""' // Suffix
-                . ',"' . strtoupper($value['attendance']->firstname) . '"'
-                . ',"' . strtoupper($value['attendance']->middleinitial) . '"'
-                . ', "' . $value['attendance']->philhealth . '"'
-                . ',""' // Birthdate
-                . ',""' // Sex
-                . ',"' . $sum . '"' // Salary
-                . "\n";
-        }
-
-        die();
-
-    }
-
-    public function sssexportAction()
-    {
-
     }
 
     public function exportAction()
@@ -2235,7 +2170,23 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $payroll_meta = json_decode($pvalue->getDeductionData());
 
-            // preprint($payroll_meta,1);
+            $bop_maintenance = $pvalue->getBopMaintenance();
+            $bop_rental = 0;
+
+            $BOP = new Messerve_Model_Bop();
+            $Employee = new Messerve_Model_Employee();
+            $Employee->find($pvalue->getEmployeeId());
+
+            if ($Employee->getBopId() > 0) {
+                $BOP->find($Employee->getBopId());
+
+                if (stripos($BOP->getName(), 'R1') === false) {
+                    //
+                } else {
+                    $bop_maintenance = 0;
+                    $bop_rental = $pvalue->getBopMaintenance();
+                }
+            }
 
             $this_row = array(
                 'Period covered' => $pvalue->getPeriodCovered()
@@ -2249,7 +2200,8 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'Account number' => $pvalue->getAccountNumber()
             , 'Ecola' => number_format(round($pvalue->getEcola(), 2), 2)
             , 'Incentives' => number_format(round($pvalue->getIncentives(), 2), 2)
-            , 'BOP maintenance' => $pvalue->getBopMaintenance()
+            , 'BOP maintenance' => $bop_maintenance
+            , 'BOP rental' => $bop_rental
             , '13th month pay' => number_format(round($pvalue->getThirteenthMonth(), 2), 2)
             , 'Fuel addition' => number_format(round($pvalue->getFuelAddition(), 2), 2)
             , 'Misc addition' => number_format(round($pvalue->getMiscAddition(), 2), 2)
@@ -2446,6 +2398,17 @@ class Payroll_IndexController extends Zend_Controller_Action
         return array($table_sss, $calculated_sss);
     }
 
+    protected function get_philhealth_deduction($base_pay)
+    {
+        $philhealth = new Messerve_Model_DbTable_Philhealth();
+
+        $result = $philhealth->fetchRow("`min` <= $base_pay AND `max` >= $base_pay");
+
+        $table_philhealth = (int)$result->employee;
+
+        return $table_philhealth;
+    }
+
 
     public function philhealthAction()
     {
@@ -2464,7 +2427,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             , array("period_covered", "lastname", "firstname", "employee_number"));
 
         $payroll_array = array();
-
 
         foreach ($payroll as $pvalue) {
             if (!array_key_exists($pvalue->employee_id, $payroll_array)) {
@@ -2489,10 +2451,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             if ($pvalue->period_covered == $first_cutoff) { // First cut-off
                 $payroll_array[$pvalue->employee_id]['1st half'] = $pvalue->philhealth;
-                // $payroll_array[$pvalue->employee_id]['Payroll_data_1']  = $pvalue->toArray();
             } else { // Second cut-off
                 $payroll_array[$pvalue->employee_id]['2nd half'] = $pvalue->philhealth;
-                // $payroll_array[$pvalue->employee_id]['Payroll_data_2']  = $pvalue->toArray();
             }
         }
 
@@ -2517,7 +2477,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         header('Content-type: text/csv');
         header('Content-Disposition: attachment; filename="HDMF_report-' . $first_cutoff . '-' . $period_covered . '.csv"');
-
 
         $PayrollMap = new Messerve_Model_Mapper_PayrollTemp();
         $payroll = $PayrollMap->fetchList("(period_covered = '{$period_covered}' OR period_covered = '{$first_cutoff}')
@@ -2873,9 +2832,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             $writer->save($folder . '/' . $date_16 . '.xls');
 
             $date = date('Y-m-d', $next_month);
-
-
-            // echo "$date<br>";
         }
         die('OH HAI');
     }
