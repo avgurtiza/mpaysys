@@ -992,10 +992,9 @@ class Payroll_IndexController extends Zend_Controller_Action
             }
             */
 
-            $value['deductions']['philhealth'] = $this->get_philhealth_deduction($total_pay);
+            // $value['deductions']['philhealth'] = $this->get_philhealth_deduction($total_pay);
 
             foreach ($value['deductions'] as $pkey => $pvalue) {
-
                 if ($pvalue > 0) {
                     $total_deduct += $pvalue;
                     $page->setFont($font, 8)->drawText(ucwords(str_replace('_', ' ', $pkey)), $dim_x + 380, $dim_y);
