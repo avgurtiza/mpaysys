@@ -782,7 +782,10 @@ class Payroll_IndexController extends Zend_Controller_Action
                     AND (attendance.group_id = {$group_id})
                     AND datetime_start >= '{$date_start} 00:00'
                     AND datetime_start <= '{$date_end} 23:59'
-                    AND (legal > 0 OR legal_nd > 0 OR legal_ot > 0 OR legal_nd_ot > 0)");
+                    AND (
+                        legal > 0  OR legal_ot > 0
+                        -- OR legal_nd_ot > 0 OR legal_nd > 0
+                    )");
 
                 $legal_ua_hours = 0;
 
@@ -790,11 +793,13 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 foreach ($legal_attendance as $legal_day) {
                     $legal_ecola_days++;
+                    /*
                     $legal_hours = $legal_day['legal'] + $legal_day['legal_nd'] + $legal_day['legal_ot'] + $legal_day['legal_nd_ot'];
 
                     if ($legal_hours < 8) {
                         $legal_ua_hours += (8 - $legal_hours);
                     }
+                    */
                 }
 
                 /*
