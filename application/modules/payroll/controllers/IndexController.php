@@ -776,7 +776,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 }
 
                 // Legal adjustments for attendance less than 8 hours
-                /*
                 $LegalAttendanceMap = new Messerve_Model_Mapper_Attendance();
 
                 $legal_attendance = $LegalAttendanceMap->fetchListToArray("(attendance.employee_id = '{$Employee->getId()}')
@@ -798,6 +797,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                     }
                 }
 
+                /*
                 if ($legal_ua_hours > 0) {
 
                     $sss_deductions[] = ($sss / 22 / 8) * $legal_ua_hours;

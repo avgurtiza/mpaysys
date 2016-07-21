@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dadc4ea7-dcae-45f0-a214-eea4dea9a4ab" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/dataentry/controllers/AttendanceController.php" afterPath="$PROJECT_DIR$/application/modules/dataentry/controllers/AttendanceController.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php" afterPath="$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/dataentry/views/scripts/attendance/employee.phtml" afterPath="$PROJECT_DIR$/application/modules/dataentry/views/scripts/attendance/employee.phtml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Rolling.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -30,10 +27,10 @@
       <file leaf-file-name="IndexController.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.64319247">
-              <caret line="815" column="18" selection-start-line="815" selection-start-column="18" selection-end-line="815" selection-end-column="18" />
+            <state vertical-scroll-proportion="0.18879056">
+              <caret line="800" column="0" selection-start-line="800" selection-start-column="0" selection-end-line="800" selection-end-column="0" />
               <folding>
-                <marker date="1469064232000" expanded="true" signature="105183:106077" placeholder="SELECT c.nam..." />
+                <marker date="1469065385000" expanded="true" signature="105183:106077" placeholder="SELECT c.nam..." />
               </folding>
             </state>
           </provider>
@@ -372,7 +369,7 @@
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19170243" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32984293" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32984293" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32944915" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -799,10 +796,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.64319247">
-          <caret line="815" column="18" selection-start-line="815" selection-start-column="18" selection-end-line="815" selection-end-column="18" />
+        <state vertical-scroll-proportion="0.18879056">
+          <caret line="800" column="0" selection-start-line="800" selection-start-column="0" selection-end-line="800" selection-end-column="0" />
           <folding>
-            <marker date="1469064232000" expanded="true" signature="105183:106077" placeholder="SELECT c.nam..." />
+            <marker date="1469065385000" expanded="true" signature="105183:106077" placeholder="SELECT c.nam..." />
           </folding>
         </state>
       </provider>
