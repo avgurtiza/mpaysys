@@ -776,6 +776,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 }
 
                 // Legal adjustments for attendance less than 8 hours
+                /*
                 $LegalAttendanceMap = new Messerve_Model_Mapper_Attendance();
 
                 $legal_attendance = $LegalAttendanceMap->fetchListToArray("(attendance.employee_id = '{$Employee->getId()}')
@@ -812,6 +813,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 }
 
                 $dim_y -= 16;
+                */
             }
 
             $dim_y = 92;

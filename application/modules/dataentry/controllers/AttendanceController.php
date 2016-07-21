@@ -259,14 +259,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 		$this->view->form = $form;
 	}
 
-	/*
-	 public function commitpayrollAction() {
-	$pay_period = $this->_request->getParam('pay_period');
-	$group_id = $this->_request->getParam('group_id');
-
-	die();
-	}
-	*/
 
 	public function _save_the_day($employee_id, $group_id, $data) {
 		$Payroll = new Messervelib_Payroll();
