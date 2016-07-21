@@ -1116,7 +1116,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setPaternity($value['more_income']['paternity'])
                 ->setGrossPay($total_pay)
                 ->setNetPay($net_pay)
-                ->setEcola($value['pay']['e_cola'])
+                ->setEcola($ecola_addition + $legal_ecola_addition)
                 ->setSss($value['deductions']['sss'])
                 ->setPhilhealth($value['deductions']['philhealth'])
                 ->setHdmf($value['deductions']['hdmf'])

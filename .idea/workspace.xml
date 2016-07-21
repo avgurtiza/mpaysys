@@ -27,10 +27,10 @@
       <file leaf-file-name="IndexController.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.18879056">
-              <caret line="800" column="0" selection-start-line="800" selection-start-column="0" selection-end-line="800" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.2861357">
+              <caret line="1118" column="45" selection-start-line="1118" selection-start-column="45" selection-end-line="1118" selection-end-column="45" />
               <folding>
-                <marker date="1469065385000" expanded="true" signature="105183:106077" placeholder="SELECT c.nam..." />
+                <marker date="1469065532000" expanded="true" signature="105199:106093" placeholder="SELECT c.nam..." />
               </folding>
             </state>
           </provider>
@@ -796,10 +796,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/application/modules/payroll/controllers/IndexController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.18879056">
-          <caret line="800" column="0" selection-start-line="800" selection-start-column="0" selection-end-line="800" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.2861357">
+          <caret line="1118" column="45" selection-start-line="1118" selection-start-column="45" selection-end-line="1118" selection-end-column="45" />
           <folding>
-            <marker date="1469065385000" expanded="true" signature="105183:106077" placeholder="SELECT c.nam..." />
+            <marker date="1469065532000" expanded="true" signature="105199:106093" placeholder="SELECT c.nam..." />
           </folding>
         </state>
       </provider>
