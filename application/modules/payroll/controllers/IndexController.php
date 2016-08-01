@@ -59,7 +59,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $all_periods[] = $period->period_covered;
         }
 
-        array_shift($all_periods);
+        // array_shift($all_periods);
 
         $this->view->old_periods = $all_periods;
 
