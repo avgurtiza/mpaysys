@@ -265,8 +265,8 @@ input.small-field { width: 1em !important; }
  /* select.big-select { font-size: 1.2em !important; } */
 
 ul.report-list li { list-style: none; }
-ul.report-list li a { font-size: 0.7em; color: gray; }
-ul.report-list li:first-child a { font-size: 1.0em; color: black;}
+ul.report-list li a { font-size: 0.6em; color: gray; }
+ul.report-list li:first-child a { font-size: 0.8em; color: black;}
 
 .warn { color: #f00 !important; font-weight: bold; }
 

@@ -556,6 +556,8 @@ class Payroll_IndexController extends Zend_Controller_Action
         $this->view->payroll = $this->_employee_payroll;
 
         $pdf = new Zend_Pdf();
+        $dole_pdf = new Zend_Pdf();
+
         $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
         $bold = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_BOLD);
         $italic = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_ITALIC);
@@ -699,7 +701,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $page->drawLine($dim_x - 2, $dim_y, $dim_x + 560, $dim_y);
             $dim_y -= 8;
 
-            $page->setFont($bold, 8)->drawText('PAYSLIP', $dim_x + 240, $dim_y);
+            $page->setFont($bold, 8)->drawText('ACKNOWLEDGEMENT', $dim_x + 240, $dim_y);
 
             $dim_y -= 2;
 
@@ -784,7 +786,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                     AND datetime_start <= '{$date_end} 23:59'
                     AND (
                         legal > 0  OR legal_ot > 0
-                        -- OR legal_nd_ot > 0 OR legal_nd > 0
+                        -- OR legal_nd_ot > 0 OR legal_nd > 0 // TODO:  This may break legal UA calcs.   Check this if it happens
                     )");
 
                 $legal_ua_hours = 0;
@@ -793,32 +795,9 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 foreach ($legal_attendance as $legal_day) {
                     $legal_ecola_days++;
-                    /*
-                    $legal_hours = $legal_day['legal'] + $legal_day['legal_nd'] + $legal_day['legal_ot'] + $legal_day['legal_nd_ot'];
 
-                    if ($legal_hours < 8) {
-                        $legal_ua_hours += (8 - $legal_hours);
-                    }
-                    */
                 }
 
-                /*
-                if ($legal_ua_hours > 0) {
-
-                    $sss_deductions[] = ($sss / 22 / 8) * $legal_ua_hours;
-
-                    $legal_ua_pay = ($legal_ua_hours / 8) * $pay_rate;
-
-                    $total_no_hours += $legal_ua_hours;
-                    $total_pay += $legal_ua_pay;
-
-                    $page->setFont($font, 8)->drawText("UA REG", $dim_x + 10, $dim_y);
-                    $page->setFont($mono, 8)->drawText(str_pad(number_format($legal_ua_hours, 2), 8, ' ', STR_PAD_LEFT), $dim_x + 110, $dim_y);
-                    $page->setFont($mono, 8)->drawText(str_pad(number_format($legal_ua_pay, 2), 8, ' ', STR_PAD_LEFT), $dim_x + 160, $dim_y);
-                }
-
-                $dim_y -= 16;
-                */
             }
 
             $dim_y = 92;
@@ -986,19 +965,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $dim_y -= 8;
 
-            // Adjustment for Philhealth
-            /*
-            if ($total_pay > 7000 && $total_pay <= 50000) {
-                $value['deductions']['philhealth'] = round($total_pay * 1.5, 2);
-            }
-
-            if ($total_pay > 50000) {
-                $value['deductions']['philhealth'] = 750;
-            }
-            */
-
-            // $value['deductions']['philhealth'] = $this->get_philhealth_deduction($total_pay);
-
             foreach ($value['deductions'] as $pkey => $pvalue) {
                 if ($pvalue > 0) {
                     $total_deduct += $pvalue;
@@ -1008,18 +974,25 @@ class Payroll_IndexController extends Zend_Controller_Action
                 }
             }
 
+            $split_dim_y = $dim_y;
+
+
+            /* Start Messerve deductions */
+
+            $messerve_deduct = 0;
+
             $fuel_overage = 0;  // Reset
             $fuel_deduction = 0;  // Reset
 
             if ($Attendance->getFuelHours() > 0) {
 
                 $fuel_overage = $Attendance->getFuelConsumed() - $Attendance->getFuelAlloted();
-                $total_deduct += $fuel_deduction;
+                $messerve_deduct += $fuel_deduction;
 
                 if ($fuel_overage > 0) {
                     $fuel_deduction = round($fuel_overage * $Attendance->getFuelCost(), 2);
-                    $total_deduct += $fuel_deduction;
-
+                    $messerve_deduct += $fuel_deduction;
+                    /*
                     $page->setFont($font, 8)->drawText('Fuel overage', $dim_x + 380, $dim_y);
                     $page->setFont($mono, 8)->drawText(str_pad($fuel_deduction, 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
                     $dim_y -= 8;
@@ -1032,16 +1005,19 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $page->setFont($mono, 8)->drawText(str_pad($Attendance->getFuelConsumed(), 10, ' ', STR_PAD_LEFT), $dim_x + 440, $dim_y);
 
                     $dim_y -= 8;
+                    */
                 }
 
             }
             $dim_y -= 10;
 
+            $dole_page = clone $page;
+
             // Scheduled deductions
             if (count($scheduled_deductions) > 0) {
                 foreach ($scheduled_deductions as $sdvalue) {
                     if ($sdvalue['amount'] > 0) {
-                        $total_deduct += $sdvalue['amount'];
+                        $messerve_deduct += $sdvalue['amount'];
                         $total_misc_deduct += $sdvalue['amount'];
 
                         $page->setFont($font, 8)->drawText(ucwords(str_replace('_', ' ', $sdvalue['type'])), $dim_x + 380, $dim_y);
@@ -1055,11 +1031,40 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $dim_y -= 10;
             }
 
+            if($messerve_deduct > 0) {
+                $dole_page->setFont($font, 8)->drawText('Other deductions', $dim_x + 380, $split_dim_y);
+                $dole_page->setFont($mono, 8)->drawText(str_pad(number_format($messerve_deduct, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $split_dim_y);
+            }
+
+
+            $total_deduct += $messerve_deduct;
+            /* End Messerve deductions */
+
             $dim_y = 82;
             $dim_y -= 8;
 
             $page->setFont($font, 8)->drawText('TOTAL DEDUCTION', $dim_x + 220, $dim_y);
             $page->setFont($mono, 8)->drawText(str_pad(number_format($total_deduct, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
+            $dole_page->setFont($font, 8)->drawText('TOTAL DEDUCTION', $dim_x + 220, $dim_y);
+            $dole_page->setFont($mono, 8)->drawText(str_pad(number_format($total_deduct, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
+
+
+            if ($fuel_overage > 0) {
+                $dim_y = $split_dim_y;
+
+                $page->setFont($font, 8)->drawText('Fuel overage', $dim_x + 380, $dim_y);
+                $page->setFont($mono, 8)->drawText(str_pad($fuel_deduction, 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
+                $dim_y -= 8;
+
+                $page->setFont($font, 8)->drawText(' - Allotment L', $dim_x + 380, $dim_y);
+                $page->setFont($mono, 8)->drawText(str_pad($Attendance->getFuelAlloted(), 10, ' ', STR_PAD_LEFT), $dim_x + 440, $dim_y);
+                $dim_y -= 8;
+
+                $page->setFont($font, 8)->drawText(' - Consumed L', $dim_x + 380, $dim_y);
+                $page->setFont($mono, 8)->drawText(str_pad($Attendance->getFuelConsumed(), 10, ' ', STR_PAD_LEFT), $dim_x + 440, $dim_y);
+
+                $dim_y -= 8;
+            }
 
             // TODO:  Fix hacky hack
             $PayrollTemp = new Messerve_Model_PayrollTemp();
@@ -1073,21 +1078,27 @@ class Payroll_IndexController extends Zend_Controller_Action
             $dim_y = 136;
             $dim_y -= 8;
             $page->drawLine($dim_x + 480, $dim_y, $dim_x + 530, $dim_y);
+            $dole_page->drawLine($dim_x + 480, $dim_y, $dim_x + 530, $dim_y);
 
             $dim_y = 128;
             $dim_y -= 8;
             $page->setFont($mono, 8)->drawText(str_pad(number_format($total_deduct, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
+            $dole_page->setFont($mono, 8)->drawText(str_pad(number_format($total_deduct, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
 
             $dim_y = 82;
             $net_pay = $total_pay - $total_deduct;
             $page->setFont($bold, 10)->drawText('Net pay', $dim_x + 380, $dim_y);
+            $dole_page->setFont($bold, 10)->drawText('Net pay', $dim_x + 380, $dim_y);
 
             $dim_y -= 16;
             $page->setFont($boldmono, 12)->drawText('Php ' . str_pad(number_format($net_pay, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 380, $dim_y);
+            $dole_page->setFont($boldmono, 12)->drawText('Php ' . str_pad(number_format($net_pay, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 380, $dim_y);
 
             $page->setFont($font, 8)->drawText('Pilipinas Messerve Inc.  |  4/F San Diego Building, 462 Carlos Palanca St., Quiapo, Manila 1001', $dim_x, 24);
+            $dole_page->setFont($font, 8)->drawText('Pilipinas Messerve Inc.  |  4/F San Diego Building, 462 Carlos Palanca St., Quiapo, Manila 1001', $dim_x, 24);
 
             $pdf->pages[] = $page;
+            $dole_pdf->pages[] = $dole_page;
 
             $pay_array = array(
                 $value['attendance']->lastname
@@ -1170,7 +1181,19 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $this->_receiving_copy($pdf, $rec_copy_data);
 
+        mkdir($folder . 'dole', 0777);
+
+        $dole_filename = $folder . "dole/Payslips_{$this->_client->getName()}_{$Group->getName()}_{$group_id}_{$date_start}_{$this->_last_date}.pdf";
+
         $pdf->save($filename);
+        $dole_pdf->save($dole_filename);
+
+        // TODO:  Add DOLE payslip here
+        // Rename "PAYSLIP" to "ACKNOWLEDGEMENT"
+        // Sum Messerve deductions
+        // Remove breakdown
+        // Print "Other deductions"
+        // Print sum
 
         $this->summaryreportAction();
         $this->clientreportAction();
@@ -2194,6 +2217,24 @@ class Payroll_IndexController extends Zend_Controller_Action
                 }
             }
 
+            /*
+            , 'Accident' => number_format(round($pvalue->getAccident() * -1, 2), 2)
+            , 'Uniform' => number_format(round($pvalue->getUniform() * -1, 2), 2)
+            , 'Adjustment' => number_format(round($pvalue->getAdjustment() * -1, 2), 2)
+            , 'Miscellaneous' => number_format(round($pvalue->getMiscellaneous() * -1, 2), 2)
+            , 'Communication' => number_format(round($pvalue->getCommunication() * -1, 2), 2)
+            , 'Fuel deduction' => number_format(round($pvalue->getFuelDeduction() * -1, 2), 2)
+             */
+
+            $other_deductions = $pvalue->getBopMotorcycle() + $pvalue->getBopInsurance()
+                + $pvalue->getAccident() + $pvalue->getUniform()
+                + $pvalue->getAdjustment() + $pvalue->getMiscellaneous()
+                + $pvalue->getCommunication() + $pvalue->getFuelDeduction()
+                + $pvalue->lost_card + $pvalue->food
+            ;
+
+            $other_deductions = number_format(round($other_deductions * -1, 2), 2);
+
             $this_row = array(
                 'Period covered' => $pvalue->getPeriodCovered()
             , 'Client name' => $pvalue->getClientName()
@@ -2206,12 +2247,13 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'Account number' => $pvalue->getAccountNumber()
             , 'Ecola' => number_format(round($pvalue->getEcola(), 2), 2)
             , 'Incentives' => number_format(round($pvalue->getIncentives(), 2), 2)
-            , 'BOP maintenance' => $bop_maintenance
-            , 'BOP rental' => $bop_rental
             , '13th month pay' => number_format(round($pvalue->getThirteenthMonth(), 2), 2)
             , 'Fuel addition' => number_format(round($pvalue->getFuelAddition(), 2), 2)
             , 'Misc addition' => number_format(round($pvalue->getMiscAddition(), 2), 2)
             , 'Paternity' => number_format(round($pvalue->getPaternity(), 2), 2)
+
+            , 'BOP maintenance' => $bop_maintenance
+            , 'BOP rental' => $bop_rental
 
             , 'Gross pay' => number_format(round($pvalue->getGrossPay(), 2), 2)
             , 'SSS' => number_format(round($pvalue->getSss() * -1, 2), 2)
@@ -2223,19 +2265,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             , 'SSS loan' => number_format(round($pvalue->getSSSLoan() * -1, 2), 2)
             , 'HDMF loan' => number_format(round($pvalue->getHDMFLoan() * -1, 2), 2)
-            , 'Accident' => number_format(round($pvalue->getAccident() * -1, 2), 2)
-            , 'Uniform' => number_format(round($pvalue->getUniform() * -1, 2), 2)
-            , 'Adjustment' => number_format(round($pvalue->getAdjustment() * -1, 2), 2)
-            , 'Miscellaneous' => number_format(round($pvalue->getMiscellaneous() * -1, 2), 2)
-            , 'Communication' => number_format(round($pvalue->getCommunication() * -1, 2), 2)
-            , 'Fuel overage' => number_format(round($pvalue->getFuelOverage() * -1, 2), 2)
 
-            , 'Fuel deduction' => number_format(round($pvalue->getFuelDeduction() * -1, 2), 2)
-            , 'BOP motorcycle' => $pvalue->getBopMotorcycle() * -1
-            , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1
-
-            , 'Lost card' => number_format(round($pvalue->lost_card * -1, 2), 2)
-            , 'Food' => number_format(round($pvalue->food * -1, 2), 2)
+            , 'Other deductions' => $other_deductions
 
             , 'Net pay' => number_format(round($pvalue->getNetPay(), 2), 2)
             , 'Fuel hours' => number_format(round($pvalue->getFuelHours(), 2), 2)
@@ -2243,9 +2274,24 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'Fuel purchased' => number_format(round($pvalue->getFuelUsage(), 2), 2)
             , 'Fuel overage L' => number_format(round($pvalue->getFuelUsage() - $pvalue->getFuelAllotment(), 2), 2)
             , 'Fuel price' => number_format(round($pvalue->getFuelPrice(), 2), 2)
+
+
             , 'SSS deductions (Table/Calculated)' => $payroll_meta->sss_pair[0] . ' / ' . $payroll_meta->sss_pair[1]
             , 'SSS More data' => @$payroll_meta->sss_debug
 
+            , 'Accident' => number_format(round($pvalue->getAccident() * -1, 2), 2)
+            , 'Uniform' => number_format(round($pvalue->getUniform() * -1, 2), 2)
+            , 'Adjustment' => number_format(round($pvalue->getAdjustment() * -1, 2), 2)
+            , 'Miscellaneous' => number_format(round($pvalue->getMiscellaneous() * -1, 2), 2)
+            , 'Communication' => number_format(round($pvalue->getCommunication() * -1, 2), 2)
+            , 'Fuel deduction' => number_format(round($pvalue->getFuelDeduction() * -1, 2), 2)
+            , 'Lost card' => number_format(round($pvalue->lost_card * -1, 2), 2)
+            , 'Food' => number_format(round($pvalue->food * -1, 2), 2)
+
+            , 'Fuel overage' => number_format(round($pvalue->getFuelOverage() * -1, 2), 2)
+
+            , 'BOP motorcycle' => $pvalue->getBopMotorcycle() * -1
+            , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1
             );
 
             /*

@@ -152,7 +152,10 @@ $(function() {
 	
 		<ul class="report-list">
 			<?php foreach($this->payslips as $crvalue): ?>
-			<li><a href="<?php echo "/{$this->report_path}/payslips/$crvalue"; ?>" target="_blank"><?php echo $crvalue; ?></a></li>
+			<li>
+				<a href="<?php echo "/{$this->report_path}/payslips/$crvalue"; ?>" target="_blank"><?php echo $crvalue; ?></a>
+				<a href="<?php echo "/{$this->report_path}/payslips/dole/$crvalue"; ?>" target="_blank" class="small">Payslip</a>
+			</li>
 			<?php endforeach; ?>
 		</ul>
 	
