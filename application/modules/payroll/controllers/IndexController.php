@@ -1031,6 +1031,23 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $dim_y -= 10;
             }
 
+            if ($fuel_overage > 0) {
+                // $dim_y = $split_dim_y;
+
+                $page->setFont($font, 8)->drawText('Fuel overage', $dim_x + 380, $dim_y);
+                $page->setFont($mono, 8)->drawText(str_pad($fuel_deduction, 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
+                $dim_y -= 8;
+
+                $page->setFont($font, 8)->drawText(' - Allotment L', $dim_x + 380, $dim_y);
+                $page->setFont($mono, 8)->drawText(str_pad($Attendance->getFuelAlloted(), 10, ' ', STR_PAD_LEFT), $dim_x + 440, $dim_y);
+                $dim_y -= 8;
+
+                $page->setFont($font, 8)->drawText(' - Consumed L', $dim_x + 380, $dim_y);
+                $page->setFont($mono, 8)->drawText(str_pad($Attendance->getFuelConsumed(), 10, ' ', STR_PAD_LEFT), $dim_x + 440, $dim_y);
+
+                $dim_y -= 8;
+            }
+
             if($messerve_deduct > 0) {
                 $dole_page->setFont($font, 8)->drawText('Other deductions', $dim_x + 380, $split_dim_y);
                 $dole_page->setFont($mono, 8)->drawText(str_pad(number_format($messerve_deduct, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $split_dim_y);
@@ -1049,22 +1066,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $dole_page->setFont($mono, 8)->drawText(str_pad(number_format($total_deduct, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
 
 
-            if ($fuel_overage > 0) {
-                $dim_y = $split_dim_y;
 
-                $page->setFont($font, 8)->drawText('Fuel overage', $dim_x + 380, $dim_y);
-                $page->setFont($mono, 8)->drawText(str_pad($fuel_deduction, 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
-                $dim_y -= 8;
-
-                $page->setFont($font, 8)->drawText(' - Allotment L', $dim_x + 380, $dim_y);
-                $page->setFont($mono, 8)->drawText(str_pad($Attendance->getFuelAlloted(), 10, ' ', STR_PAD_LEFT), $dim_x + 440, $dim_y);
-                $dim_y -= 8;
-
-                $page->setFont($font, 8)->drawText(' - Consumed L', $dim_x + 380, $dim_y);
-                $page->setFont($mono, 8)->drawText(str_pad($Attendance->getFuelConsumed(), 10, ' ', STR_PAD_LEFT), $dim_x + 440, $dim_y);
-
-                $dim_y -= 8;
-            }
 
             // TODO:  Fix hacky hack
             $PayrollTemp = new Messerve_Model_PayrollTemp();
