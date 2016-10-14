@@ -900,7 +900,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 if ($value['more_income']['incentives'] > 0) {
                     $dim_y -= 8;
-                    $page->setFont($font, 8)->drawText('Incentives', $dim_x + 220, $dim_y);
+                    $page->setFont($font, 8)->drawText('SILP', $dim_x + 220, $dim_y);
                     $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['incentives'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
                     $total_pay += $value['more_income']['incentives'];
                 }
