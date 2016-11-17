@@ -374,10 +374,13 @@ class Messervelib_Payroll
             $base_reg = $this->_max_regular_hours;
 
             if (isset($attendance['extended_shift']) && $attendance['extended_shift'] == 'yes') {
-                // Place holder
+                // TODO:  find a way to bill this to Messerve, not the client
             } else {
-                $ot_duration = $work_duration - $this->_max_regular_hours;
+                // $ot_duration = $work_duration - $this->_max_regular_hours;
             }
+
+            // Always pay rider their due for OT
+            $ot_duration = $work_duration - $this->_max_regular_hours;
 
             $ot_start = 0;
 
@@ -534,10 +537,14 @@ class Messervelib_Payroll
                 , 'total_duration' => $total_duration
                 , 'ot_duration' => $ot_duration
 
-                    // , 'tomorrow'=>$tomorrow
                 , 'tomorrow_nd' => $tomorrow_nd
                 , 'tomorrow_ot' => $tomorrow_ot
                 , 'tomorrow_nd_ot' => $tomorrow_nd_ot
+
+                , 'legal' => 0
+                , 'legal_nd' => 0
+                , 'legal_ot' => 0
+                , 'legal_nd_ot' => 0
             );
 
             $time_array['ot_actual_hours'] = $tomorrow_ot + $tomorrow_nd_ot + $nd_ot + $ot;
@@ -1289,7 +1296,7 @@ class Messervelib_Payroll
 
         if ($end <= $this->_midnight && $end >= $this->_night_diff_start) {
 
-            echo "<br />Duration: $duration_id ";
+            // echo "<br />Duration: $duration_id ";
 
             if ($start <= $this->_night_diff_start) {
                 $today = $this->_night_diff_start - $start;
@@ -1300,7 +1307,7 @@ class Messervelib_Payroll
                 if ($today_nd > 0) $broken_array['today_nd'] += $today_nd;
 
             } else {
-                echo "<br /> ND :B ";
+                // echo "<br /> ND :B ";
                 // $today = $start - $this->_night_diff_start;
                 // if($today > 0) $broken_array['today'] +=  $today;
 
@@ -1331,7 +1338,7 @@ class Messervelib_Payroll
         if ($end > $this->_midnight) {
             // echo "<br />End beyond MN";
             if ($end > $this->_night_diff_end) { // Breached next day's 6AM
-                echo "<br /> Duration $duration_id ND end breach";
+                // echo "<br /> Duration $duration_id ND end breach";
 
                 if ($start > $this->_midnight) {
                     // echo "<br />Start after MN";

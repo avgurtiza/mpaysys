@@ -575,6 +575,8 @@ class Payroll_IndexController extends Zend_Controller_Action
         , 'riders' => array()
         );
 
+        $bop_acknowledgement = [];
+
         foreach ($this->_employee_payroll as $value) {
             $page = new Zend_Pdf_Page(612, 396);
 
@@ -643,7 +645,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $BOP = new Messerve_Model_Bop();
                     $BOP->find($Employee->getBopId());
-
+                    /*
                     $scheduled_deductions[] = array(
                         'type' => 'BOP - ' . $BOP->getName()
                     , 'amount' => $BOPAttendance->getMotorcycleDeduction()
@@ -653,9 +655,25 @@ class Payroll_IndexController extends Zend_Controller_Action
                         'type' => 'BOP insurance/registration'
                     , 'amount' => $BOPAttendance->getInsuranceDeduction()
                     );
+                    */
 
                     $bop_motorcycle = $BOPAttendance->getMotorcycleDeduction();
                     $bop_insurance = $BOPAttendance->getInsuranceDeduction();
+
+                    if ($bop_motorcycle > 0) {
+                        $bop_acknowledgement[] =
+                            [
+                                'employee_number' => $Employee->getEmployeeNumber()
+                                , 'name' => $value['attendance']->lastname . ', '
+                                . $value['attendance']->firstname . ' '
+                                . $value['attendance']->middleinitial
+                                , 'pay_period' => $date_start . ' to ' . $date_end
+                                , 'program' => 'BOP - ' . $BOP->getName()
+                                , 'amount' => $BOPAttendance->getMotorcycleDeduction()
+                                , 'insurance' => $BOPAttendance->getInsuranceDeduction()
+                            ];
+                    }
+
                 }
             }
 
@@ -715,7 +733,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $PayrollLib = new Messervelib_Payroll();
 
-            $pay_period = $this->_request->getParam('pay_period');
+            // $pay_period = $this->_request->getParam('pay_period');
 
             $employee_pay = $PayrollLib->GetEmployeePayroll(
                 $Employee->getId()
@@ -920,7 +938,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 }
             }
 
-            if ($group_id == $Employee->getGroupId()) {
+            if ($group_id == $Employee->getGroupId()) { // On parent group,  show BOP additions
                 if (isset($BOPAttendance) && $BOPAttendance->getMaintenanceAddition() > 0) {
                     $dim_y -= 8;
                     $page->setFont($font, 8)->drawText('BOP Maintenance', $dim_x + 220, $dim_y);
@@ -992,23 +1010,14 @@ class Payroll_IndexController extends Zend_Controller_Action
                 if ($fuel_overage > 0) {
                     $fuel_deduction = round($fuel_overage * $Attendance->getFuelCost(), 2);
                     $messerve_deduct += $fuel_deduction;
-                    /*
-                    $page->setFont($font, 8)->drawText('Fuel overage', $dim_x + 380, $dim_y);
-                    $page->setFont($mono, 8)->drawText(str_pad($fuel_deduction, 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
-                    $dim_y -= 8;
 
-                    $page->setFont($font, 8)->drawText(' - Allotment L', $dim_x + 380, $dim_y);
-                    $page->setFont($mono, 8)->drawText(str_pad($Attendance->getFuelAlloted(), 10, ' ', STR_PAD_LEFT), $dim_x + 440, $dim_y);
-                    $dim_y -= 8;
-
-                    $page->setFont($font, 8)->drawText(' - Consumed L', $dim_x + 380, $dim_y);
-                    $page->setFont($mono, 8)->drawText(str_pad($Attendance->getFuelConsumed(), 10, ' ', STR_PAD_LEFT), $dim_x + 440, $dim_y);
-
-                    $dim_y -= 8;
-                    */
                 }
 
             }
+
+            $messerve_deduct = 0;
+
+
             $dim_y -= 10;
 
             $dole_page = clone $page;
@@ -1048,7 +1057,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $dim_y -= 8;
             }
 
-            if($messerve_deduct > 0) {
+            if ($messerve_deduct > 0) {
                 $dole_page->setFont($font, 8)->drawText('Other deductions', $dim_x + 380, $split_dim_y);
                 $dole_page->setFont($mono, 8)->drawText(str_pad(number_format($messerve_deduct, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $split_dim_y);
             }
@@ -1064,8 +1073,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             $page->setFont($mono, 8)->drawText(str_pad(number_format($total_deduct, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
             $dole_page->setFont($font, 8)->drawText('TOTAL DEDUCTION', $dim_x + 220, $dim_y);
             $dole_page->setFont($mono, 8)->drawText(str_pad(number_format($total_deduct, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
-
-
 
 
             // TODO:  Fix hacky hack
@@ -1182,6 +1189,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $filename = $folder . "Payslips_{$this->_client->getName()}_{$Group->getName()}_{$group_id}_{$date_start}_{$this->_last_date}.pdf";
 
         $this->_receiving_copy($pdf, $rec_copy_data);
+        $this->_bop_acknowledgement($pdf, $bop_acknowledgement);
 
         mkdir($folder . 'dole', 0777);
 
@@ -1190,12 +1198,6 @@ class Payroll_IndexController extends Zend_Controller_Action
         $pdf->save($filename);
         $dole_pdf->save($dole_filename);
 
-        // TODO:  Add DOLE payslip here
-        // Rename "PAYSLIP" to "ACKNOWLEDGEMENT"
-        // Sum Messerve deductions
-        // Remove breakdown
-        // Print "Other deductions"
-        // Print sum
 
         $this->summaryreportAction();
         $this->clientreportAction();
@@ -1205,6 +1207,71 @@ class Payroll_IndexController extends Zend_Controller_Action
         } else {
             echo "AJAX Complete";
         }
+
+    }
+
+    protected function _bop_acknowledgement($pdf, $bop_data)
+    {
+
+
+        /*
+                                 [
+                            'employee_number' => $Employee->getEmployeeNumber()
+                            , 'name' => $value['attendance']->lastname . ', '
+                            . $value['attendance']->firstname . ' '
+                            . $value['attendance']->middleinitial
+                            , 'pay_period' => $date_start . ' to ' . $date_end
+                            , 'program' => 'BOP - ' . $BOP->getName()
+                            , 'amount' => $BOPAttendance->getMotorcycleDeduction()
+                            , 'insurance' => $BOPAttendance->getInsuranceDeduction()
+                        ]
+         */
+        foreach ($bop_data as $bop) {
+            $page = new Zend_Pdf_Page(612, 199);
+            $logo = Zend_Pdf_Image::imageWithPath(APPLICATION_PATH . '/../public/images/messerve.png');
+            $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+            $bold = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_BOLD);
+
+            $pageHeight = $page->getHeight();
+
+            $imageHeight = 41;
+            $imageWidth = 119;
+
+            $dim_x = 32;
+            $dim_y = $pageHeight - 25;
+
+            $bottomPos = $dim_y - $imageHeight;
+            $rightPos = $dim_x + $imageWidth;
+
+            $page->drawImage($logo, $dim_x, $bottomPos, $rightPos, $dim_y);
+            $dim_y -= 24;
+            $dim_y -= 24;
+            $dim_y -= 12;
+            $page->setFont($bold, 10)->drawText("ACKNOWLEDGEMENT", $dim_x, $dim_y);
+            $dim_y -= 24;
+            $page->setFont($font, 8)->drawText("{$bop['employee_number']}   {$bop['name']}", $dim_x, $dim_y);
+            $page->setFont($font, 8)->drawText("Pay period: {$bop['pay_period']}", $dim_x + 180, $dim_y);
+            $dim_y -= 12;
+            $page->setFont($font, 8)->drawText("{$bop['program']}", $dim_x, $dim_y);
+            $page->setFont($font, 8)->drawText("{$bop['amount']}", $dim_x + 180, $dim_y);
+            $dim_y -= 12;
+            $page->setFont($font, 8)->drawText("Insurance/registration", $dim_x, $dim_y);
+            $page->setFont($font, 8)->drawText("{$bop['insurance']}", $dim_x + 180, $dim_y);
+            $dim_y -= 12;
+            $page->setFont($font, 8)->drawText("TOTAL", $dim_x, $dim_y);
+
+            $total = number_format($bop['insurance'] + $bop['amount'], 2);
+
+            $page->setFont($font, 8)->drawText("Php {$total}", $dim_x + 180, $dim_y);
+
+            $dim_y -= 24;
+            $page->setFont($font, 8)->drawText("__________________________", $dim_x, $dim_y);
+            $dim_y -= 12;
+            $page->setFont($font, 8)->drawText("Printed name and signature", $dim_x, $dim_y);
+
+            $pdf->pages[] = $page;
+        }
+
 
     }
 
@@ -1371,6 +1438,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         foreach ($employees as $evalue) {
             $total_hours = 0;
 
+            /*
             $select = $AttendDB->select();
 
             $select
@@ -1417,15 +1485,137 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->where('attendance.group_id = ?', $group_id)
                 ->where("datetime_start >= '{$date_start} 00:00' AND datetime_start <= '{$date_end} 23:59'");
 
+                        $attendance = $AttendDB->fetchRow($select);
 
-            $attendance = $AttendDB->fetchRow($select);
+            preprint($attendance->toArray());
+            */
 
-            if ($attendance->rate_id > 0) {
+            $select = $AttendDB->select();
+
+            $select
+                ->setIntegrityCheck(false)
+                ->from('attendance')
+                ->join('employee', 'employee.id = attendance.employee_id', [
+                    'id'
+                    , 'employee_number'
+                    , 'firstname'
+                    , 'middleinitial'
+                    , 'lastname'
+                    , 'tin'
+                    , 'sss'
+                    , 'hdmf'
+                    , 'philhealth'
+                    , 'dateemployed'
+                ])
+                ->where('attendance.employee_id = ?', $evalue->getId())
+                ->where('attendance.group_id = ?', $group_id)
+                ->where("datetime_start >= '{$date_start} 00:00' AND datetime_start <= '{$date_end} 23:59'");
+
+            $all_attendance = $AttendDB->fetchAll($select);
+
+            $attendance = (object)[
+                'employee_id' => '',
+                'group_id' => '',
+                'datetime_start' => '',
+                'employee_number' => '',
+                'firstname' => '',
+                'middleinitial' => '',
+                'lastname' => '',
+                'tin' => '',
+                'sss' => '',
+                'philhealth' => '',
+                'dateemployed' => '',
+
+                'sum_fuel_overage' => 0,
+
+                'sum_reg' => 0,
+                'sum_reg_nd' => 0,
+                'sum_reg_ot' => 0,
+                'sum_reg_nd_ot' => 0,
+                'sum_sun' => 0,
+                'sum_sun_nd' => 0,
+                'sum_sun_ot' => 0,
+                'sum_sun_nd_ot' => 0,
+                'sum_spec' => 0,
+                'sum_spec_nd' => 0,
+                'sum_spec_ot' => 0,
+                'sum_spec_nd_ot' => 0,
+                'sum_legal' => 0,
+                'sum_legal_nd' => 0,
+                'sum_legal_ot' => 0,
+                'sum_legal_nd_ot' => 0,
+                'sum_legal_unattend' => 0,
+                'sum_rest' => 0,
+                'sum_rest_nd' => 0,
+                'sum_rest_ot' => 0,
+                'sum_rest_nd_ot' => 0,
+
+                'rate_id' => 0,
+            ];
+
+            foreach ($all_attendance as $day) {
+                $attendance->sum_fuel_overage += $day->fuel_overage;
+
+                $attendance->sum_reg += $day->reg;
+                $attendance->sum_reg_nd += $day->reg_nd;
+
+                $attendance->sum_sun += $day->sun;
+                $attendance->sum_sun_nd += $day->sun_nd;
+
+                $attendance->sum_spec += $day->spec;
+                $attendance->sum_spec_nd += $day->spec_nd;
+
+
+                $attendance->sum_legal += $day->legal;
+                $attendance->sum_legal_nd += $day->legal_nd;
+
+                $attendance->sum_rest += $day->rest;
+                $attendance->sum_rest_nd += $day->rest_nd;
+
+                /* OT */
+
+                $attendance->sum_reg_ot += $day->reg_ot;
+                $attendance->sum_reg_nd_ot += $day->reg_nd_ot;
+
+                $attendance->sum_sun_ot += $day->sun_ot;
+                $attendance->sum_sun_nd_ot += $day->sun_nd_ot;
+
+                $attendance->sum_spec_ot += $day->spec_ot;
+                $attendance->sum_spec_nd_ot += $day->spec_nd_ot;
+
+                $attendance->sum_legal_ot += $day->legal_ot;
+                $attendance->sum_legal_nd_ot += $day->legal_nd_ot;
+
+                $attendance->sum_rest_ot += $day->rest_ot;
+                $attendance->sum_rest_nd_ot += $day->rest_nd_ot;
+
+                $attendance->sum_legal_unattend += $day->legal_unattend;
+
+                // Fork for-employer attendance
+
+            }
+
+            $attendance->id = $day->employee_id;
+            $attendance->group_id = $day->group_id;
+            $attendance->employee_number = $day->employee_number;
+            $attendance->firstname = $day->firstname;
+            $attendance->middleinitial = $day->middleinitial;
+            $attendance->lastname = $day->lastname;
+
+            $attendance->tin = $day->tin;
+            $attendance->sss = $day->sss;
+            $attendance->hdmf = $day->hdmf;
+            $attendance->philhealth = $day->philhealth;
+
+            $attendance->dateemployed = $day->dateemployed;
+            // preprint($attendance, 1);
+            // die();
+
+
+            if ($attendance->rate_id > 0) { //  Using employee rate
                 $this_rate = $rates_array[$attendance->rate_id];
-                // echo "Using employee rate <br />";
-            } elseif ($Group->getRateId() > 0) {
+            } elseif ($Group->getRateId() > 0) {//  Using group rate
                 $this_rate = $rates_array[$Group->getRateid()];
-                // echo "Using group rate <br />";
             } else {
                 die('Process halted:  no rates found for either employee or group.');
             }
@@ -2232,8 +2422,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 + $pvalue->getAccident() + $pvalue->getUniform()
                 + $pvalue->getAdjustment() + $pvalue->getMiscellaneous()
                 + $pvalue->getCommunication() + $pvalue->getFuelDeduction()
-                + $pvalue->lost_card + $pvalue->food
-            ;
+                + $pvalue->lost_card + $pvalue->food;
 
             $other_deductions = number_format(round($other_deductions * -1, 2), 2);
 
