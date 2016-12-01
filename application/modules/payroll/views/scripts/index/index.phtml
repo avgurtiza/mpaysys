@@ -48,7 +48,7 @@
         $.get('http://10.200.0.21:9080/api/report/no-duty', function (data) {
             var no_duty = $('.no-duty dl');
             if(!data.length > 0) {
-                short_duty.append('<dd>None</dd>');
+                no_duty.append('<dd>None</dd>');
             } else {
                 for (var i in data) {
                     no_duty.append('<dd>' + data[i].group + ' - ' + data[i].rider + ' (' + data[i].employee_number + ') </dd>');
@@ -70,12 +70,12 @@
 
 
         $.get('http://10.200.0.21:9080/api/report/rest-day-duty', function (data) {
-            var short_duty = $('.rest-day-duty dl');
+            var rest_day_duty = $('.rest-day-duty dl');
             if(!data.length > 0) {
-                short_duty.append('<dd>None</dd>');
+                rest_day_duty.append('<dd>None</dd>');
             } else {
                 for (var i in data) {
-                    short_duty.append('<dd>' + data[i].group + ' - ' + data[i].rider + ' (' + data[i].employee_number + ') </dd>');
+                    rest_day_duty.append('<dd>' + data[i].group + ' - ' + data[i].rider + ' (' + data[i].employee_number + ') </dd>');
                 }
             }
         });
