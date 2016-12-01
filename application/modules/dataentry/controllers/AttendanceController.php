@@ -55,8 +55,18 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $groups_array = array();
 
         foreach ($groups as $gvalue) {
-            $groups_array[$gvalue->getId()] = $clients[$gvalue->getClientId()] . ' ' . $gvalue->getName();
+            $Employee = new Messerve_Model_DbTable_Employee();
+
+            $employee_count = $Employee->countByQuery('group_id = ' . $gvalue->getId());
+
+            if ($employee_count > 0) {
+                $groups_array[$gvalue->getId()] = $clients[$gvalue->getClientId()] . ' ' . $gvalue->getName()
+                    . ' (' . $employee_count . ')';
+            }
         }
+
+
+        asort($groups_array);
 
         $form = new Messerve_Form_Attendance();
         $form->setAction('/dataentry/attendance/employees');
@@ -523,7 +533,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $Client->find($Group->getClientId());
         $this->view->client = $Client;
 
-        $clients = $Client->getMapper()->fetchList('1');
+        $clients = $Client->getMapper()->fetchList('id > 0', 'name ASC');
 
         $groups_array = array();
 
@@ -531,12 +541,19 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             $client_groups = $Group->getMapper()->fetchList('client_id = ' . $cvalue->getId(), 'name ASC');
 
             foreach ($client_groups as $gvalue) {
-                $groups_array[] = array(
-                    'client_id' => $cvalue->getId()
-                , 'client_name' => $cvalue->getName()
-                , 'group_id' => $gvalue->getId()
-                , 'group_name' => $gvalue->getName()
-                );
+                $Employee = new Messerve_Model_DbTable_Employee();
+
+                $employee_count = $Employee->countByQuery('group_id = ' . $gvalue->getId());
+
+                if ($employee_count > 0) {
+                    $groups_array[] = array(
+                        'client_id' => $cvalue->getId()
+                    , 'client_name' => $cvalue->getName()
+                    , 'group_id' => $gvalue->getId()
+                    , 'group_name' => $gvalue->getName()
+                    );
+                }
+
 
             }
         }
