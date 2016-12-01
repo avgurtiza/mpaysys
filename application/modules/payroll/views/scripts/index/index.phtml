@@ -1,19 +1,38 @@
-<h2>Pay period: <?php echo $this->period_covered; ?> to <?php echo $this->period_end; ?></h2>
+<h3>Pay period: <?php echo $this->period_covered; ?> to <?php echo $this->period_end; ?></h3>
 <dl>
     <dd><a href="/payroll/index/etps/period_covered/<?php echo $this->period_covered; ?>" class="button">ETPS</a></dd>
-    <?php if(date('d', strtotime($this->period_covered)) == '16') : ?>
-    <dd>
-        <a href="/payroll/index/philhealth/period_covered/<?php echo $this->period_covered; ?>" class="button">Philhealth</a>
-        <a href="/payroll/index/hdmf/period_covered/<?php echo $this->period_covered; ?>" class="button">HDMF</a>
-        <a href="/payroll/index/sss/period_covered/<?php echo $this->period_covered; ?>" class="button">SSS</a>
-    </dd>
+    <?php if (date('d', strtotime($this->period_covered)) == '16') : ?>
+        <dd>
+            <a href="/payroll/index/philhealth/period_covered/<?php echo $this->period_covered; ?>" class="button">Philhealth</a>
+            <a href="/payroll/index/hdmf/period_covered/<?php echo $this->period_covered; ?>" class="button">HDMF</a>
+            <a href="/payroll/index/sss/period_covered/<?php echo $this->period_covered; ?>" class="button">SSS</a>
+        </dd>
     <?php endif; ?>
     <dd><a href="/payroll/index/export/period_covered/<?php echo $this->period_covered; ?>" class="button">Payroll
             report</a></dd>
 
 </dl>
 
-<h3>Old payroll reports</h3>
+<h3>Rest day duty for current cut-off</h3>
+<div class="rest-day-duty">
+    <dl>
+    </dl>
+</div>
+
+<h3>Short duty for current cut-off</h3>
+<div class="short-duty">
+    <dl>
+    </dl>
+
+</div>
+
+<h3>No duty for the last 2 months</h3>
+<div class="no-duty">
+    <dl>
+    </dl>
+</div>
+
+<h4>Old payroll reports</h4>
 <div
     style="margin-left: 1.0em; font-size: 0.8em; height: 200px; overflow-y: auto; border: 1px solid #aaa; padding: 10px; border-radius: 5px; width: 200px;">
     <dl>
@@ -24,3 +43,41 @@
         <?php endforeach; ?>
     </dl>
 </div>
+<script>
+    $(function () {
+        $.get('http://10.200.0.21:9088/api/report/no-duty', function (data) {
+            var no_duty = $('.no-duty dl');
+            if(!data.length > 0) {
+                short_duty.append('<dd>None</dd>');
+            } else {
+                for (var i in data) {
+                    no_duty.append('<dd>' + data[i].group + ' - ' + data[i].rider + ' (' + data[i].employee_number + ') </dd>');
+                }
+            }
+        });
+
+        $.get('http://10.200.0.21:9088/api/report/short-duty', function (data) {
+            var short_duty = $('.short-duty dl');
+            if(!data.length > 0) {
+                short_duty.append('<dd>None</dd>');
+            } else {
+                for (var i in data) {
+                    short_duty.append('<dd>'+ data[i].group+' - ' + data[i].rider + ' (' + data[i].employee_number + ') </dd>');
+                }
+
+            }
+        });
+
+
+        $.get('http://10.200.0.21:9088/api/report/rest-day-duty', function (data) {
+            var short_duty = $('.rest-day-duty dl');
+            if(!data.length > 0) {
+                short_duty.append('<dd>None</dd>');
+            } else {
+                for (var i in data) {
+                    short_duty.append('<dd>' + data[i].group + ' - ' + data[i].rider + ' (' + data[i].employee_number + ') </dd>');
+                }
+            }
+        });
+    });
+</script>
