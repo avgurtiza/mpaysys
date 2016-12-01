@@ -62,7 +62,9 @@
                 short_duty.append('<dd>None</dd>');
             } else {
                 for (var i in data) {
-                    short_duty.append('<dd>'+ data[i].group+' - ' + data[i].rider + ' (' + data[i].employee_number + ') </dd>');
+                    short_duty.append('<dd>'+ data[i].group+' - '
+                        + data[i].rider + ' (' + data[i].employee_number + ') -  '
+                        + data[i].duty + ' Hours </dd>');
                 }
 
             }
