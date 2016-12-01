@@ -801,10 +801,7 @@ class Messervelib_Payroll
                 if ($holiday_today) {
                     $holiday_type_today = ucfirst($holiday_today->getType());
                     $pay_rate_prefix = strtolower($holiday_today->getType());
-
-
                 }
-
 
                 if ($pay_rate_prefix == 'special') $pay_rate_prefix = "spec";
 
@@ -897,10 +894,10 @@ class Messervelib_Payroll
         if (!$cutoff_total_duration > 0) {
 
             $reset = array('today' => 0, 'today_nd' => 0, 'today_ot' => 0, 'today_nd_ot' => 0, 'tomorrow_nd_ot' => 0
-            , 'reg' => 0, 'reg_nd' => 0, 'reg_ot' => 0, 'reg_nd_ot' => 0
-            , 'spec' => 0, 'spec_nd' => 0, 'spec_ot' => 0, 'spec_nd_ot' => 0
-            , 'legal' => 0, 'legal_nd' => 0, 'legal_ot' => 0, 'legal_nd_ot' => 0, 'legal_unattend' => 0
-            , 'rest' => 0, 'rest_nd' => 0, 'rest_ot' => 0, 'rest_nd_ot' => 0);
+                , 'reg' => 0, 'reg_nd' => 0, 'reg_ot' => 0, 'reg_nd_ot' => 0
+                , 'spec' => 0, 'spec_nd' => 0, 'spec_ot' => 0, 'spec_nd_ot' => 0
+                , 'legal' => 0, 'legal_nd' => 0, 'legal_ot' => 0, 'legal_nd_ot' => 0, 'legal_unattend' => 0
+                , 'rest' => 0, 'rest_nd' => 0, 'rest_ot' => 0, 'rest_nd_ot' => 0);
 
         } else {
             if ($cutoff == 2) {

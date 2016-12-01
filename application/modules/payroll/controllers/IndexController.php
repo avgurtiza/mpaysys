@@ -2,13 +2,12 @@
 
 class Payroll_IndexController extends Zend_Controller_Action
 {
-    protected $_employee_payroll, $_employer_bill, $_client, $_pay_period, $_fuelcost, $_last_date;
-
+    protected $_employee_payroll, $_employer_bill, $_messerve_bill;
+    protected $_client, $_pay_period, $_fuelcost, $_last_date;
     protected $_user_auth, $_config;
 
     public function init()
     {
-        /* Initialize action controller here */
         $storage = new Zend_Auth_Storage_Session();
         $data = $storage->read();
 
@@ -33,7 +32,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
     public function indexAction()
     {
-        // action body
         $day = date('d');
         $last_month = date('m', strtotime('last month'));
 
@@ -67,8 +65,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
     public function clientreportAction()
     {
-
-
         $this->_compute();
 
         $client = $this->_client;
@@ -81,13 +77,10 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $ClientRate = new Messerve_Model_RateClient();
 
-
         // TODO:  find by date!
 
         $RateSchedule = new Messerve_Model_EmployeeRateSchedule();
         $rates = $RateSchedule->getMapper()->fetchList("group_id = $group_id", "date_active DESC");
-        // preprint($rates,1);
-
 
         if (count($rates) > 0) {
             $ClientRate->find($rates[0]->getClientRateId());
@@ -709,10 +702,10 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $rec_copy_data['riders'][$Employee->getId()] = array(
                 'employee_number' => $Employee->getEmployeeNumber()
-            , 'name' => $value['attendance']->lastname . ', '
+                , 'name' => $value['attendance']->lastname . ', '
                     . $value['attendance']->firstname . ' '
                     . $value['attendance']->middleinitial
-            , 'pay_period' => $date_start . ' to ' . $date_end
+                , 'pay_period' => $date_start . ' to ' . $date_end
             );
 
             $dim_y -= 16;
@@ -732,8 +725,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             $reset_y = $dim_y;
 
             $PayrollLib = new Messervelib_Payroll();
-
-            // $pay_period = $this->_request->getParam('pay_period');
 
             $employee_pay = $PayrollLib->GetEmployeePayroll(
                 $Employee->getId()
@@ -1351,8 +1342,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         } else {
             $select = $AttendDB->select(true);
 
-            $select
-                ->where('group_id = ?', $group_id)
+            $select->where('group_id = ?', $group_id)
                 ->where("datetime_start >= '{$date_start} 00:00' AND datetime_start <= '{$date_end} 23:59'")
                 ->group('employee_id');
 
@@ -1369,7 +1359,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             unset($select);
 
         }
-
 
         return $employees;
     }
@@ -1404,6 +1393,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $employee_payroll = array();
 
         $employer_bill = array();
+        $messerve_bill = array();
 
         $date1 = new DateTime($date_start); //inclusive
         $date2 = new DateTime($date_end); //exclusive
@@ -1433,62 +1423,14 @@ class Payroll_IndexController extends Zend_Controller_Action
         , 'rest_nd_ot' => 0
         );
 
+        $messerve_bill = $summary_bill;
+
         $AttendDB = new Messerve_Model_DbTable_Attendance();
 
+
         foreach ($employees as $evalue) {
+            // preprint($evalue->toArray());
             $total_hours = 0;
-
-            /*
-            $select = $AttendDB->select();
-
-            $select
-                ->setIntegrityCheck(false)
-                ->from('attendance', array(
-                        'sum_fuel_overage' => 'SUM(fuel_overage)'
-                    , 'sum_reg' => 'SUM(reg)'
-                    , 'sum_reg_nd' => 'SUM(reg_nd)'
-                    , 'sum_reg_ot' => 'SUM(reg_ot)'
-                    , 'sum_reg_nd_ot' => 'SUM(reg_nd_ot)'
-                    , 'sum_sun' => 'SUM(sun)'
-                    , 'sum_sun_nd' => 'SUM(sun_nd)'
-                    , 'sum_sun_ot' => 'SUM(sun_ot)'
-                    , 'sum_sun_nd_ot' => 'SUM(sun_nd_ot)'
-                    , 'sum_spec' => 'SUM(spec)'
-                    , 'sum_spec_nd' => 'SUM(spec_nd)'
-                    , 'sum_spec_ot' => 'SUM(spec_ot)'
-                    , 'sum_spec_nd_ot' => 'SUM(spec_nd_ot)'
-                    , 'sum_legal' => 'SUM(legal)'
-                    , 'sum_legal_nd' => 'SUM(legal_nd)'
-                    , 'sum_legal_ot' => 'SUM(legal_ot)'
-                    , 'sum_legal_nd_ot' => 'SUM(legal_nd_ot)'
-                    , 'sum_legal_unattend' => 'SUM(legal_unattend)'
-
-                    , 'sum_rest' => 'SUM(rest)'
-                    , 'sum_rest_nd' => 'SUM(rest_nd)'
-                    , 'sum_rest_ot' => 'SUM(rest_ot)'
-                    , 'sum_rest_nd_ot' => 'SUM(rest_nd_ot)'
-
-                    , 'today' => 'SUM(today)'
-                    , 'today_nd' => 'SUM(today_nd)'
-                    , 'today_ot' => 'SUM(today_ot)'
-                    , 'today_nd_ot' => 'SUM(today_nd_ot)'
-
-                    , 'tomorrow' => 'SUM(tomorrow)'
-                    , 'tomorrow_nd' => 'SUM(tomorrow_nd)'
-                    , 'tomorrow_ot' => 'SUM(tomorrow_ot)'
-                    , 'tomorrow_nd_ot' => 'SUM(tomorrow_nd_ot)'
-                    , 'count' => 'COUNT(*)'
-                    )
-                )
-                ->join('employee', 'employee.id = attendance.employee_id')
-                ->where('attendance.employee_id = ?', $evalue->getId())
-                ->where('attendance.group_id = ?', $group_id)
-                ->where("datetime_start >= '{$date_start} 00:00' AND datetime_start <= '{$date_end} 23:59'");
-
-                        $attendance = $AttendDB->fetchRow($select);
-
-            preprint($attendance->toArray());
-            */
 
             $select = $AttendDB->select();
 
@@ -1496,8 +1438,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setIntegrityCheck(false)
                 ->from('attendance')
                 ->join('employee', 'employee.id = attendance.employee_id', [
-                    'id'
-                    , 'employee_number'
+                    'employee_number'
                     , 'firstname'
                     , 'middleinitial'
                     , 'lastname'
@@ -1526,6 +1467,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 'philhealth' => '',
                 'dateemployed' => '',
 
+                'extended_shift' => 'no',
                 'sum_fuel_overage' => 0,
 
                 'sum_reg' => 0,
@@ -1554,6 +1496,22 @@ class Payroll_IndexController extends Zend_Controller_Action
             ];
 
             foreach ($all_attendance as $day) {
+                echo "{$evalue->firstname} {$day->datetime_start} <br>";
+
+                $AttendanceMap = new Messerve_Model_Mapper_Attendance();
+
+                $first_day = $AttendanceMap->findOneByField(
+                    array('datetime_start', 'employee_id', 'group_id')
+                    , array($date_start, $evalue->getId(), $group_id)
+                );
+
+                if (!$first_day) {
+                    echo "SKIP";
+                    continue;
+                }
+
+                preprint($day->toArray());
+
                 $attendance->sum_fuel_overage += $day->fuel_overage;
 
                 $attendance->sum_reg += $day->reg;
@@ -1593,7 +1551,46 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 // Fork for-employer attendance
 
+                $summary_bill['reg'] += $day->reg;
+                $summary_bill['reg_nd'] += $day->reg_nd;
+
+                $summary_bill['spec'] += $day->spec;
+                $summary_bill['spec_nd'] += $day->spec_nd;
+
+                $summary_bill['legal'] += $day->legal;
+                $summary_bill['legal_nd'] += $day->legal_nd;
+
+                $summary_bill['legal_unattend'] += $day->legal_unattend;
+
+
+                if ($day->extended_shift == 'yes') { // Has extended shift, bill OT to Messerve
+                    $messerve_bill['reg_ot'] += $day->reg_ot;
+                    $messerve_bill['reg_nd_ot'] += $day->reg_nd_ot;
+
+                    $messerve_bill['spec_ot'] += $day->spec_ot;
+                    $messerve_bill['spec_nd_ot'] += $day->spec_nd_ot;
+
+                    $messerve_bill['legal_ot'] += $day->legal_ot;
+                    $messerve_bill['legal_nd_ot'] += $day->legal_nd_ot;
+
+                    $messerve_bill['rest_ot'] += $day->rest_ot;
+                    $messerve_bill['rest_nd_ot'] += $day->rest_nd_ot;
+                } else {
+                    $summary_bill['reg_ot'] += $day->reg_ot;
+                    $summary_bill['reg_nd_ot'] += $day->reg_nd_ot;
+
+                    $summary_bill['spec_ot'] += $day->spec_ot;
+                    $summary_bill['spec_nd_ot'] += $day->spec_nd_ot;
+
+                    $summary_bill['legal_ot'] += $day->legal_ot;
+                    $summary_bill['legal_nd_ot'] += $day->legal_nd_ot;
+
+                    $summary_bill['rest_ot'] += $day->rest_ot;
+                    $summary_bill['rest_nd_ot'] += $day->rest_nd_ot;
+                }
+
             }
+
 
             $attendance->id = $day->employee_id;
             $attendance->group_id = $day->group_id;
@@ -1608,9 +1605,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             $attendance->philhealth = $day->philhealth;
 
             $attendance->dateemployed = $day->dateemployed;
-            // preprint($attendance, 1);
-            // die();
-
 
             if ($attendance->rate_id > 0) { //  Using employee rate
                 $this_rate = $rates_array[$attendance->rate_id];
@@ -1620,14 +1614,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 die('Process halted:  no rates found for either employee or group.');
             }
 
-            $AttendanceMap = new Messerve_Model_Mapper_Attendance();
-
-            $first_day = $AttendanceMap->findOneByField(
-                array('datetime_start', 'employee_id', 'group_id')
-                , array($date_start, $evalue->getId(), $group_id)
-            );
-
-            if (!$first_day) continue;
 
             $total_hours = $attendance->sum_reg
                 + $attendance->sum_reg_nd
@@ -1681,6 +1667,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'rest_nd_ot' => $attendance->sum_rest_nd_ot * $this_rate->SpecNdOt
             );
 
+
             $sss_deduct = $total_hours * ($this_rate->SSSEmployee / 22 / 8);
 
             $employee_payroll[$evalue->getId()]['deductions'] = array(
@@ -1706,106 +1693,15 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'date_employed' => $attendance->dateemployed
             );
 
-            $summary_bill['reg'] += round($attendance->sum_reg, 2);
-            $summary_bill['reg_nd'] += round($attendance->sum_reg_nd, 2);
-            $summary_bill['reg_ot'] += round($attendance->sum_reg_ot, 2);
-            $summary_bill['reg_nd_ot'] += round($attendance->sum_reg_nd_ot, 2);
 
-            $summary_bill['spec'] += round($attendance->sum_spec, 2);
-            $summary_bill['spec_nd'] += round($attendance->sum_spec_nd, 2);
-            $summary_bill['spec_ot'] += round($attendance->sum_spec_ot, 2);
-            $summary_bill['spec_nd_ot'] += round($attendance->sum_spec_nd_ot, 2);
-
-            $summary_bill['legal'] += round($attendance->sum_legal, 2);
-            $summary_bill['legal_nd'] += round($attendance->sum_legal_nd, 2);
-            $summary_bill['legal_ot'] += round($attendance->sum_legal_ot, 2);
-            $summary_bill['legal_nd_ot'] += round($attendance->sum_legal_nd_ot, 2);
-            $summary_bill['legal_unattend'] += round($attendance->sum_legal_unattend, 2);
-
-            $summary_bill['rest'] += round($attendance->sum_rest, 2);
-            $summary_bill['rest_nd'] += round($attendance->sum_rest_nd, 2);
-            $summary_bill['rest_ot'] += round($attendance->sum_rest_ot, 2);
-            $summary_bill['rest_nd_ot'] += round($attendance->sum_rest_nd_ot, 2);
-
-            $employer_bill[$evalue->getId()]['income'] = array(
-                'reg_hours' => $attendance->sum_reg
-            , 'reg' => $this_rate->Reg
-            , 'reg_nd_hours' => $attendance->sum_reg_nd
-            , 'reg_nd' => $this_rate->RegNd
-            , 'reg_ot_hours' => $attendance->sum_reg_ot
-            , 'reg_ot' => $this_rate->RegOT
-            , 'reg_nd_ot_hours' => $attendance->sum_reg_nd_ot
-            , 'reg_nd_ot' => $this_rate->RegNdOT
-            , 'sun_hours' => $attendance->sum_sun
-            , 'sun' => $this_rate->Sun
-            , 'sun_nd_hours' => $attendance->sum_sun_nd
-            , 'sun_nd' => $this_rate->SunNd
-            , 'sun_ot_hours' => $attendance->sum_sun_ot
-            , 'sun_ot' => $this_rate->SunOT
-            , 'sun_nd_ot_hours' => $attendance->sum_sun_nd_ot
-            , 'sun_nd_ot' => $this_rate->SunNdOt
-            , 'spec_hours' => $attendance->sum_spec
-            , 'spec' => $this_rate->Spec
-            , 'spec_nd_hours' => $attendance->sum_spec_nd
-            , 'spec_nd' => $this_rate->SpecNd
-            , 'spec_ot_hours' => $attendance->sum_spec_ot
-            , 'spec_ot' => $this_rate->SpecOT
-            , 'spec_nd_ot_hours' => $attendance->sum_spec_nd_ot
-            , 'spec_nd_ot' => $this_rate->SpecNdOt
-            , 'legal_hours' => $attendance->sum_legal
-            , 'legal' => $this_rate->Legal
-            , 'legal_nd_hours' => $attendance->sum_legal_nd
-            , 'legal_nd' => $this_rate->LegalNd
-            , 'legal_ot_hours' => $attendance->sum_legal_ot
-            , 'legal_ot' => $this_rate->LegalOT
-            , 'legal_nd_ot_hours' => $attendance->sum_legal_nd_ot
-            , 'legal_nd_ot' => $this_rate->LegalNdOt
-            , 'legal_unattend_hours' => $attendance->sum_legal_unattend
-            , 'legal_unattend' => $this_rate->LegalUnattend
-            , 'rest_hours' => $attendance->sum_rest
-            , 'rest' => $this_rate->Rest
-            , 'rest_nd_hours' => $attendance->sum_rest_nd
-            , 'rest_nd' => $this_rate->RestNd
-            , 'rest_ot_hours' => $attendance->sum_rest_ot
-            , 'rest_ot' => $this_rate->RestOT
-            , 'rest_nd_ot_hours' => $attendance->sum_rest_nd_ot
-            , 'rest_nd_ot' => $this_rate->RestNdOt
-            , 'ecola_hours' => $total_hours
-            , 'ecola' => ($this_rate->Ecola / 8) // Deprecated
-            );
-
-
-            $employer_bill[$evalue->getId()]['deductions'] = array(
-                'sss_ee' => ($this_rate->SSSEmployee * -1)
-            , 'sss_er' => ($this_rate->SSSEmployer * -1)
-
-            , 'philhealth_ee' => ($this_rate->PhilhealthEmployee * -1)
-            , 'philhealth_er' => ($this_rate->PhilhealthEmployer * -1)
-
-            , 'hdmf_ee' => ($this_rate->HDMFEmployee * -1)
-            , 'hdmf_er' => ($this_rate->HDMFEmployer * -1)
-            , 'ec' => ($this_rate->EC * -1)
-
-            , 'bike_rehab' => 0
-            , 'bike_insurance_reg' => 0
-            );
-
-            if (strtotime($attendance->bike_rehab_end) >= strtotime($date_start)) {
+            if (property_exists($attendance, 'bike_rehab_end') && strtotime($attendance->bike_rehab_end) >= strtotime($date_start)) {
                 $employee_payroll[$evalue->getId()]['deductions']['bike_rehab']
                     = $this_rate->BikeRehab;
-
-                $employer_bill[$evalue->getId()]['deductions']['bike_rehab']
-                    = $this_rate->BikeRehab * -1;
-
             }
 
-            if (strtotime($attendance->bike_insurance_reg_end) >= strtotime($date_start)) {
+            if (property_exists($attendance, 'bike_insurance_reg_end') && strtotime($attendance->bike_insurance_reg_end) >= strtotime($date_start)) {
                 $employee_payroll[$evalue->getId()]['deductions']['bike_insurance_reg']
                     = $this_rate->BikeInsuranceReg;
-
-                $employer_bill[$evalue->getId()]['deductions']['bike_insurance_reg']
-                    = $this_rate->BikeInsuranceReg * -1;
-
             }
 
             $AddIncome = new Messerve_Model_Addincome();
@@ -1831,7 +1727,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 unset($more_income['id'], $more_income['attendance_id']);
 
                 $employee_payroll[$evalue->getId()]['more_income'] = $more_income;
-                $employer_bill[$evalue->getId()]['income'] += $more_income;
             }
 
             $Deductions = new Messerve_Model_Deductions();
@@ -1846,11 +1741,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 foreach ($more_deductions as $dkey => $dvalue) {
                     $dvalue = $more_deductions[$dkey] = $dvalue;
                 }
-
-                $employer_bill[$evalue->getId()]['deductions'] += $more_deductions;
             }
-
-            $employer_bill[$evalue->getId()]['deductions']['cash_bond'] = $this_rate->getCashBond() * -1;
 
             $employee_payroll[$evalue->getId()]['attendance'] = $attendance;
 
@@ -1862,10 +1753,19 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $employee_payroll[$evalue->getId()]['deductions']['bike_rehab'] = 0;
                 $employee_payroll[$evalue->getId()]['deductions']['bike_insurance_reg'] = 0;
             }
+
         }
+
 
         $this->_employee_payroll = $employee_payroll;
         $this->_employer_bill = $summary_bill;
+
+        // preprint($summary_bill, true);
+
+        $this->_messerve_bill = $messerve_bill;
+
+        preprint($messerve_bill,1);
+
     }
 
     public function summaryreportAction()
