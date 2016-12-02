@@ -977,8 +977,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $date_end = $this->_request->getParam('date_end');
         $this->view->date_end = $date_end;
 
-        $Attendance = new Messerve_Model_Attendance();
-
         $date1 = new DateTime($date_start); //inclusive
         $date2 = new DateTime($date_end); //exclusive
         $diff = $date2->diff($date1);
@@ -1021,7 +1019,10 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             $current_date = date('Y-m-d', strtotime('+1 day', strtotime($current_date)));
 
             if ($i == 1) $first_day_id = $Attendance->getId();
+            // preprint($Attendance->toArray());
+
         }
+
 
         $this->view->dates = $dates;
         $this->view->period_size = $period_size;
@@ -1047,6 +1048,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         if ($this->_request->isPost()) { // Save submit
             $postvars = $this->_request->getPost();
+
             if ($form->isValid($postvars)) {
 
                 $Deductions
@@ -1058,11 +1060,10 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                     ->save();
 
                 $this->_save_the_day($employee_id, $group_id, $this->_request->getPost()); // TODO:  figure out why this needs to run twice
-                $this->_save_the_day($employee_id, $group_id, $this->_request->getPost());
+                // $this->_save_the_day($employee_id, $group_id, $this->_request->getPost());
 
                 $this->_redirect("/dataentry/attendance/employee/id/{$employee_id}/pay_period/{$pay_period}/date_start/{$date_start}/date_end/{$date_end}/group_id/{$group_id}");
             }
-
 
             // Log action
         }

@@ -75,8 +75,8 @@ class Messerve_Form_EditEmployee extends Zend_Form
         		$this->createElement('text', 'employee_number')
         		->setLabel('Employee number')
         		->setAttrib("maxlength", 64)
-        		->setRequired(true)
-        		->addValidator(new Zend_Validate_StringLength(array("max" => 64)))
+        		//->setRequired(true)
+        		//->addValidator(new Zend_Validate_StringLength(array("max" => 64)))
         		->addFilter(new Zend_Filter_StringTrim())
         );
         
