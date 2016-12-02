@@ -377,10 +377,10 @@ class Messervelib_Payroll
 
             $base_reg = $this->_max_regular_hours;
 
+            $has_extended_shift = false;
+
             if (isset($attendance['extended_shift']) && $attendance['extended_shift'] == 'yes') {
-                // TODO:  find a way to bill this to Messerve, not the client
-            } else {
-                // $ot_duration = $work_duration - $this->_max_regular_hours;
+                $has_extended_shift = true;
             }
 
             // Always pay rider their due for OT
@@ -805,7 +805,7 @@ class Messervelib_Payroll
             , 'tomorrow_nd_ot' => $tomorrow_nd_ot
             ));
 
-            if ($Attendance->getOtApproved() != 'yes') {
+            if ($Attendance->getOtApproved() != 'yes' && !$has_extended_shift) {
                 $time_array['reg_ot'] = 0;
                 $time_array['reg_nd_ot'] = 0;
                 $time_array['spec_ot'] = 0;
@@ -818,7 +818,6 @@ class Messervelib_Payroll
                 $time_array['today_ot'] = 0;
                 $time_array['today_nd_ot'] = 0;
                 $time_array['tomorrow_nd_ot'] = 0;
-
             }
 
 
