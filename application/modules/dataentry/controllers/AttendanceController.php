@@ -55,8 +55,18 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $groups_array = array();
 
         foreach ($groups as $gvalue) {
-            $groups_array[$gvalue->getId()] = $clients[$gvalue->getClientId()] . ' ' . $gvalue->getName();
+            $Employee = new Messerve_Model_DbTable_Employee();
+
+            $employee_count = $Employee->countByQuery('group_id = ' . $gvalue->getId());
+
+            if ($employee_count > 0) {
+                $groups_array[$gvalue->getId()] = $clients[$gvalue->getClientId()] . ' ' . $gvalue->getName()
+                    . ' (' . $employee_count . ')';
+            }
         }
+
+
+        asort($groups_array);
 
         $form = new Messerve_Form_Attendance();
         $form->setAction('/dataentry/attendance/employees');
@@ -523,7 +533,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $Client->find($Group->getClientId());
         $this->view->client = $Client;
 
-        $clients = $Client->getMapper()->fetchList('1');
+        $clients = $Client->getMapper()->fetchList('id > 0', 'name ASC');
 
         $groups_array = array();
 
@@ -531,12 +541,19 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             $client_groups = $Group->getMapper()->fetchList('client_id = ' . $cvalue->getId(), 'name ASC');
 
             foreach ($client_groups as $gvalue) {
-                $groups_array[] = array(
-                    'client_id' => $cvalue->getId()
-                , 'client_name' => $cvalue->getName()
-                , 'group_id' => $gvalue->getId()
-                , 'group_name' => $gvalue->getName()
-                );
+                $Employee = new Messerve_Model_DbTable_Employee();
+
+                $employee_count = $Employee->countByQuery('group_id = ' . $gvalue->getId());
+
+                if ($employee_count > 0) {
+                    $groups_array[] = array(
+                        'client_id' => $cvalue->getId()
+                    , 'client_name' => $cvalue->getName()
+                    , 'group_id' => $gvalue->getId()
+                    , 'group_name' => $gvalue->getName()
+                    );
+                }
+
 
             }
         }
@@ -960,8 +977,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $date_end = $this->_request->getParam('date_end');
         $this->view->date_end = $date_end;
 
-        $Attendance = new Messerve_Model_Attendance();
-
         $date1 = new DateTime($date_start); //inclusive
         $date2 = new DateTime($date_end); //exclusive
         $diff = $date2->diff($date1);
@@ -1004,7 +1019,10 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             $current_date = date('Y-m-d', strtotime('+1 day', strtotime($current_date)));
 
             if ($i == 1) $first_day_id = $Attendance->getId();
+            // preprint($Attendance->toArray());
+
         }
+
 
         $this->view->dates = $dates;
         $this->view->period_size = $period_size;
@@ -1030,6 +1048,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         if ($this->_request->isPost()) { // Save submit
             $postvars = $this->_request->getPost();
+
             if ($form->isValid($postvars)) {
 
                 $Deductions
@@ -1041,11 +1060,10 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                     ->save();
 
                 $this->_save_the_day($employee_id, $group_id, $this->_request->getPost()); // TODO:  figure out why this needs to run twice
-                $this->_save_the_day($employee_id, $group_id, $this->_request->getPost());
+                // $this->_save_the_day($employee_id, $group_id, $this->_request->getPost());
 
                 $this->_redirect("/dataentry/attendance/employee/id/{$employee_id}/pay_period/{$pay_period}/date_start/{$date_start}/date_end/{$date_end}/group_id/{$group_id}");
             }
-
 
             // Log action
         }

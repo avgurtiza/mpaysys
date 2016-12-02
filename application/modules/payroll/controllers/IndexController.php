@@ -2335,24 +2335,32 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'Last name' => $pvalue->getLastName()
             , 'First name' => $pvalue->getFirstName()
             , 'Middle name' => $pvalue->getMiddleName()
-            , 'Account number' => $pvalue->getAccountNumber()
             , 'Ecola' => number_format(round($pvalue->getEcola(), 2), 2)
+
             , 'Incentives' => number_format(round($pvalue->getIncentives(), 2), 2)
             , '13th month pay' => number_format(round($pvalue->getThirteenthMonth(), 2), 2)
-            , 'Fuel addition' => number_format(round($pvalue->getFuelAddition(), 2), 2)
-            , 'Misc addition' => number_format(round($pvalue->getMiscAddition(), 2), 2)
-            , 'Paternity' => number_format(round($pvalue->getPaternity(), 2), 2)
 
             , 'BOP maintenance' => $bop_maintenance
             , 'BOP rental' => $bop_rental
 
+            , 'Fuel addition' => number_format(round($pvalue->getFuelAddition(), 2), 2)
+
+            , 'Misc addition' => number_format(round($pvalue->getMiscAddition(), 2), 2)
+            , 'Paternity' => number_format(round($pvalue->getPaternity(), 2), 2)
+
             , 'Gross pay' => number_format(round($pvalue->getGrossPay(), 2), 2)
+
+            // , 'Account number' => $pvalue->getAccountNumber()
+
+
+
             , 'SSS' => number_format(round($pvalue->getSss() * -1, 2), 2)
             , 'Philhealth' => number_format(round($pvalue->getPhilhealth() * -1, 2), 2)
             , 'HDMF' => number_format(round($pvalue->getHdmf() * -1, 2), 2)
-            , 'Cash bond' => number_format(round($pvalue->getCashBond() * -1, 2), 2)
-            , 'Insurance' => number_format(round($pvalue->getInsurance() * -1, 2), 2)
-                // , 'Misc deduction'=>number_format(round($pvalue->getMiscDeduction() * -1,2),2)
+
+            // , 'Cash bond' => number_format(round($pvalue->getCashBond() * -1, 2), 2)
+            // , 'Insurance' => number_format(round($pvalue->getInsurance() * -1, 2), 2)
+            // , 'Misc deduction'=>number_format(round($pvalue->getMiscDeduction() * -1,2),2)
 
             , 'SSS loan' => number_format(round($pvalue->getSSSLoan() * -1, 2), 2)
             , 'HDMF loan' => number_format(round($pvalue->getHDMFLoan() * -1, 2), 2)

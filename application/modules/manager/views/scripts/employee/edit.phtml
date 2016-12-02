@@ -28,7 +28,9 @@
 	$(function() {
 		$('button.cancel').click(function() {
 			history.back();	 
-		} ); 
+		} );
+
+		$('#group_id option[value=<?php echo $this->group_id; ?>]').attr('selected','selected');
 	} );
 //-->
 </script>
