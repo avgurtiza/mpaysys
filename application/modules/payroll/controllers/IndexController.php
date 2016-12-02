@@ -1393,7 +1393,6 @@ class Payroll_IndexController extends Zend_Controller_Action
         $employee_payroll = array();
 
         $employer_bill = array();
-        $messerve_bill = array();
 
         $date1 = new DateTime($date_start); //inclusive
         $date2 = new DateTime($date_end); //exclusive
@@ -1423,13 +1422,12 @@ class Payroll_IndexController extends Zend_Controller_Action
         , 'rest_nd_ot' => 0
         );
 
-        $messerve_bill = $summary_bill;
+        $messerve_bill = $summary_bill; // Reset to zero
 
         $AttendDB = new Messerve_Model_DbTable_Attendance();
 
 
         foreach ($employees as $evalue) {
-            // preprint($evalue->toArray());
             $total_hours = 0;
 
             $select = $AttendDB->select();
@@ -1509,8 +1507,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                     echo "SKIP";
                     continue;
                 }
-
-                preprint($day->toArray());
 
                 $attendance->sum_fuel_overage += $day->fuel_overage;
 
