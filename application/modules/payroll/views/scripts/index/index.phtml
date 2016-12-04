@@ -15,21 +15,23 @@
 
 <h3>Rest day duty for current cut-off</h3>
 <div class="rest-day-duty">
-    <dl>
-    </dl>
+    <table class="table">
+        <tbody></tbody>
+    </table>
 </div>
 
 <h3>Short duty for current cut-off</h3>
 <div class="short-duty">
-    <dl>
-    </dl>
-
+    <table class="table">
+        <tbody></tbody>
+    </table>
 </div>
 
 <h3>No duty for the last 2 months</h3>
 <div class="no-duty">
-    <dl>
-    </dl>
+    <table class="table">
+        <tbody></tbody>
+    </table>
 </div>
 
 <h4>Old payroll reports</h4>
@@ -46,25 +48,25 @@
 <script>
     $(function () {
         $.get('http://10.200.0.21:9080/api/report/no-duty', function (data) {
-            var no_duty = $('.no-duty dl');
+            var no_duty = $('.no-duty tbody');
             if(!data.length > 0) {
-                no_duty.append('<dd>None</dd>');
+                no_duty.append('<tr><td>None</td></tr>');
             } else {
                 for (var i in data) {
-                    no_duty.append('<dd>' + data[i].group + ' - ' + data[i].rider + ' (' + data[i].employee_number + ') </dd>');
+                    no_duty.append('<tr><td>' + data[i].group + ' </td><td> ' + data[i].rider + ' (' + data[i].employee_number + ') </td></tr>');
                 }
             }
         });
 
         $.get('http://10.200.0.21:9080/api/report/short-duty', function (data) {
-            var short_duty = $('.short-duty dl');
+            var short_duty = $('.short-duty tbody');
             if(!data.length > 0) {
-                short_duty.append('<dd>None</dd>');
+                short_duty.append('<tr><td>None</td></tr>');
             } else {
                 for (var i in data) {
-                    short_duty.append('<dd>'+ data[i].group+' - '
-                        + data[i].rider + ' (' + data[i].employee_number + ') -  '
-                        + data[i].duty + ' Hours </dd>');
+                    short_duty.append('<tr><td>'+ data[i].group+' </td><td> '
+                        + data[i].rider + ' (' + data[i].employee_number + ') </td><td>  '
+                        + data[i].duty + ' Hours </td></tr>');
                 }
 
             }
@@ -72,12 +74,12 @@
 
 
         $.get('http://10.200.0.21:9080/api/report/rest-day-duty', function (data) {
-            var rest_day_duty = $('.rest-day-duty dl');
+            var rest_day_duty = $('.rest-day-duty tbody');
             if(!data.length > 0) {
-                rest_day_duty.append('<dd>None</dd>');
+                rest_day_duty.append('<tr><td>None</td></tr>');
             } else {
                 for (var i in data) {
-                    rest_day_duty.append('<dd>' + data[i].group + ' - ' + data[i].rider + ' (' + data[i].employee_number + ') </dd>');
+                    rest_day_duty.append('<tr><td>' + data[i].group + ' </td><td> ' + data[i].rider + ' (' + data[i].employee_number + ')</td></tr>');
                 }
             }
         });
