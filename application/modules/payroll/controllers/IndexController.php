@@ -570,6 +570,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $bop_acknowledgement = [];
 
+        // preprint($this->_employee_payroll,1);
+
         foreach ($this->_employee_payroll as $value) {
             $page = new Zend_Pdf_Page(612, 396);
 
@@ -732,12 +734,21 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , $this->_request->getParam('date_start')
             );
 
+            if($Employee->getId() == 893) {
+                // preprint($employee_pay,1);
+
+            }
+
+
             $total_no_hours = 0;
             $total_pay = 0;
             $total_deduct = 0;
             $total_misc_deduct = 0;
 
             $sss_deductions = array();
+
+            $ecola_addition = 0;
+            $legal_ecola_addition = 0;
 
             foreach ($employee_pay as $pkey => $pvalue) {
                 $ecola = 0;
@@ -1100,14 +1111,16 @@ class Payroll_IndexController extends Zend_Controller_Action
             $pdf->pages[] = $page;
             $dole_pdf->pages[] = $dole_page;
 
+            /*
             $pay_array = array(
                 $value['attendance']->lastname
-            , $value['attendance']->firstname
-            , $value['attendance']->middleinitial
-            , $value['attendance']->employee_number
-            , $value['attendance']->account_number
-            , round($total_pay - $total_deduct, 2)
+                , $value['attendance']->firstname
+                , $value['attendance']->middleinitial
+                , $value['attendance']->employee_number
+                , $value['attendance']->account_number
+                , round($total_pay - $total_deduct, 2)
             );
+            */
 
             if ($group_id == $Employee->getGroupId()) {
                 $is_reliever = 'no';
@@ -1494,7 +1507,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             ];
 
             foreach ($all_attendance as $day) {
-                echo "{$evalue->firstname} {$day->datetime_start} <br>";
+                // echo "{$evalue->firstname} {$day->datetime_start} <br>";
 
                 $AttendanceMap = new Messerve_Model_Mapper_Attendance();
 
@@ -1760,7 +1773,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $this->_messerve_bill = $messerve_bill;
 
-        preprint($messerve_bill,1);
+        // preprint($messerve_bill,1);
 
     }
 
@@ -1872,8 +1885,9 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $employee_count = 0;
 
-        foreach ($this->_employee_payroll as $value) {
+        echo "Summary data below";
 
+        foreach ($this->_employee_payroll as $value) {
             if ($employee_count >= 8) {
                 $employee_count = 0;
 
@@ -1905,14 +1919,11 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $total_legal_unattend = 0;
 
-
             $total_rest = 0;
             $total_rest_ot = 0;
             $total_rest_nd = 0;
             $total_rest_nd_ot = 0;
 
-            $total_nd = 0;
-            $total_nd_ot = 0;
             $total_total_hours = 0;
 
             $dates = array();
@@ -1941,8 +1952,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                         ->setGroupId($group_id)
                         ->save();
 
-                    $Attendance->find($Attendance->getId()); // TODO: Why is this necessary?
-                    // Answer:  so you'll get the whole model
+                    $Attendance->find($Attendance->getId()); // Get the whole model
                 }
 
                 $dates[$current_date] = $Attendance;
@@ -1955,36 +1965,33 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $all_hours = array(
                     $attendance_array['reg']
-                , $attendance_array['reg_nd']
-                , $attendance_array['spec']
-                , $attendance_array['spec_nd']
-                , $attendance_array['sun']
-                , $attendance_array['sun_nd']
-                , $attendance_array['legal']
-                , $attendance_array['legal_nd']
-                , $attendance_array['legal_unattend']
-                , $attendance_array['rest']
-                , $attendance_array['rest_nd']
+                    , $attendance_array['reg_nd']
+                    , $attendance_array['spec']
+                    , $attendance_array['spec_nd']
+                    , $attendance_array['sun']
+                    , $attendance_array['sun_nd']
+                    , $attendance_array['legal']
+                    , $attendance_array['legal_nd']
+                    , $attendance_array['legal_unattend']
+                    , $attendance_array['rest']
+                    , $attendance_array['rest_nd']
 
                 );
+
+
 
                 if ($Attendance->getOtApproved() == 'yes') {
                     $all_hours = array_merge($all_hours, array(
                         $attendance_array['reg_ot']
-                    , $attendance_array['reg_nd_ot']
-
-                    , $attendance_array['spec_ot']
-                    , $attendance_array['spec_nd_ot']
-
-                    , $attendance_array['sun_ot']
-                    , $attendance_array['sun_nd_ot']
-
-                    , $attendance_array['legal_ot']
-                    , $attendance_array['legal_nd_ot']
-
-                    , $attendance_array['rest_ot']
-                    , $attendance_array['rest_nd_ot']
-
+                        , $attendance_array['reg_nd_ot']
+                        , $attendance_array['spec_ot']
+                        , $attendance_array['spec_nd_ot']
+                        , $attendance_array['sun_ot']
+                        , $attendance_array['sun_nd_ot']
+                        , $attendance_array['legal_ot']
+                        , $attendance_array['legal_nd_ot']
+                        , $attendance_array['rest_ot']
+                        , $attendance_array['rest_nd_ot']
                     ));
                 }
 
@@ -2025,6 +2032,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $i = 1;
 
                 foreach ($employee_attendance_text as $evalue) {
+                    if($employee_id == 893) {
+                        // echo "-- 893: ";  preprint($evalue);
+                    }
                     $page->setFont($font, 8)->drawText($evalue, $dim_x + ($i * 25) + 150, $dim_y, 'UTF8');
                     $i++;
                 }
