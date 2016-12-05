@@ -70,7 +70,8 @@ class Messerve_Form_EditEmployee extends Zend_Form
         		->addValidator(new Zend_Validate_StringLength(array("max" => 64)))
         		->addFilter(new Zend_Filter_StringTrim())
         );
-        
+
+        /*
         $this->addElement(
         		$this->createElement('text', 'employee_number')
         		->setLabel('Employee number')
@@ -79,6 +80,7 @@ class Messerve_Form_EditEmployee extends Zend_Form
         		//->addValidator(new Zend_Validate_StringLength(array("max" => 64)))
         		->addFilter(new Zend_Filter_StringTrim())
         );
+        */
         
         $this->addElement(
         		$this->createElement('text', 'tin')
