@@ -3,7 +3,9 @@
 class Messervelib_Payroll
 {
     protected $_max_regular_hours = null, $_init_night_diff_start, $_init_night_diff_end
-    , $_night_diff_start, $_night_diff_end, $_midnight, $_date;
+    , $_night_diff_start, $_night_diff_end, $_midnight, $_date
+    , $_ot_start, $_round_to_ten_minutes // TODO: Clean up
+    ;
     protected $_config;
     protected $_client_rates, $_employee_rates;
 
@@ -19,8 +21,6 @@ class Messervelib_Payroll
 
     public function save_the_day($employee_id, $group_id, $data)
     {
-        $config = Zend_Registry::get('config');
-
         $Employee = new Messerve_Model_Employee();
 
         $Employee->find($employee_id);
@@ -118,10 +118,13 @@ class Messervelib_Payroll
 
             $Attendance->save();
 
+            /*
             $time_array = ['today' => 0, 'today_nd' => 0, 'today_ot' => 0, 'today_nd_ot' => 0
                 , 'tomorrow' => 0, 'tomorrow_nd' => 0, 'tomorrow_ot' => 0, 'tomorrow_nd_ot' => 0];
+            */
 
             $time_array = [];
+
             // Determine employee and client rates for today and tomorrow
             $rates_today = $this->_get_rate_today($date);
 
@@ -375,21 +378,24 @@ class Messervelib_Payroll
 
             $end_of_shift = $start_1 + ($total_duration * 3600);
 
-            $base_reg = $this->_max_regular_hours;
-
             $has_extended_shift = false;
 
+            $ot_duration = 0;
+
+            if ($attendance['ot_approved'] == 'yes') {
+                $ot_duration = $work_duration - $this->_max_regular_hours;
+            }
+
             if (isset($attendance['extended_shift']) && $attendance['extended_shift'] == 'yes') {
+                $ot_duration = $work_duration - $this->_max_regular_hours;
                 $has_extended_shift = true;
             }
 
-            // Always pay rider their due for OT
-            $ot_duration = $work_duration - $this->_max_regular_hours;
 
             $ot_start = 0;
 
             if ($ot_duration > 0) {
-                $approved_hours_balance = $Attendance->getOtApprovedHours();
+                // $approved_hours_balance = $Attendance->getOtApprovedHours();
 
                 /* When does OT start? */
                 if ($work_duration >= $this->_max_regular_hours) {
@@ -400,8 +406,6 @@ class Messervelib_Payroll
                     } elseif ($duration_2 + $duration_2 + $duration_3 >= $this->_max_regular_hours) { // OT starts in D3
                         $ot_start = $end_3 - ($work_duration - ($this->_max_regular_hours * 3600));
                     }
-                } else {
-                    $base_reg = $work_duration;
                 }
             } else { // Just in case negatives turn up
                 $ot_duration = 0;
@@ -436,19 +440,12 @@ class Messervelib_Payroll
             $tomorrow_ot = 0;
             $tomorrow_nd_ot = 0;
 
-            /*
-            $reg_nd = 0;
-            $reg_ot = 0;
-            $reg_nd_ot = 0;
-            */
             if ($ot_duration > 0) {
                 $ot_balance = $ot_duration;
 
                 for ($i = 3; $i >= 0; $i--) {
                     // echo "<br>OT $i - ";
                     if (isset($time_array[$i])) {
-
-                        // preprint($time_array[$i]);
 
                         if (isset($time_array[$i]['tomorrow'])) {
                             if (($time_array[$i]['tomorrow'] - $ot_balance) >= 0) {

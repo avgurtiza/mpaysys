@@ -1,4 +1,4 @@
-<h3>Pay period: <?php echo $this->period_covered; ?> to <?php echo $this->period_end; ?></h3>
+<h4>Pay period: <?php echo $this->period_covered; ?> to <?php echo $this->period_end; ?></h4>
 <dl>
     <dd><a href="/payroll/index/etps/period_covered/<?php echo $this->period_covered; ?>" class="button">ETPS</a></dd>
     <?php if (date('d', strtotime($this->period_covered)) == '16') : ?>
@@ -13,21 +13,28 @@
 
 </dl>
 
-<h3>Rest day duty for current cut-off</h3>
+<h4>Billed-to-Messerve OT for current cut-off</h4>
+<div class="messerve-ot">
+    <table class="table">
+        <tbody></tbody>
+    </table>
+</div>
+
+<h4>Rest day duty for current cut-off</h4>
 <div class="rest-day-duty">
     <table class="table">
         <tbody></tbody>
     </table>
 </div>
 
-<h3>Short duty for current cut-off</h3>
+<h4>Short duty for current cut-off</h4>
 <div class="short-duty">
     <table class="table">
         <tbody></tbody>
     </table>
 </div>
 
-<h3>No duty for the last 2 months</h3>
+<h4>No duty for the last 2 months</h4>
 <div class="no-duty">
     <table class="table">
         <tbody></tbody>
@@ -47,7 +54,22 @@
 </div>
 <script>
     $(function () {
-        $.get('http://10.200.0.21:9080/api/report/no-duty', function (data) {
+        $.get('<?php echo $this->api_host; ?>/api/report/messerve-ot', function (data) {
+            var short_duty = $('.messerve-ot tbody');
+            if(!data.length > 0) {
+                short_duty.append('<tr><td>None</td></tr>');
+            } else {
+                for (var i in data) {
+                    short_duty.append('<tr><td>'+ data[i].group+' </td><td> '
+                        + data[i].rider + ' (' + data[i].employee_number + ') </td><td>  '
+                        + data[i].ot_hours + ' Hour/s </td><td>' + data[i].date + '</td><td><a target="_blank" href="'+data[i].link+'">View attendance</a></td></tr>');
+                }
+
+                short_duty.append('<tr><td colspan="5"><a href="<?php echo $this->api_host; ?>/api/report/messerve-ot?download=oh-yes">Download report</a></td></tr>');
+            }
+        });
+
+        $.get('<?php echo $this->api_host; ?>/api/report/no-duty', function (data) {
             var no_duty = $('.no-duty tbody');
             if(!data.length > 0) {
                 no_duty.append('<tr><td>None</td></tr>');
@@ -58,7 +80,7 @@
             }
         });
 
-        $.get('http://10.200.0.21:9080/api/report/short-duty', function (data) {
+        $.get('<?php echo $this->api_host; ?>/api/report/short-duty', function (data) {
             var short_duty = $('.short-duty tbody');
             if(!data.length > 0) {
                 short_duty.append('<tr><td>None</td></tr>');
@@ -73,7 +95,7 @@
         });
 
 
-        $.get('http://10.200.0.21:9080/api/report/rest-day-duty', function (data) {
+        $.get('<?php echo $this->api_host; ?>/api/report/rest-day-duty', function (data) {
             var rest_day_duty = $('.rest-day-duty tbody');
             if(!data.length > 0) {
                 rest_day_duty.append('<tr><td>None</td></tr>');

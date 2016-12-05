@@ -57,9 +57,12 @@ class Payroll_IndexController extends Zend_Controller_Action
             $all_periods[] = $period->period_covered;
         }
 
-        // array_shift($all_periods);
-
         $this->view->old_periods = $all_periods;
+
+        $messerve_config= $this->_config->get('messerve');
+
+        $this->view->api_host = $messerve_config->api_host;
+
 
     }
 
