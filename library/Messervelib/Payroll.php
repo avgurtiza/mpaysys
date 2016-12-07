@@ -613,7 +613,7 @@ class Messervelib_Payroll
 
             if ($ot_duration > $Attendance->getOtApprovedHours()) {
                 $excess_ot = $ot_duration - $Attendance->getOtApprovedHours();
-                /*
+
                 if ($tomorrow_ot > 0 && $excess_ot > 0) {
                     $ot_check = $tomorrow_ot - $excess_ot;
 
@@ -657,7 +657,7 @@ class Messervelib_Payroll
                         $ot = $ot_check;
                     }
                 }
-                */
+                
             }
 
             echo $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
