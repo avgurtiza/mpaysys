@@ -35,14 +35,33 @@ class Payroll_AutoController extends Zend_Controller_Action
         }
 
 
-        $groups = array();
+        $groups = [];
 
         $GroupMap = new Messerve_Model_Mapper_Group();
+
+        $groups_list = $GroupMap->fetchList("id > 0", array('client_id ASC', 'name ASC'));
+
+        foreach ($groups_list as $gvalue) {
+            $Employee = new Messerve_Model_DbTable_Employee();
+
+            $employee_count = $Employee->countByQuery('group_id = ' . $gvalue->getId());
+            if ($employee_count > 0) {
+               /* $groups_array[$gvalue->getId()] = $clients[$gvalue->getClientId()] . ' ' . $gvalue->getName()
+                    . ' (' . $employee_count . ')';*/
+
+                $groups[$clients[$gvalue->getClientId()]][$gvalue->getId()] = $gvalue->getName()
+                    . ' (' . $employee_count . ')';
+
+            }
+        }
+
+
+        // asort($groups);
 
         foreach($GroupMap->fetchList("client_id <> 7", array("client_id", "name")) as $gvalue) {
         // foreach($GroupMap->fetchList("rate_id = 18", array("client_id", "name")) as $gvalue) {
 
-            $groups[$clients[$gvalue->getClientId()]][$gvalue->getId()] = ucwords(strtolower($gvalue->getName()));
+            // $groups[$clients[$gvalue->getClientId()]][$gvalue->getId()] = ucwords(strtolower($gvalue->getName()));
         }
 
         $this->view->groups = $groups;
