@@ -119,6 +119,8 @@
 
                         // preprint($dvalue->toArray());
 
+                        $fuel = [];
+
                         foreach ($dvalue->toArray() as $ekey => $evalue):
 
                             if ($ekey == 'id'
@@ -153,6 +155,11 @@
                                 || $ekey == 'fuel_alloted'*/
                             ) continue;
 
+                            if(stripos($ekey, 'fuel') !== false) {
+                                $fuel[$ekey] = $evalue;
+                                continue;
+                            }
+
                             if (!round($evalue, 2) > 0) continue;
                             $warn_css = '';
                             if ($evalue > 9 || $evalue < 0) $warn_css = 'warn';
@@ -178,6 +185,7 @@
                             }
                         endforeach;
                         ?>
+
                         <?php
                         $total_hours = $total_reg + $total_ot;
                         if ($total_hours > 0):
@@ -198,6 +206,16 @@
                             <dd class="warn"></dd>
                         <?php endif; ?>
 
+                        <?php endif; ?>
+
+                        <?php if($fuel['fuel_hours'] > 0): ?>
+                        <dt>&nbsp;</dt>
+                        <?php foreach($fuel as $fkey => $fvalue): ?>
+                            <dt><?php echo ucwords(str_replace('_', ' ', $fkey)); ?></dt>
+                            <dd class="">
+                                <?=$fvalue;?> <?php if(stripos($fkey,'hours')===false) echo " L" ;?>
+                            </dd>
+                        <?php endforeach; ?>
                         <?php endif; ?>
                     </dl>
                 </td>

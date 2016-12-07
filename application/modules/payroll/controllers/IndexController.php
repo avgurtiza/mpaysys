@@ -1924,9 +1924,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $all_messerve_ot = 0;
 
-
-        echo "Summary data below";
-
         foreach ($this->_employee_payroll as $value) {
             if ($employee_count >= 8) {
                 $employee_count = 0;
@@ -2022,7 +2019,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $attendance_array = $Attendance->toArray();
 
                 if($Attendance->getId() == 495992) {
-                    preprint($attendance_array,1);
+                    // preprint($attendance_array,1);
                 }
 
                 $all_hours = array(

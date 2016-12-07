@@ -392,6 +392,7 @@ class Messervelib_Payroll
             if (isset($attendance['extended_shift']) && $attendance['extended_shift'] == 'yes') {
                 $ot_duration = $work_duration - $this->_max_regular_hours;
                 $has_extended_shift = true;
+                echo "Extended <br>";
             }
 
             if(!$ot_approved && !$has_extended_shift && $work_duration > $this->_max_regular_hours) {
@@ -507,10 +508,10 @@ class Messervelib_Payroll
                                 $reg += $time_array[$i]['today'];
                             }
                         }
+
                     }
                 }
             } else {
-
                 // echo "<br> NO OT <br>";
                 $reg_balance = $this->_max_regular_hours;
                 for ($i = 3; $i >= 0; $i--) {
@@ -550,28 +551,6 @@ class Messervelib_Payroll
                         }
                     }
                 }
-                /*
-                for ($i = 3; $i >= 0; $i--) {
-                    if (isset($time_array[$i])) {
-
-                        if (isset($time_array[$i]['tomorrow'])) {
-                            $tomorrow += $time_array[$i]['tomorrow'];
-                        }
-
-                        if (isset($time_array[$i]['tomorrow_nd'])) {
-                            $tomorrow_nd += $time_array[$i]['tomorrow_nd'];
-                        }
-
-                        if (isset($time_array[$i]['today_nd'])) {
-                            $nd += $time_array[$i]['today_nd'];
-                        }
-
-                        if (isset($time_array[$i]['today'])) {
-                            $reg += $time_array[$i]['today'];
-                        }
-                    }
-                }
-                */
             }
 
             $time_array = array_merge($time_array, [
@@ -607,12 +586,12 @@ class Messervelib_Payroll
                 , 'legal_nd_ot' => 0
             ]);
 
+
             $time_array['ot_actual_hours'] = $tomorrow_ot + $tomorrow_nd_ot + $nd_ot + $ot;
 
-            echo "THIS: " . $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
 
 
-            if ($ot_duration > $Attendance->getOtApprovedHours()) {
+            if (!$has_extended_shift && $ot_duration > $Attendance->getOtApprovedHours()) {
                 $excess_ot = $ot_duration - $Attendance->getOtApprovedHours();
 
                 if ($tomorrow_ot > 0 && $excess_ot > 0) {
@@ -660,9 +639,6 @@ class Messervelib_Payroll
                 }
 
             }
-
-            // echo $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
-
 
             $time_array['reg'] = 0;
             $time_array['reg_ot'] = 0;
@@ -938,9 +914,9 @@ class Messervelib_Payroll
             */
 
 
-            if ($Attendance->getOtApproved() != 'yes'
-                && $has_extended_shift != 'yes'
-            ) {
+            if ($Attendance->getOtApproved() != 'yes' && !$has_extended_shift) {
+                echo "Resetting OT <br>";
+
                 $time_array['reg_ot'] = 0;
                 $time_array['reg_nd_ot'] = 0;
 
@@ -958,6 +934,8 @@ class Messervelib_Payroll
 
                 $time_array['tomorrow_ot'] = 0;
                 $time_array['tomorrow_nd_ot'] = 0;
+            } else {
+                echo "Not resetting OT <br>";
             }
 
             foreach ($time_array as $tkey => $tvalue) {
@@ -965,6 +943,12 @@ class Messervelib_Payroll
                     // $time_array[$tkey] = round($tvalue, 2);
                     $time_array[$tkey] = number_format($tvalue, 2, '.', '');
                 }
+            }
+
+            if($Attendance->id == 495992) {
+                preprint($time_array);
+                echo "THIS: " . $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
+                // die('495922');
             }
 
             $options = $time_array;
