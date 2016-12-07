@@ -737,12 +737,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , $this->_request->getParam('date_start')
             );
 
-            if ($Employee->getId() == 893) {
-                // preprint($employee_pay,1);
-
-            }
-
-
             $total_no_hours = 0;
             $total_pay = 0;
             $total_deduct = 0;
@@ -1010,18 +1004,15 @@ class Payroll_IndexController extends Zend_Controller_Action
             if ($Attendance->getFuelHours() > 0) {
 
                 $fuel_overage = $Attendance->getFuelConsumed() - $Attendance->getFuelAlloted();
-                $messerve_deduct += $fuel_deduction;
 
                 if ($fuel_overage > 0) {
                     $fuel_deduction = round($fuel_overage * $Attendance->getFuelCost(), 2);
                     $messerve_deduct += $fuel_deduction;
-
+                    // $total_deduct += $fuel_deduction;
                 }
-
             }
 
-            $messerve_deduct = 0;
-
+            // $messerve_deduct = 0;
 
             $dim_y -= 10;
 
@@ -1569,6 +1560,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $summary_bill['spec'] += $day->spec;
                 $summary_bill['spec_nd'] += $day->spec_nd;
 
+                $summary_bill['rest'] += $day->rest;
+                $summary_bill['rest_nd'] += $day->rest_nd;
+
                 $summary_bill['legal'] += $day->legal;
                 $summary_bill['legal_nd'] += $day->legal_nd;
 
@@ -1576,14 +1570,29 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
                 if ($day->extended_shift == 'yes') { // Has extended shift, bill OT to Messerve
+                    $summary_bill['reg'] += $day->reg_ot;
+                    $summary_bill['reg_nd'] += $day->reg_nd_ot;
+
                     $messerve_bill['reg_ot'] += $day->reg_ot;
                     $messerve_bill['reg_nd_ot'] += $day->reg_nd_ot;
+
+                    $summary_bill['spec'] += $day->spec_ot;
+                    $summary_bill['spec_nd'] += $day->spec_nd_ot;
 
                     $messerve_bill['spec_ot'] += $day->spec_ot;
                     $messerve_bill['spec_nd_ot'] += $day->spec_nd_ot;
 
-                    $messerve_bill['legal_ot'] += $day->legal_ot;
+                    $summary_bill['legal'] += $day->legal_ot;
+                    $summary_bill['legal_nd'] += $day->legal_nd;
+
+                    $messerve_bill['legal_ot'] += $day->legal_nd_ot;
                     $messerve_bill['legal_nd_ot'] += $day->legal_nd_ot;
+
+                    $summary_bill['legal'] += $day->legal;
+                    $summary_bill['legal_nd'] += $day->legal_nd;
+
+                    $summary_bill['rest'] += $day->rest_ot;
+                    $summary_bill['rest_nd'] += $day->rest_nd_ot;
 
                     $messerve_bill['rest_ot'] += $day->rest_ot;
                     $messerve_bill['rest_nd_ot'] += $day->rest_nd_ot;
@@ -2002,6 +2011,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $Attendance->find($Attendance->getId()); // Get the whole model
                 }
 
+
+
                 $dates[$current_date] = $Attendance;
 
                 $current_date = date('Y-m-d', strtotime('+1 day', strtotime($current_date)));
@@ -2009,6 +2020,10 @@ class Payroll_IndexController extends Zend_Controller_Action
                 if ($i == 1) $first_id = $Attendance->getId();
 
                 $attendance_array = $Attendance->toArray();
+
+                if($Attendance->getId() == 495992) {
+                    preprint($attendance_array,1);
+                }
 
                 $all_hours = array(
                     $attendance_array['reg']
@@ -2202,6 +2217,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $page->setFont($ot_font, 8)->drawText('RegNDOT ' . round_this($total_reg_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
                 if ($messerve_reg_nd_ot > 0) {
                     $page->setFont($italic, 8)->drawText($messerve_reg_nd_ot, $dim_x + $now_x + 56, $dim_y, 'UTF8');
+                } else {
+                    $page->setFont($italic, 8)->drawText("NO MESS ND OT", $dim_x + $now_x + 56, $dim_y, 'UTF8');
                 }
                 $now_x += $now_inc;
 

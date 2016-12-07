@@ -609,7 +609,8 @@ class Messervelib_Payroll
 
             $time_array['ot_actual_hours'] = $tomorrow_ot + $tomorrow_nd_ot + $nd_ot + $ot;
 
-            echo $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
+            echo "THIS: " . $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
+
 
             if ($ot_duration > $Attendance->getOtApprovedHours()) {
                 $excess_ot = $ot_duration - $Attendance->getOtApprovedHours();
@@ -657,10 +658,10 @@ class Messervelib_Payroll
                         $ot = $ot_check;
                     }
                 }
-                
+
             }
 
-            echo $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
+            // echo $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
 
 
             $time_array['reg'] = 0;
@@ -938,9 +939,8 @@ class Messervelib_Payroll
 
 
             if ($Attendance->getOtApproved() != 'yes'
-                && $has_extended_shift == false
+                && $has_extended_shift != 'yes'
             ) {
-                // die('NO OT');
                 $time_array['reg_ot'] = 0;
                 $time_array['reg_nd_ot'] = 0;
 
@@ -967,16 +967,7 @@ class Messervelib_Payroll
                 }
             }
 
-
             $options = $time_array;
-
-            // echo $attendance['id'];
-
-            if($attendance['id'] == 495992) {
-                echo $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot";
-                // preprint($time_array,1);
-
-            }
 
             if (is_array($attendance)) {
                 $options = array_merge($options, $attendance);
@@ -1034,17 +1025,19 @@ class Messervelib_Payroll
 
                         ->setRegPay($options['today'] * $rates_today['employee']['rate'][$pay_rate_prefix])
                         ->setOtPay($options['today_ot'] * $rates_today['employee']['rate'][$pay_rate_prefix . "_ot"])
-                        ->setNdPay($options['today_nd'] * $rates_today['employee']['rate'][$pay_rate_prefix . "_nd"])
-                        ->setNdOtPay($options['today_nd_ot'] * $rates_today['employee']['rate'][$pay_rate_prefix . "_nd_ot"])
                         ->setDateProcessed(date("Y-m-d H:i:s"));
 
                     if ($holiday_today) {
                         $PayrollToday
+                            ->setNdPay(($options['today_nd'] + $options['tomorrow_nd']) * $rates_today['employee']['rate'][$pay_rate_prefix . "_nd"])
+                            ->setNdOtPay(($options['today_nd_ot'] + $options['tomorrow_nd_ot']) * $rates_today['employee']['rate'][$pay_rate_prefix . "_nd_ot"])
                             ->setNdHours($options['today_nd'] + $options['tomorrow_nd'])
                             ->setNdOtHours($options['today_nd_ot'] + $options['tomorrow_nd_ot']);
 
                     } else {
                         $PayrollToday
+                            ->setNdPay($options['today_nd'] * $rates_today['employee']['rate'][$pay_rate_prefix . "_nd"])
+                            ->setNdOtPay($options['today_nd_ot'] * $rates_today['employee']['rate'][$pay_rate_prefix . "_nd_ot"])
                             ->setNdHours($options['today_nd'])
                             ->setNdOtHours($options['today_nd_ot']);
                     }
@@ -1075,7 +1068,6 @@ class Messervelib_Payroll
                 $rates_tomorrow['_prefix'] = $pay_rate_prefix;
 
                 if ($employee_id > 0 && $Attendance->getId() > 0) {
-
                     $PayrollTomorrow
                         ->setAttendanceId($Attendance->getId())
                         ->setEmployeeId($employee_id)
@@ -1095,22 +1087,31 @@ class Messervelib_Payroll
 
                         ->setRegPay($options['tomorrow'] * $rates_tomorrow['employee']['rate'][$pay_rate_prefix])
                         ->setOtPay($options['tomorrow_ot'] * $rates_tomorrow['employee']['rate'][$pay_rate_prefix . "_ot"])
-                        ->setNdPay($options['tomorrow_nd'] * $rates_tomorrow['employee']['rate'][$pay_rate_prefix . "_nd"])
-                        ->setNdOtPay($options['tomorrow_nd_ot'] * $rates_tomorrow['employee']['rate'][$pay_rate_prefix . "_nd_ot"])
                         ->setDateProcessed(date("Y-m-d H:i:s"));
 
                     if (!$holiday_today) {
                         $PayrollTomorrow
+                            ->setNdPay($options['tomorrow_nd'] * $rates_tomorrow['employee']['rate'][$pay_rate_prefix . "_nd"])
+                            ->setNdOtPay($options['tomorrow_nd_ot'] * $rates_tomorrow['employee']['rate'][$pay_rate_prefix . "_nd_ot"])
+
                             ->setNdHours($options['tomorrow_nd'])
                             ->setNdOtHours($options['tomorrow_nd_ot']);
                     } else {
                         $PayrollTomorrow
+                            ->setNdPay(0)
+                            ->setNdOtPay(0)
                             ->setNdHours(0)
                             ->setNdOtHours(0);
                     }
 
                     $PayrollTomorrow->save();
                 }
+            }
+
+            if($attendance['id'] == 495992) {
+                echo $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot";
+                // preprint($options,1);
+
             }
         }
 
