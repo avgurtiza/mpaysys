@@ -2517,8 +2517,8 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'Incentives' => number_format(round($pvalue->getIncentives(), 2), 2)
             , '13th month pay' => number_format(round($pvalue->getThirteenthMonth(), 2), 2)
 
-            // , 'BOP maintenance' => $bop_maintenance
-            // , 'BOP rental' => $bop_rental
+            , 'BOP maintenance' => $bop_maintenance
+            , 'BOP rental' => $bop_rental
 
             , 'Fuel addition' => number_format(round($pvalue->getFuelAddition(), 2), 2)
 
@@ -2541,16 +2541,15 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'SSS loan' => number_format(round($pvalue->getSSSLoan() * -1, 2), 2)
             , 'HDMF loan' => number_format(round($pvalue->getHDMFLoan() * -1, 2), 2)
 
-            //, 'Other deductions' => $other_deductions
+            , 'Other deductions' => $other_deductions
 
-            , 'Net pay' => 0
-            /*
             , 'Net pay' => number_format(round($pvalue->getNetPay(), 2), 2)
             , 'Fuel hours' => number_format(round($pvalue->getFuelHours(), 2), 2)
             , 'Fuel allotment' => number_format(round($pvalue->getFuelAllotment(), 2), 2)
             , 'Fuel purchased' => number_format(round($pvalue->getFuelUsage(), 2), 2)
             , 'Fuel overage L' => number_format(round($pvalue->getFuelUsage() - $pvalue->getFuelAllotment(), 2), 2)
             , 'Fuel price' => number_format(round($pvalue->getFuelPrice(), 2), 2)
+
 
             , 'SSS deductions (Table/Calculated)' => $payroll_meta->sss_pair[0] . ' / ' . $payroll_meta->sss_pair[1]
             , 'SSS More data' => @$payroll_meta->sss_debug
@@ -2568,7 +2567,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             , 'BOP motorcycle' => $pvalue->getBopMotorcycle() * -1
             , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1
-            */
             );
 
             /*
