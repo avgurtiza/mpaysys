@@ -2509,6 +2509,9 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'Group name' => strtoupper($pvalue->getGroupName())
             , 'Employee type' => $employee_type
             , 'Employee number' => $pvalue->getEmployeeNumber()
+
+            , 'Account number' => $pvalue->getAccountNumber()
+
             , 'Last name' => $pvalue->getLastName()
             , 'First name' => $pvalue->getFirstName()
             , 'Middle name' => $pvalue->getMiddleName()
@@ -2527,7 +2530,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             , 'Gross pay' => number_format(round($pvalue->getGrossPay(), 2), 2)
 
-            , 'Account number' => $pvalue->getAccountNumber()
 
 
             , 'SSS' => number_format(round($pvalue->getSss() * -1, 2), 2)
