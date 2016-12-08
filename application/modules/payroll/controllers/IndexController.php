@@ -546,8 +546,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $this->_process_group_attendance($group_id, $date_start, $date_end);
 
-        $this->_compute();
-        $this->_compute(); // TODO:  Fix this!
+        $this->_compute(); $this->_compute(); // TODO:  Fix this!  Why does it need to be ran twice. Clue:  creation of new model
 
         $this->view->payroll = $this->_employee_payroll;
 
@@ -1394,7 +1393,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $this->_client = $Client;
 
-        $pay_period = $this->_request->getParam('pay_period');
+        // $pay_period = $this->_request->getParam('pay_period');
 
         $employees = $this->_fetch_employees($group_id, $date_start, $date_end);
 
@@ -1405,7 +1404,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $date1 = new DateTime($date_start); //inclusive
         $date2 = new DateTime($date_end); //exclusive
         $diff = $date2->diff($date1);
-        $period_size = intval($diff->format("%a")) + 1;
+        // $period_size = intval($diff->format("%a")) + 1;
 
         $summary_bill = array(
             'reg' => 0
@@ -2518,8 +2517,8 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'Incentives' => number_format(round($pvalue->getIncentives(), 2), 2)
             , '13th month pay' => number_format(round($pvalue->getThirteenthMonth(), 2), 2)
 
-            , 'BOP maintenance' => $bop_maintenance
-            , 'BOP rental' => $bop_rental
+            // , 'BOP maintenance' => $bop_maintenance
+            // , 'BOP rental' => $bop_rental
 
             , 'Fuel addition' => number_format(round($pvalue->getFuelAddition(), 2), 2)
 
@@ -2542,15 +2541,16 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'SSS loan' => number_format(round($pvalue->getSSSLoan() * -1, 2), 2)
             , 'HDMF loan' => number_format(round($pvalue->getHDMFLoan() * -1, 2), 2)
 
-            , 'Other deductions' => $other_deductions
+            //, 'Other deductions' => $other_deductions
 
+            , 'Net pay' => 0
+            /*
             , 'Net pay' => number_format(round($pvalue->getNetPay(), 2), 2)
             , 'Fuel hours' => number_format(round($pvalue->getFuelHours(), 2), 2)
             , 'Fuel allotment' => number_format(round($pvalue->getFuelAllotment(), 2), 2)
             , 'Fuel purchased' => number_format(round($pvalue->getFuelUsage(), 2), 2)
             , 'Fuel overage L' => number_format(round($pvalue->getFuelUsage() - $pvalue->getFuelAllotment(), 2), 2)
             , 'Fuel price' => number_format(round($pvalue->getFuelPrice(), 2), 2)
-
 
             , 'SSS deductions (Table/Calculated)' => $payroll_meta->sss_pair[0] . ' / ' . $payroll_meta->sss_pair[1]
             , 'SSS More data' => @$payroll_meta->sss_debug
@@ -2568,6 +2568,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             , 'BOP motorcycle' => $pvalue->getBopMotorcycle() * -1
             , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1
+            */
             );
 
             /*
