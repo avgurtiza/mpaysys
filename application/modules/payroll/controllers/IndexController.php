@@ -2543,32 +2543,36 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'SSS loan' => number_format(round($pvalue->getSSSLoan() * -1, 2), 2)
             , 'HDMF loan' => number_format(round($pvalue->getHDMFLoan() * -1, 2), 2)
 
-            , 'Other deductions' => $other_deductions
+            // , 'Other deductions' => $other_deductions
 
-            , 'Net pay' => number_format(round($pvalue->getNetPay(), 2), 2)
-            , 'Fuel hours' => number_format(round($pvalue->getFuelHours(), 2), 2)
-            , 'Fuel allotment' => number_format(round($pvalue->getFuelAllotment(), 2), 2)
-            , 'Fuel purchased' => number_format(round($pvalue->getFuelUsage(), 2), 2)
-            , 'Fuel overage L' => number_format(round($pvalue->getFuelUsage() - $pvalue->getFuelAllotment(), 2), 2)
-            , 'Fuel price' => number_format(round($pvalue->getFuelPrice(), 2), 2)
+            , 'Net pay' => 0
+
+                /*
+                            , 'Net pay' => number_format(round($pvalue->getNetPay(), 2), 2)
+
+                , 'Fuel hours' => number_format(round($pvalue->getFuelHours(), 2), 2)
+                , 'Fuel allotment' => number_format(round($pvalue->getFuelAllotment(), 2), 2)
+                , 'Fuel purchased' => number_format(round($pvalue->getFuelUsage(), 2), 2)
+                , 'Fuel overage L' => number_format(round($pvalue->getFuelUsage() - $pvalue->getFuelAllotment(), 2), 2)
+                , 'Fuel price' => number_format(round($pvalue->getFuelPrice(), 2), 2)
 
 
-            , 'SSS deductions (Table/Calculated)' => $payroll_meta->sss_pair[0] . ' / ' . $payroll_meta->sss_pair[1]
-            , 'SSS More data' => @$payroll_meta->sss_debug
+                , 'SSS deductions (Table/Calculated)' => $payroll_meta->sss_pair[0] . ' / ' . $payroll_meta->sss_pair[1]
+                , 'SSS More data' => @$payroll_meta->sss_debug
 
-            , 'Accident' => number_format(round($pvalue->getAccident() * -1, 2), 2)
-            , 'Uniform' => number_format(round($pvalue->getUniform() * -1, 2), 2)
-            , 'Adjustment' => number_format(round($pvalue->getAdjustment() * -1, 2), 2)
-            , 'Miscellaneous' => number_format(round($pvalue->getMiscellaneous() * -1, 2), 2)
-            , 'Communication' => number_format(round($pvalue->getCommunication() * -1, 2), 2)
-            , 'Fuel deduction' => number_format(round($pvalue->getFuelDeduction() * -1, 2), 2)
-            , 'Lost card' => number_format(round($pvalue->lost_card * -1, 2), 2)
-            , 'Food' => number_format(round($pvalue->food * -1, 2), 2)
+                , 'Accident' => number_format(round($pvalue->getAccident() * -1, 2), 2)
+                , 'Uniform' => number_format(round($pvalue->getUniform() * -1, 2), 2)
+                , 'Adjustment' => number_format(round($pvalue->getAdjustment() * -1, 2), 2)
+                , 'Miscellaneous' => number_format(round($pvalue->getMiscellaneous() * -1, 2), 2)
+                , 'Communication' => number_format(round($pvalue->getCommunication() * -1, 2), 2)
+                , 'Fuel deduction' => number_format(round($pvalue->getFuelDeduction() * -1, 2), 2)
+                , 'Lost card' => number_format(round($pvalue->lost_card * -1, 2), 2)
+                , 'Food' => number_format(round($pvalue->food * -1, 2), 2)
 
-            , 'Fuel overage' => number_format(round($pvalue->getFuelOverage() * -1, 2), 2)
+                , 'Fuel overage' => number_format(round($pvalue->getFuelOverage() * -1, 2), 2)
 
-            , 'BOP motorcycle' => $pvalue->getBopMotorcycle() * -1
-            , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1
+                , 'BOP motorcycle' => $pvalue->getBopMotorcycle() * -1
+                , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1*/
             );
 
             /*
