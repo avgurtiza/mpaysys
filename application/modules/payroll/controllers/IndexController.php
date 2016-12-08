@@ -2527,7 +2527,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             , 'Gross pay' => number_format(round($pvalue->getGrossPay(), 2), 2)
 
-                // , 'Account number' => $pvalue->getAccountNumber()
+            , 'Account number' => $pvalue->getAccountNumber()
 
 
             , 'SSS' => number_format(round($pvalue->getSss() * -1, 2), 2)
