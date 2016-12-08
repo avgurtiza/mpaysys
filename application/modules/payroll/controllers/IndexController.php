@@ -643,17 +643,17 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $BOP = new Messerve_Model_Bop();
                     $BOP->find($Employee->getBopId());
-                    /*
+
                     $scheduled_deductions[] = array(
                         'type' => 'BOP - ' . $BOP->getName()
-                    , 'amount' => $BOPAttendance->getMotorcycleDeduction()
+                        , 'amount' => $BOPAttendance->getMotorcycleDeduction()
                     );
 
                     $scheduled_deductions[] = array(
                         'type' => 'BOP insurance/registration'
                     , 'amount' => $BOPAttendance->getInsuranceDeduction()
                     );
-                    */
+                    /*
 
                     $bop_motorcycle = $BOPAttendance->getMotorcycleDeduction();
                     $bop_insurance = $BOPAttendance->getInsuranceDeduction();
@@ -671,6 +671,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                                 , 'insurance' => $BOPAttendance->getInsuranceDeduction()
                             ];
                     }
+                    */
 
                 }
             }
