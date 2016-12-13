@@ -21,12 +21,17 @@ class Messervelib_Payroll
 
     public function save_the_day($employee_id, $group_id, $data)
     {
+        $time_start = microtime(true);
+
         $Employee = new Messerve_Model_Employee();
 
         $Employee->find($employee_id);
 
         $Group = new Messerve_Model_Group();
         $Group->find($group_id);
+
+        echo '<br> ' . __LINE__ . ': ' . (microtime(true) - $time_start);
+        $time_start = microtime(true);
 
         if ($Group->getRoundOff10() == 'yes') {
             $this->_round_to_ten_minutes = true;
@@ -43,10 +48,16 @@ class Messervelib_Payroll
             $Attendance = new Messerve_Model_Attendance();
             $Attendance->find($attendance['id']);
 
+            echo '<br> ' . __LINE__ . ': ' . (microtime(true) - $time_start);
+            $time_start = microtime(true);
+
             $holiday_today = false;
             $holiday_tomorrow = false;
 
             $holidays = $this->_fetch_holidays($group_id, $date);
+
+            echo '<br> ' . __LINE__ . ': ' . (microtime(true) - $time_start);
+            $time_start = microtime(true);
 
             if ($holidays) {
                 if ($holidays['today']) $holiday_today = $holidays['today'];
@@ -79,11 +90,17 @@ class Messervelib_Payroll
                 // RESET! Delete all employee deductions for this payroll period
                 $DeductAttendMap->getDbTable()->delete('attendance_id = ' . $attendance['id']);
 
+                echo '<br> ' . __LINE__ . ': ' . (microtime(true) - $time_start);
+                $time_start = microtime(true);
+
                 // Is this the employee's home group? If it is, process deductions and BOP
                 if ($Employee->getGroupId() == $group_id) {
                     $this->_process_deductions($attendance['id'], $employee_id, $cutoff);
                     $BOP = $this->_process_bop($attendance['id'], $Employee, $cutoff, $date);
                 }
+
+                echo '<br> ' . __LINE__ . ': ' . (microtime(true) - $time_start);
+                $time_start = microtime(true);
 
             }
 
@@ -127,6 +144,9 @@ class Messervelib_Payroll
 
             // Determine employee and client rates for today and tomorrow
             $rates_today = $this->_get_rate_today($date);
+
+            echo '<br> ' . __LINE__ . ': ' . (microtime(true) - $time_start);
+            $time_start = microtime(true);
 
             $date_tommorow = date('Y-m-d 00:00:00', strtotime('+1 day', strtotime($date)));
 
@@ -265,6 +285,9 @@ class Messervelib_Payroll
                         ->setNdOtPay(0)
                         ->setDateProcessed(date("Y-m-d H:i:s"))
                         ->save();
+                    echo '<br> ' . __LINE__ . ': ' . (microtime(true) - $time_start);
+                    $time_start = microtime(true);
+
 
                     $new_date_tomorrow = date("Y-m-d", strtotime('tomorrow', strtotime($Attendance->getDatetimeStart())));
 
@@ -297,6 +320,9 @@ class Messervelib_Payroll
                         ->setNdOtPay(0)
                         ->setDateProcessed(date("Y-m-d H:i:s"))
                         ->save();
+
+                    echo '<br> ' . __LINE__ . ': ' . (microtime(true) - $time_start);
+                    $time_start = microtime(true);
 
 
                 }
@@ -403,8 +429,10 @@ class Messervelib_Payroll
 
             $ot_start = 0;
 
-            if ($ot_duration > 0) {
+            echo '<br> ' . __LINE__ . ': ' . (microtime(true) - $time_start);
+            $time_start = microtime(true);
 
+            if ($ot_duration > 0) {
                 /* When does OT start? */
                 if ($work_duration >= $this->_max_regular_hours) {
                     if ($duration_1 >= $this->_max_regular_hours) { // OT starts in D1
@@ -418,6 +446,8 @@ class Messervelib_Payroll
             } else { // Just in case negatives turn up
                 $ot_duration = 0;
             }
+            echo '<br> ' . __LINE__ . ': ' . (microtime(true) - $time_start);
+            $time_start = microtime(true);
 
             $this->_ot_start = $ot_start;
 
@@ -425,17 +455,23 @@ class Messervelib_Payroll
                 $d1_attendance = $this->_break_it_down($start_1, $end_1, 1, $attendance);
                 $time_array = array_merge($time_array, $d1_attendance);
             }
+            echo '<br> ' . __LINE__ . ': ' . (microtime(true) - $time_start);
+            $time_start = microtime(true);
 
             if ($duration_2 > 0) {
                 $d2_attendance = $this->_break_it_down($start_2, $end_2, 2, $attendance);
                 $time_array = array_merge($time_array, $d2_attendance);
             }
 
+            echo '<br> ' . __LINE__ . ': ' . (microtime(true) - $time_start);
+            $time_start = microtime(true);
 
             if ($duration_3 > 0) {
                 $d3_attendance = $this->_break_it_down($start_3, $end_3, 3, $attendance);
                 $time_array = array_merge($time_array, $d3_attendance);
             }
+            echo '<br> ' . __LINE__ . ': ' . (microtime(true) - $time_start);
+            $time_start = microtime(true);
 
             $reg = 0;
             $nd = 0;
@@ -512,7 +548,7 @@ class Messervelib_Payroll
                     }
                 }
             } else {
-                // echo "<br> NO OT <br>";
+                echo "<br> NO OT <br>";
                 $reg_balance = $this->_max_regular_hours;
                 for ($i = 3; $i >= 0; $i--) {
                     if (isset($time_array[$i]['tomorrow'])) {
@@ -526,19 +562,19 @@ class Messervelib_Payroll
 
                     if (isset($time_array[$i]['tomorrow_nd'])) {
                         if (($reg_balance - $time_array[$i]['tomorrow_nd']) >= 0) {
-                            $reg += $time_array[$i]['tomorrow_nd'];
+                            $tomorrow_nd += $time_array[$i]['tomorrow_nd'];
                             $reg_balance -= $time_array[$i]['tomorrow_nd'];
                         } else {
-                            $reg += $reg_balance;
+                            $tomorrow += $reg_balance;
                         }
                     }
 
                     if (isset($time_array[$i]['today_nd'])) {
                         if (($reg_balance - $time_array[$i]['today_nd']) >= 0) {
-                            $reg += $time_array[$i]['today_nd'];
+                            $nd += $time_array[$i]['today_nd'];
                             $reg_balance -= $time_array[$i]['today_nd'];
                         } else {
-                            $reg += $reg_balance;
+                            $nd += $reg_balance;
                         }
                     }
 
@@ -588,8 +624,6 @@ class Messervelib_Payroll
 
 
             $time_array['ot_actual_hours'] = $tomorrow_ot + $tomorrow_nd_ot + $nd_ot + $ot;
-
-
 
             if (!$has_extended_shift && $ot_duration > $Attendance->getOtApprovedHours()) {
                 $excess_ot = $ot_duration - $Attendance->getOtApprovedHours();
@@ -761,159 +795,6 @@ class Messervelib_Payroll
             }
 
 
-            /*
-
-            if ($attendance['type'] == 'regular' && !$holiday_today) { //  ** Core calc **
-                echo "<br>ALL REGULAR";
-
-                if (!$holiday_tomorrow || !$holiday_tomorrow->getType() == 'legal') { // TODO: Wassap, foo?  Fix the logic
-                    $time_array['reg'] = $reg + $tomorrow;
-                    $time_array['reg_ot'] = $ot + $tomorrow_ot;
-                    $time_array['reg_nd'] = $nd + $tomorrow_nd;
-                    $time_array['reg_nd_ot'] = $nd_ot + $tomorrow_nd_ot;
-                } else {
-                    $time_array['reg'] = $reg;
-                    $time_array['reg_ot'] = $ot;
-                    $time_array['reg_nd'] = $nd + $tomorrow_nd;
-                    $time_array['reg_nd_ot'] = $nd_ot;
-                }
-            }
-
-
-
-            if ($attendance['type'] == 'rest' && $holiday_today && !$holiday_today->getType() == 'legal') {
-                echo "<br>R !T:L";
-
-                if (!$holiday_tomorrow || !$holiday_tomorrow->getType() == 'legal') {
-                    $time_array['rest'] = $reg;
-                    $time_array['rest_ot'] = $ot;
-                    $time_array['rest_nd'] = $nd + $tomorrow_nd;
-                    $time_array['rest_nd_ot'] = $nd_ot + $tomorrow_nd_ot;
-                } else {
-                    $time_array['rest'] = $reg;
-                    $time_array['rest_ot'] = $ot;
-                    $time_array['rest_nd'] = $nd;
-                    $time_array['rest_nd_ot'] = $nd_ot;
-                }
-            } elseif ($attendance['type'] == 'rest') {
-                echo "<br>R";
-
-                $time_array['rest'] = $reg;
-                $time_array['rest_ot'] = $ot + $tomorrow_ot;
-                $time_array['rest_nd'] = $nd + $tomorrow_nd;
-                $time_array['rest_nd_ot'] = $nd_ot + $tomorrow_nd_ot;
-            }
-
-            if ($holiday_today && $holiday_today->getType() == 'special') {
-                echo "<br>S--";
-
-                $time_array['spec'] = $reg;
-                $time_array['spec_nd'] = $nd;
-                $time_array['spec_ot'] = $ot + $tomorrow_ot;
-                $time_array['spec_nd_ot'] = $nd_ot;
-
-
-                if(!$holiday_tomorrow) {
-                    $time_array['reg'] = $tomorrow;
-                    // $time_array['reg_ot'] = $tomorrow_ot;
-                    $time_array['reg_nd'] = $tomorrow_nd;
-                    $time_array['reg_nd_ot'] = $tomorrow_nd_ot;
-                }
-
-                // preprint($time_array,1);
-            }
-
-            if ($holiday_today && $holiday_today->getType() == 'legal') {
-                echo "LEGAL $reg $nd $ot $nd_ot";
-
-                $time_array['legal'] = $reg;
-                $time_array['legal_nd'] = $nd;
-                $time_array['legal_ot'] = $ot;
-                $time_array['legal_nd_ot'] = $nd_ot;
-
-
-                if (!$work_duration > 0) { // Do unattended OT calcs
-                    $time_array['legal_unattend'] = $this->_max_regular_hours;
-                }
-            }
-
-
-            if ($holiday_tomorrow && $holiday_tomorrow->getType() == 'legal') {
-                echo "<br>TH T:L";
-
-                $time_array['legal'] = $tomorrow;
-                $time_array['legal_nd'] = $tomorrow_nd;
-                $time_array['legal_ot'] = $tomorrow_ot;
-                $time_array['legal_nd_ot'] = $tomorrow_nd_ot;
-            }
-
-            if ($holiday_tomorrow && $holiday_tomorrow->getType() == 'special') {
-                echo "<br>T:H T:S";
-
-                $time_array['spec'] = $tomorrow;
-                $time_array['spec_nd'] = $tomorrow_nd;
-                $time_array['spec_ot'] = $tomorrow_ot;
-                $time_array['spec_nd_ot'] = $tomorrow_nd_ot;
-            }
-
-            if (
-                $holiday_today && $holiday_today->getType() == 'legal'
-                && $holiday_tomorrow && $holiday_tomorrow->getType() == 'legal'
-            ) {
-                echo "<br>TH T:L TH TH:L";
-
-                $time_array = array_merge($time_array, array(
-                    'legal' => $reg + $tomorrow
-                , 'legal_nd' => $nd + $tomorrow_nd
-                , 'legal_ot' => $ot + $tomorrow_ot
-                , 'legal_nd_ot' => $nd_ot + $tomorrow_nd_ot
-                , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Legal both days, reset regular to 0
-                ));
-            }
-
-            if (
-                $holiday_today && $holiday_today->getType() == 'legal'
-                && $holiday_tomorrow && $holiday_tomorrow->getType() == 'special'
-            ) {
-                echo "LEGAL SPECIAL reg $reg, tomorrow $tomorrow, reg_nd $nd, tomorrow_nd $tomorrow_nd <br />";
-
-                $time_array = array_merge($time_array, array(
-                    'spec' => $tomorrow
-                , 'spec_nd' => $tomorrow_nd
-                , 'spec_ot' => $tomorrow_ot
-                , 'spec_nd_ot' => $tomorrow_nd_ot
-
-                , 'legal' => $reg
-                , 'legal_nd' => $nd
-                , 'legal_ot' => $ot
-                , 'legal_nd_ot' => $nd_ot
-
-                , 'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0 // Holiday both days, reset regular to 0
-                ));
-            }
-
-            if (
-                $holiday_today && $holiday_today->getType() == 'legal'
-                && !$holiday_tomorrow
-            ) {
-                echo "<br> #  LEGAL REG reg $reg, tomorrow $tomorrow, reg_nd $nd, tomorrow_nd $tomorrow_nd <br />";
-
-                $time_array = array_merge($time_array, array(
-                    'reg' => $tomorrow
-                , 'reg_nd' => $tomorrow_nd
-                , 'reg_ot' => $tomorrow_ot
-                , 'reg_nd_ot' => $tomorrow_nd_ot
-
-                , 'legal' => $reg
-                , 'legal_nd' => $nd
-                , 'legal_ot' => $ot
-                , 'legal_nd_ot' => $nd_ot
-                ));
-            }
-
-            */
-
-
             if ($Attendance->getOtApproved() != 'yes' && !$has_extended_shift) {
                 echo "Resetting OT <br>";
 
@@ -945,11 +826,13 @@ class Messervelib_Payroll
                 }
             }
 
-            if($Attendance->id == 495992) {
+            /*
+            if($Attendance->id == 492582) {
                 preprint($time_array);
                 echo "THIS: " . $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
-                // die('495922');
+                die('495922');
             }
+            */
 
             $options = $time_array;
 
@@ -1092,13 +975,10 @@ class Messervelib_Payroll
                 }
             }
 
-            if($attendance['id'] == 495992) {
+            if($attendance['id'] == 492582) {
                 echo $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot";
-                // preprint($options,1);
-
             }
         }
-
 
         if (!$cutoff_total_duration > 0) {
 

@@ -70,31 +70,17 @@ class Payroll_AutoController extends Zend_Controller_Action
 
         $date_today = date('Ymd');
 
-        if($date_today >= date('Ym01') && $date_today <= date('Ym15')) {
-            $pay_period = date('Y-m-16_31', $last_month);
-            $date_start = date('Y-m-16', $last_month);
-            $date_end = date('Y-m-d', strtotime("last day of last month"));
 
-        } elseif(
-            $date_today > date('Ymd',strtotime("last day of this month"))
-            && $date_today > date('Ym15',strtotime("next month"))
-        ) {
+        $pay_period = date('Y-m-16_t', strtotime('-1 month'));
+        $date_start = date('Y-m-16', strtotime('-1 month'));
+        $date_end = date('Y-m-t', strtotime('-1 month'));
+
+        if(date('d') > 15) {
             $pay_period = date('Y-m-01_15');
             $date_start = date('Y-m-01');
             $date_end = date('Y-m-15');
-        } else {
-            $pay_period = date('Y-m-16_31');
-            $date_start = date('Y-m-16');
-            $date_end = date('Y-m-d', strtotime("last day of this month"));
         }
 
-
-        $pay_period = date('Y-m-01_15');
-        $date_start = date('Y-m-01');
-        $date_end = date('Y-m-15');
-
-        // die('OI');
-        echo "xx $date_today : $pay_period / $date_start - $date_end <br />";
 
         $this->view->pay_period = $pay_period;
         $this->view->date_start = $date_start;

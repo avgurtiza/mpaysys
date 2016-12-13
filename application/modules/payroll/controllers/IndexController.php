@@ -636,22 +636,26 @@ class Payroll_IndexController extends Zend_Controller_Action
                         }
                     }
 
-                    // BOP deductions
-                    $BOPAttendance = new Messerve_Model_BopAttendance();
-                    $BOPAttendance->find(array('bop_id' => $Employee->getBopId(), 'attendance_id' => $Attendance->getId()));
+                    if($Group->getClientId() != 6 && $Group->getClientId() != 10) {
+                        // BOP deductions
 
-                    $BOP = new Messerve_Model_Bop();
-                    $BOP->find($Employee->getBopId());
+                        $BOPAttendance = new Messerve_Model_BopAttendance();
+                        $BOPAttendance->find(array('bop_id' => $Employee->getBopId(), 'attendance_id' => $Attendance->getId()));
 
-                    $scheduled_deductions[] = array(
-                        'type' => 'BOP - ' . $BOP->getName()
+                        $BOP = new Messerve_Model_Bop();
+                        $BOP->find($Employee->getBopId());
+
+                        $scheduled_deductions[] = array(
+                            'type' => 'BOP - ' . $BOP->getName()
                         , 'amount' => $BOPAttendance->getMotorcycleDeduction()
-                    );
+                        );
 
-                    $scheduled_deductions[] = array(
-                        'type' => 'BOP insurance/registration'
-                    , 'amount' => $BOPAttendance->getInsuranceDeduction()
-                    );
+                        $scheduled_deductions[] = array(
+                            'type' => 'BOP insurance/registration'
+                        , 'amount' => $BOPAttendance->getInsuranceDeduction()
+                        );
+                    }
+
                     /*
 
                     $bop_motorcycle = $BOPAttendance->getMotorcycleDeduction();
@@ -1001,17 +1005,19 @@ class Payroll_IndexController extends Zend_Controller_Action
             $fuel_overage = 0;  // Reset
             $fuel_deduction = 0;  // Reset
 
-            if ($Attendance->getFuelHours() > 0) {
+            if($Group->getClientId() != 6 && $Group->getClientId() != 10) {
 
-                $fuel_overage = $Attendance->getFuelConsumed() - $Attendance->getFuelAlloted();
+                if ($Attendance->getFuelHours() > 0) {
 
-                if ($fuel_overage > 0) {
-                    $fuel_deduction = round($fuel_overage * $Attendance->getFuelCost(), 2);
-                    $messerve_deduct += $fuel_deduction;
-                    // $total_deduct += $fuel_deduction;
+                    $fuel_overage = $Attendance->getFuelConsumed() - $Attendance->getFuelAlloted();
+
+                    if ($fuel_overage > 0) {
+                        $fuel_deduction = round($fuel_overage * $Attendance->getFuelCost(), 2);
+                        $messerve_deduct += $fuel_deduction;
+                        // $total_deduct += $fuel_deduction;
+                    }
                 }
             }
-
             // $messerve_deduct = 0;
 
             $dim_y -= 10;
@@ -1805,8 +1811,13 @@ class Payroll_IndexController extends Zend_Controller_Action
         // action body
         $date_start = $this->_request->getParam('date_start');
         $date_end = $this->_request->getParam('date_end');
+        $standalone = $this->getParam('standalone');
 
-        // $this->_compute(); // TODO:  Simplify and streamline.  Just fetch the group members and their payroll
+        if($standalone != '' && $standalone == 'true') {
+            $this->_last_date = date('Y-m-d-Hi');
+            $this->_compute();
+        } // TODO:  Simplify and streamline.  Just fetch the group members and their payroll
+
         $this->view->payroll = $this->_employee_payroll;
 
         $pdf = new Zend_Pdf();
@@ -1883,11 +1894,13 @@ class Payroll_IndexController extends Zend_Controller_Action
         $all_total_sun_nd = 0;
         $all_total_sun_nd_ot = 0;
 
+        /*
         $all_total_spec = 0;
         $all_total_spec_ot = 0;
         $all_total_spec_nd = 0;
         $all_total_spec_nd_ot = 0;
-        
+        */
+
         $all_total_legal = 0;
         $all_total_legal_ot = 0;
         $all_total_legal_nd = 0;
@@ -2017,10 +2030,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 if ($i == 1) $first_id = $Attendance->getId();
 
                 $attendance_array = $Attendance->toArray();
-
-                if($Attendance->getId() == 495992) {
-                    // preprint($attendance_array,1);
-                }
 
                 $all_hours = array(
                     $attendance_array['reg']
@@ -2212,12 +2221,12 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $now_x += $now_inc;
 
                 $page->setFont($ot_font, 8)->drawText('RegNDOT ' . round_this($total_reg_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+
                 if ($messerve_reg_nd_ot > 0) {
                     $page->setFont($italic, 8)->drawText($messerve_reg_nd_ot, $dim_x + $now_x + 56, $dim_y, 'UTF8');
                 } else {
-                    $page->setFont($italic, 8)->drawText("NO MESS ND OT", $dim_x + $now_x + 56, $dim_y, 'UTF8');
+                    // $page->setFont($italic, 8)->drawText("NO MESS ND OT", $dim_x + $now_x + 56, $dim_y, 'UTF8');
                 }
-                $now_x += $now_inc;
 
                 /* New line */
                 $now_x = $dim_x + ($i * 22) + 110 + 66;
@@ -2419,7 +2428,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $pdf->save($filename);
 
-        // $this->_redirect($_SERVER['HTTP_REFERER']);
+        if($standalone != '' && $standalone == 'true') $this->_redirect($_SERVER['HTTP_REFERER']);
 
     }
 
