@@ -639,7 +639,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                         }
                     }
 
-                    if($Group->getClientId() != 6 && $Group->getClientId() != 10) {
+                    if ($Group->getClientId() != 6 && $Group->getClientId() != 10) {
                         // BOP deductions
 
                         $BOPAttendance = new Messerve_Model_BopAttendance();
@@ -659,6 +659,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                         );
                     }
 
+                    // For BOP acknowledgement slip
                     /*
 
                     $bop_motorcycle = $BOPAttendance->getMotorcycleDeduction();
@@ -754,9 +755,13 @@ class Payroll_IndexController extends Zend_Controller_Action
             $ecola_addition = 0;
             $legal_ecola_addition = 0;
 
+            $payroll_meta = [];
+            $basic_pay = 0;
+
             foreach ($employee_pay as $pkey => $pvalue) {
                 $ecola = 0;
                 $sss = 0;
+
 
                 foreach ($pvalue as $rkey => $rvalue) {
 
@@ -780,7 +785,12 @@ class Payroll_IndexController extends Zend_Controller_Action
                     } else {
                         $page->setFont($font, 8)->drawText("{$rkey}", $dim_x, $dim_y);
 
+                        if(!isset($payroll_meta[$rkey])) $payroll_meta[$rkey] = [];
+
+
                         foreach ($rvalue as $dkey => $dvalue) {
+                            $payroll_meta[$rkey][$dkey] = $dvalue;
+
                             $dim_y -= 8;
 
                             $sss_deductions[] = ($sss / 22 / 8) * $dvalue['hours'];
@@ -800,6 +810,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $dim_y -= 8;
 
                 }
+
+                $basic_pay = $total_pay;
 
                 // Legal adjustments for attendance less than 8 hours
                 $LegalAttendanceMap = new Messerve_Model_Mapper_Attendance();
@@ -1008,7 +1020,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $fuel_overage = 0;  // Reset
             $fuel_deduction = 0;  // Reset
 
-            if($Group->getClientId() != 6 && $Group->getClientId() != 10) {
+            if ($Group->getClientId() != 6 && $Group->getClientId() != 10) {
 
                 if ($Attendance->getFuelHours() > 0) {
 
@@ -1134,6 +1146,9 @@ class Payroll_IndexController extends Zend_Controller_Action
             $scheduled_deductions["sss_pair"] = $sss_deduction;
             $scheduled_deductions["sss_debug"] = $sss_debug;
 
+
+            // preprint(json_encode($payroll_meta),1);
+
             $PayrollTemp->setEmployeeId($Employee->getId())
                 ->setGroupId($group_id)
                 ->setEmployeeNumber($Employee->getEmployeeNumber())
@@ -1144,8 +1159,10 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setClientName($Client->getName())
                 ->setGroupName($Group->getName())
                 ->setAccountNumber($Employee->getAccountNumber())
+                ->setPayrollMeta(json_encode($payroll_meta))
                 ->setPaternity($value['more_income']['paternity'])
                 ->setGrossPay($total_pay)
+                ->setBasicPay($basic_pay)
                 ->setNetPay($net_pay)
                 ->setEcola($ecola_addition + $legal_ecola_addition)
                 ->setSss($value['deductions']['sss'])
@@ -1706,7 +1723,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'philhealth' => ($this_rate->PhilhealthEmployee / 2)
             , 'hdmf' => ($this_rate->HDMFEmployee / 2)
             , 'cash_bond' => ($this_rate->CashBond / 2)
-            // , 'insurance' => 25
+                // , 'insurance' => 25
             , 'bike_rehab' => 0
             , 'bike_insurance_reg' => 0
             );
@@ -1817,7 +1834,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $date_end = $this->_request->getParam('date_end');
         $standalone = $this->getParam('standalone');
 
-        if($standalone != '' && $standalone == 'true') {
+        if ($standalone != '' && $standalone == 'true') {
             $this->_last_date = date('Y-m-d-Hi');
             $this->_compute();
         } // TODO:  Simplify and streamline.  Just fetch the group members and their payroll
@@ -1925,7 +1942,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $all_messerve_sun_ot = 0;
         $all_messerve_sun_nd_ot = 0;
-        
+
         $all_messerve_spec_ot = 0;
         $all_messerve_spec_nd_ot = 0;
 
@@ -1934,7 +1951,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $all_messerve_rest_ot = 0;;
         $all_messerve_rest_nd_ot = 0;
-
 
 
         $employee_count = 0;
@@ -1979,8 +1995,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $total_rest_nd_ot = 0;
 
             $total_total_hours = 0;
-            
-            
+
 
             $dates = array();
 
@@ -2005,7 +2020,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $messerve_legal_ot = 0;
             $messerve_legal_nd_ot = 0;
-            
+
             $messerve_ot = 0;
 
             for ($i = 1; $i <= $period_size; $i++) {
@@ -2024,7 +2039,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $Attendance->find($Attendance->getId()); // Get the whole model
                 }
-
 
 
                 $dates[$current_date] = $Attendance;
@@ -2055,15 +2069,15 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ) {
                     $all_hours = array_merge($all_hours, array(
                         $attendance_array['reg_ot']
-                        , $attendance_array['reg_nd_ot']
-                        , $attendance_array['spec_ot']
-                        , $attendance_array['spec_nd_ot']
-                        , $attendance_array['sun_ot']
-                        , $attendance_array['sun_nd_ot']
-                        , $attendance_array['legal_ot']
-                        , $attendance_array['legal_nd_ot']
-                        , $attendance_array['rest_ot']
-                        , $attendance_array['rest_nd_ot']
+                    , $attendance_array['reg_nd_ot']
+                    , $attendance_array['spec_ot']
+                    , $attendance_array['spec_nd_ot']
+                    , $attendance_array['sun_ot']
+                    , $attendance_array['sun_nd_ot']
+                    , $attendance_array['legal_ot']
+                    , $attendance_array['legal_nd_ot']
+                    , $attendance_array['rest_ot']
+                    , $attendance_array['rest_nd_ot']
                     ));
 
                 } elseif ($Attendance->getExtendedShift() == 'yes') { // Bill to Messerve
@@ -2085,15 +2099,15 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $messerve_ot_array = [
                         'reg_ot' => $attendance_array['reg_ot']
-                        ,'reg_nd_ot' => $attendance_array['reg_nd_ot']
-                        ,'spec_ot' =>  $attendance_array['spec_ot']
-                        ,'spec_nd_ot' =>  $attendance_array['spec_nd_ot']
-                        ,'sun_ot' =>  $attendance_array['sun_ot']
-                        ,'sun_nd_ot' =>  $attendance_array['sun_nd_ot']
-                        ,'legal_ot' =>  $attendance_array['legal_ot']
-                        ,'legal_nd_ot' =>  $attendance_array['legal_nd_ot']
-                        ,'rest_ot' =>  $attendance_array['rest_ot']
-                        ,'rest_nd_ot' =>  $attendance_array['rest_nd_ot']
+                        , 'reg_nd_ot' => $attendance_array['reg_nd_ot']
+                        , 'spec_ot' => $attendance_array['spec_ot']
+                        , 'spec_nd_ot' => $attendance_array['spec_nd_ot']
+                        , 'sun_ot' => $attendance_array['sun_ot']
+                        , 'sun_nd_ot' => $attendance_array['sun_nd_ot']
+                        , 'legal_ot' => $attendance_array['legal_ot']
+                        , 'legal_nd_ot' => $attendance_array['legal_nd_ot']
+                        , 'rest_ot' => $attendance_array['rest_ot']
+                        , 'rest_nd_ot' => $attendance_array['rest_nd_ot']
                     ];
 
                     $messerve_ot += array_sum($messerve_ot_array);
@@ -2432,7 +2446,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $pdf->save($filename);
 
-        if($standalone != '' && $standalone == 'true') $this->_redirect($_SERVER['HTTP_REFERER']);
+        if ($standalone != '' && $standalone == 'true') $this->_redirect($_SERVER['HTTP_REFERER']);
 
     }
 
@@ -2471,8 +2485,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         foreach ($payroll as $pvalue) {
 
-            // preprint($pvalue->toArray(),1);
-
             $employee_type = 'Regular';
 
             if ($pvalue->getIsReliever() == 'yes') {
@@ -2499,15 +2511,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 }
             }
 
-            /*
-            , 'Accident' => number_format(round($pvalue->getAccident() * -1, 2), 2)
-            , 'Uniform' => number_format(round($pvalue->getUniform() * -1, 2), 2)
-            , 'Adjustment' => number_format(round($pvalue->getAdjustment() * -1, 2), 2)
-            , 'Miscellaneous' => number_format(round($pvalue->getMiscellaneous() * -1, 2), 2)
-            , 'Communication' => number_format(round($pvalue->getCommunication() * -1, 2), 2)
-            , 'Fuel deduction' => number_format(round($pvalue->getFuelDeduction() * -1, 2), 2)
-             */
-
             $other_deductions = $pvalue->getBopMotorcycle() + $pvalue->getBopInsurance()
                 + $pvalue->getAccident() + $pvalue->getUniform()
                 + $pvalue->getAdjustment() + $pvalue->getMiscellaneous()
@@ -2518,60 +2521,67 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $this_row = array(
                 'Period covered' => $pvalue->getPeriodCovered()
-            , 'Client name' => $pvalue->getClientName()
-            , 'Group name' => strtoupper($pvalue->getGroupName())
-            , 'Employee type' => $employee_type
-            , 'Employee number' => $pvalue->getEmployeeNumber()
+                , 'Client name' => $pvalue->getClientName()
+                , 'Group name' => strtoupper($pvalue->getGroupName())
+                , 'Employee type' => $employee_type
+                , 'Employee number' => $pvalue->getEmployeeNumber()
 
-            , 'Account number' => $pvalue->getAccountNumber()
+                , 'Account number' => $pvalue->getAccountNumber()
 
-            , 'Last name' => $pvalue->getLastName()
-            , 'First name' => $pvalue->getFirstName()
-            , 'Middle name' => $pvalue->getMiddleName()
-            , 'Ecola' => number_format(round($pvalue->getEcola(), 2), 2)
+                , 'Last name' => $pvalue->getLastName()
+                , 'First name' => $pvalue->getFirstName()
+                , 'Middle name' => $pvalue->getMiddleName()
+                , 'PayrollMeta' => $pvalue->getPayrollMeta()
 
-            , 'Incentives' => number_format(round($pvalue->getIncentives(), 2), 2)
-            , '13th month pay' => number_format(round($pvalue->getThirteenthMonth(), 2), 2)
+                , 'BasicPay' => number_format($pvalue->getBasicPay(), 2)
 
-            , 'BOP maintenance' => $bop_maintenance
-            , 'BOP rental' => $bop_rental
-
-            , 'Fuel addition' => number_format(round($pvalue->getFuelAddition(), 2), 2)
-
-            , 'Misc addition' => number_format(round($pvalue->getMiscAddition(), 2), 2)
-            , 'Paternity' => number_format(round($pvalue->getPaternity(), 2), 2)
-
-            , 'Gross pay' => number_format(round($pvalue->getGrossPay(), 2), 2)
+                , 'Ecola' => number_format(round($pvalue->getEcola(), 2), 2)
 
 
+                , 'Ecola' => number_format(round($pvalue->getEcola(), 2), 2)
 
-            , 'SSS' => number_format(round($pvalue->getSss() * -1, 2), 2)
-            , 'Philhealth' => number_format(round($pvalue->getPhilhealth() * -1, 2), 2)
-            , 'HDMF' => number_format(round($pvalue->getHdmf() * -1, 2), 2)
+                , 'Incentives' => number_format(round($pvalue->getIncentives(), 2), 2)
+                , '13th month pay' => number_format(round($pvalue->getThirteenthMonth(), 2), 2)
 
-                // , 'Cash bond' => number_format(round($pvalue->getCashBond() * -1, 2), 2)
-                // , 'Insurance' => number_format(round($pvalue->getInsurance() * -1, 2), 2)
-                // , 'Misc deduction'=>number_format(round($pvalue->getMiscDeduction() * -1,2),2)
+                , 'BOP maintenance' => $bop_maintenance
+                , 'BOP rental' => $bop_rental
 
-            , 'SSS loan' => number_format(round($pvalue->getSSSLoan() * -1, 2), 2)
-            , 'HDMF loan' => number_format(round($pvalue->getHDMFLoan() * -1, 2), 2)
+                , 'Fuel addition' => number_format(round($pvalue->getFuelAddition(), 2), 2)
 
-            // , 'Other deductions' => $other_deductions
+                , 'Misc addition' => number_format(round($pvalue->getMiscAddition(), 2), 2)
+                , 'Paternity' => number_format(round($pvalue->getPaternity(), 2), 2)
 
-            , 'Net pay' => 0
+                , 'Gross pay' => number_format(round($pvalue->getGrossPay(), 2), 2)
 
-                /*
-                            , 'Net pay' => number_format(round($pvalue->getNetPay(), 2), 2)
+
+                , 'SSS' => number_format(round($pvalue->getSss() * -1, 2), 2)
+                , 'Philhealth' => number_format(round($pvalue->getPhilhealth() * -1, 2), 2)
+                , 'HDMF' => number_format(round($pvalue->getHdmf() * -1, 2), 2)
+
+                    // , 'Cash bond' => number_format(round($pvalue->getCashBond() * -1, 2), 2)
+                    // , 'Insurance' => number_format(round($pvalue->getInsurance() * -1, 2), 2)
+                    // , 'Misc deduction'=>number_format(round($pvalue->getMiscDeduction() * -1,2),2)
+
+                , 'SSS loan' => number_format(round($pvalue->getSSSLoan() * -1, 2), 2)
+                , 'HDMF loan' => number_format(round($pvalue->getHDMFLoan() * -1, 2), 2)
+
+                    // , 'Other deductions' => $other_deductions
+
+                    // , 'Net pay' => 0
+
+
+                , 'Net pay' => number_format(round($pvalue->getNetPay(), 2), 2)
+
+                , 'SSS deductions (Table/Calculated)' => $payroll_meta->sss_pair[0] . ' / ' . $payroll_meta->sss_pair[1]
+                , 'SSS More data' => @$payroll_meta->sss_debug
 
                 , 'Fuel hours' => number_format(round($pvalue->getFuelHours(), 2), 2)
                 , 'Fuel allotment' => number_format(round($pvalue->getFuelAllotment(), 2), 2)
                 , 'Fuel purchased' => number_format(round($pvalue->getFuelUsage(), 2), 2)
                 , 'Fuel overage L' => number_format(round($pvalue->getFuelUsage() - $pvalue->getFuelAllotment(), 2), 2)
                 , 'Fuel price' => number_format(round($pvalue->getFuelPrice(), 2), 2)
+                , 'Fuel overage' => number_format(round($pvalue->getFuelOverage() * -1, 2), 2)
 
-
-                , 'SSS deductions (Table/Calculated)' => $payroll_meta->sss_pair[0] . ' / ' . $payroll_meta->sss_pair[1]
-                , 'SSS More data' => @$payroll_meta->sss_debug
 
                 , 'Accident' => number_format(round($pvalue->getAccident() * -1, 2), 2)
                 , 'Uniform' => number_format(round($pvalue->getUniform() * -1, 2), 2)
@@ -2582,26 +2592,25 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , 'Lost card' => number_format(round($pvalue->lost_card * -1, 2), 2)
                 , 'Food' => number_format(round($pvalue->food * -1, 2), 2)
 
-                , 'Fuel overage' => number_format(round($pvalue->getFuelOverage() * -1, 2), 2)
 
                 , 'BOP motorcycle' => $pvalue->getBopMotorcycle() * -1
-                , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1*/
+                , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1
             );
 
-            /*
-			$misc_deduction = json_decode($pvalue->getDeductionData());
-			$misc_deduction_string = '';
 
-			if(count($misc_deduction) > 0) {
+            $misc_deduction = json_decode($pvalue->getDeductionData());
+            $misc_deduction_string = '';
 
-				foreach ($misc_deduction as $mvalue) {
-					$amount = number_format(round($mvalue->amount * -1,2),2);
-					$misc_deduction_string .= "{$mvalue->type}: {$amount}, ";
-				}
-			}
+            if (count($misc_deduction) > 0) {
 
-			$this_row['Misc deduction data'] = $misc_deduction_string;
-			*/
+                foreach ($misc_deduction as $mvalue) {
+                    $amount = number_format(round($mvalue->amount * -1, 2), 2);
+                    $misc_deduction_string .= "{$mvalue->type}: {$amount}, ";
+                }
+            }
+
+            $this_row['Misc deduction data'] = $misc_deduction_string;
+
 
             $payroll_array[] = $this_row;
 

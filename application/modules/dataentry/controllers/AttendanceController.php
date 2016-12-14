@@ -59,10 +59,10 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
             $employee_count = $Employee->countByQuery('group_id = ' . $gvalue->getId());
 
-            if ($employee_count > 0) {
+            // if ($employee_count > 0) {
                 $groups_array[$gvalue->getId()] = $clients[$gvalue->getClientId()] . ' ' . $gvalue->getName()
                     . ' (' . $employee_count . ')';
-            }
+            //}
         }
 
 

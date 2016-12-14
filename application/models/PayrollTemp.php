@@ -317,6 +317,8 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
     protected $_LostCard;
     protected $_Food;
     protected $_Paternity;
+    protected $_BasicPay;
+    protected $_PayrollMeta;
 
 
 
@@ -372,6 +374,8 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
             'lost_card'=>'LostCard',
             'food'=>'Food',
             'paternity'=>'Paternity',
+            'basic_pay'=>'BasicPay',
+            'payroll_meta'=>'PayrollMeta',
         ));
 
         $this->setParentList(array(
@@ -1336,6 +1340,28 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
     public function getPaternity()
     {
         return $this->_Paternity;
+    }
+
+    public function setBasicPay($data)
+    {
+        $this->_BasicPay = $data;
+        return $this;
+    }
+
+    public function getBasicPay()
+    {
+        return $this->_BasicPay;
+    }
+
+    public function setPayrollMeta($data)
+    {
+        $this->_PayrollMeta = $data;
+        return $this;
+    }
+
+    public function getPayrollMeta()
+    {
+        return $this->_PayrollMeta;
     }
 
     /**

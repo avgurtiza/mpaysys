@@ -27,7 +27,7 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
      */
     public function toArray($model)
     {
-        if (! $model instanceof Messerve_Model_PayrollTemp) {
+        if (!$model instanceof Messerve_Model_PayrollTemp) {
             throw new Exception('Unable to create array: invalid model passed to mapper');
         }
 
@@ -77,6 +77,8 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
             'bop_maintenance' => $model->getBopMaintenance(),
             'lost_card' => $model->getLostCard(),
             'food' => $model->getFood(),
+            'basic_pay' => $model->getBasicPay(),
+            'payroll_meta' => $model->getPayrollMeta(),
         );
 
         return $result;
@@ -105,7 +107,7 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
      */
     public function delete($model)
     {
-        if (! $model instanceof Messerve_Model_PayrollTemp) {
+        if (!$model instanceof Messerve_Model_PayrollTemp) {
             throw new Exception('Unable to delete: invalid model passed to mapper');
         }
 
@@ -133,8 +135,9 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
      * @return boolean If the save action was successful
      */
     public function save(Messerve_Model_PayrollTemp $model,
-        $ignoreEmptyValues = true, $recursive = false, $useTransaction = true
-    ) {
+                         $ignoreEmptyValues = true, $recursive = false, $useTransaction = true
+    )
+    {
         $data = $model->toArray();
         if ($ignoreEmptyValues) {
             foreach ($data as $key => $value) {
@@ -163,11 +166,11 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
                 }
             } else {
                 $this->getDbTable()
-                     ->update($data,
-                              array(
-                                 'id = ?' => $primary_key
-                              )
-                );
+                    ->update($data,
+                        array(
+                            'id = ?' => $primary_key
+                        )
+                    );
             }
 
             if ($useTransaction && $success) {
@@ -224,97 +227,100 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
 
         if (is_array($data)) {
             $entry->setId($data['id'])
-                  ->setGroupId($data['group_id'])
-                  ->setEmployeeId($data['employee_id'])
-                  ->setEmployeeNumber($data['employee_number'])
-                  ->setPeriodCovered($data['period_covered'])
-                  ->setFirstname($data['firstname'])
-                  ->setMiddlename($data['middlename'])
-                  ->setLastname($data['lastname'])
-                  ->setClientName($data['client_name'])
-                  ->setGroupName($data['group_name'])
-                  ->setAccountNumber($data['account_number'])
-                  ->setNetPay($data['net_pay'])
-                  ->setEcola($data['ecola'])
-                  ->setIncentives($data['incentives'])
-                  ->setSss($data['sss'])
-                  ->setPhilhealth($data['philhealth'])
-                  ->setHdmf($data['hdmf'])
-                  ->setCashBond($data['cash_bond'])
-                  ->setInsurance($data['insurance'])
-                  ->setCommunication($data['communication'])
-                  ->setMiscDeduction($data['misc_deduction'])
-                  ->setMiscAddition($data['misc_addition'])
-                  ->setGrossPay($data['gross_pay'])
-                  ->setDeductionData($data['deduction_data'])
-                  ->setIsReliever($data['is_reliever'])
-                  ->setSssLoan($data['sss_loan'])
-                  ->setHdmfLoan($data['hdmf_loan'])
-                  ->setAccident($data['accident'])
-                  ->setUniform($data['uniform'])
-                  ->setAdjustment($data['adjustment'])
-                  ->setMiscellaneous($data['miscellaneous'])
-                  ->setFuelOverage($data['fuel_overage'])
-                  ->setFuelAddition($data['fuel_addition'])
-                  ->setFuelDeduction($data['fuel_deduction'])
-                  ->setFuelAllotment($data['fuel_allotment'])
-                  ->setFuelUsage($data['fuel_usage'])
-                  ->setFuelHours($data['fuel_hours'])
-                  ->setFuelPrice($data['fuel_price'])
-                  ->setThirteenthMonth($data['thirteenth_month'])
-                  ->setBopMotorcycle($data['bop_motorcycle'])
-                  ->setBopInsurance($data['bop_insurance'])
-                  ->setBopMaintenance($data['bop_maintenance'])
-                  ->setPaternity($data['paternity'])
-                  ->setLostCard($data['lost_card'])
-                  ->setFood($data['food']);
+                ->setGroupId($data['group_id'])
+                ->setEmployeeId($data['employee_id'])
+                ->setEmployeeNumber($data['employee_number'])
+                ->setPeriodCovered($data['period_covered'])
+                ->setFirstname($data['firstname'])
+                ->setMiddlename($data['middlename'])
+                ->setLastname($data['lastname'])
+                ->setClientName($data['client_name'])
+                ->setGroupName($data['group_name'])
+                ->setAccountNumber($data['account_number'])
+                ->setNetPay($data['net_pay'])
+                ->setEcola($data['ecola'])
+                ->setIncentives($data['incentives'])
+                ->setSss($data['sss'])
+                ->setPhilhealth($data['philhealth'])
+                ->setHdmf($data['hdmf'])
+                ->setCashBond($data['cash_bond'])
+                ->setInsurance($data['insurance'])
+                ->setCommunication($data['communication'])
+                ->setMiscDeduction($data['misc_deduction'])
+                ->setMiscAddition($data['misc_addition'])
+                ->setGrossPay($data['gross_pay'])
+                ->setDeductionData($data['deduction_data'])
+                ->setIsReliever($data['is_reliever'])
+                ->setSssLoan($data['sss_loan'])
+                ->setHdmfLoan($data['hdmf_loan'])
+                ->setAccident($data['accident'])
+                ->setUniform($data['uniform'])
+                ->setAdjustment($data['adjustment'])
+                ->setMiscellaneous($data['miscellaneous'])
+                ->setFuelOverage($data['fuel_overage'])
+                ->setFuelAddition($data['fuel_addition'])
+                ->setFuelDeduction($data['fuel_deduction'])
+                ->setFuelAllotment($data['fuel_allotment'])
+                ->setFuelUsage($data['fuel_usage'])
+                ->setFuelHours($data['fuel_hours'])
+                ->setFuelPrice($data['fuel_price'])
+                ->setThirteenthMonth($data['thirteenth_month'])
+                ->setBopMotorcycle($data['bop_motorcycle'])
+                ->setBopInsurance($data['bop_insurance'])
+                ->setBopMaintenance($data['bop_maintenance'])
+                ->setPaternity($data['paternity'])
+                ->setLostCard($data['lost_card'])
+                ->setFood($data['food'])
+                ->setBasicPay($data['basic_pay'])
+                ->setPayrollMeta($data['payroll_meta']);
         } elseif ($data instanceof Zend_Db_Table_Row_Abstract || $data instanceof stdClass) {
             $entry->setId($data->id)
-                  ->setGroupId($data->group_id)
-                  ->setEmployeeId($data->employee_id)
-                  ->setEmployeeNumber($data->employee_number)
-                  ->setPeriodCovered($data->period_covered)
-                  ->setFirstname($data->firstname)
-                  ->setMiddlename($data->middlename)
-                  ->setLastname($data->lastname)
-                  ->setClientName($data->client_name)
-                  ->setGroupName($data->group_name)
-                  ->setAccountNumber($data->account_number)
-                  ->setNetPay($data->net_pay)
-                  ->setEcola($data->ecola)
-                  ->setIncentives($data->incentives)
-                  ->setSss($data->sss)
-                  ->setPhilhealth($data->philhealth)
-                  ->setHdmf($data->hdmf)
-                  ->setCashBond($data->cash_bond)
-                  ->setInsurance($data->insurance)
-                  ->setCommunication($data->communication)
-                  ->setMiscDeduction($data->misc_deduction)
-                  ->setMiscAddition($data->misc_addition)
-                  ->setGrossPay($data->gross_pay)
-                  ->setDeductionData($data->deduction_data)
-                  ->setIsReliever($data->is_reliever)
-                  ->setSssLoan($data->sss_loan)
-                  ->setHdmfLoan($data->hdmf_loan)
-                  ->setAccident($data->accident)
-                  ->setUniform($data->uniform)
-                  ->setAdjustment($data->adjustment)
-                  ->setMiscellaneous($data->miscellaneous)
-                  ->setFuelOverage($data->fuel_overage)
-                  ->setFuelAddition($data->fuel_addition)
-                  ->setFuelDeduction($data->fuel_deduction)
-                  ->setFuelAllotment($data->fuel_allotment)
-                  ->setFuelUsage($data->fuel_usage)
-                  ->setFuelHours($data->fuel_hours)
-                  ->setFuelPrice($data->fuel_price)
-                  ->setThirteenthMonth($data->thirteenth_month)
-                  ->setBopMotorcycle($data->bop_motorcycle)
-                  ->setBopInsurance($data->bop_insurance)
-                  ->setBopMaintenance($data->bop_maintenance)
-                  ->setPaternity($data->paternity)
-                  ->setLostCard($data->lost_card)
-                  ->setFood($data->food)
-            ;
+                ->setGroupId($data->group_id)
+                ->setEmployeeId($data->employee_id)
+                ->setEmployeeNumber($data->employee_number)
+                ->setPeriodCovered($data->period_covered)
+                ->setFirstname($data->firstname)
+                ->setMiddlename($data->middlename)
+                ->setLastname($data->lastname)
+                ->setClientName($data->client_name)
+                ->setGroupName($data->group_name)
+                ->setAccountNumber($data->account_number)
+                ->setNetPay($data->net_pay)
+                ->setEcola($data->ecola)
+                ->setIncentives($data->incentives)
+                ->setSss($data->sss)
+                ->setPhilhealth($data->philhealth)
+                ->setHdmf($data->hdmf)
+                ->setCashBond($data->cash_bond)
+                ->setInsurance($data->insurance)
+                ->setCommunication($data->communication)
+                ->setMiscDeduction($data->misc_deduction)
+                ->setMiscAddition($data->misc_addition)
+                ->setGrossPay($data->gross_pay)
+                ->setDeductionData($data->deduction_data)
+                ->setIsReliever($data->is_reliever)
+                ->setSssLoan($data->sss_loan)
+                ->setHdmfLoan($data->hdmf_loan)
+                ->setAccident($data->accident)
+                ->setUniform($data->uniform)
+                ->setAdjustment($data->adjustment)
+                ->setMiscellaneous($data->miscellaneous)
+                ->setFuelOverage($data->fuel_overage)
+                ->setFuelAddition($data->fuel_addition)
+                ->setFuelDeduction($data->fuel_deduction)
+                ->setFuelAllotment($data->fuel_allotment)
+                ->setFuelUsage($data->fuel_usage)
+                ->setFuelHours($data->fuel_hours)
+                ->setFuelPrice($data->fuel_price)
+                ->setThirteenthMonth($data->thirteenth_month)
+                ->setBopMotorcycle($data->bop_motorcycle)
+                ->setBopInsurance($data->bop_insurance)
+                ->setBopMaintenance($data->bop_maintenance)
+                ->setPaternity($data->paternity)
+                ->setLostCard($data->lost_card)
+                ->setFood($data->food)
+                ->setBasicPay($data->basic_pay)
+                ->setPayrollMeta($data->payroll_meta);
         }
 
         $entry->setMapper($this);
