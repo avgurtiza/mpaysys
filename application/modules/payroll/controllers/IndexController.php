@@ -546,7 +546,10 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $this->_process_group_attendance($group_id, $date_start, $date_end);
 
-        $this->_compute(); $this->_compute(); // TODO:  Fix this!  Why does it need to be ran twice. Clue:  creation of new model
+        // die('OH : ' . __LINE__);
+
+        $this->_compute();
+        $this->_compute(); // TODO:  Fix this!  Why does it need to be ran twice. Clue:  creation of new model
 
         $this->view->payroll = $this->_employee_payroll;
 
@@ -1383,6 +1386,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $Rate = new Messerve_Model_Mapper_Rate();
         $rates = $Rate->fetchAll();
+
         $rates_array = array();
 
         foreach ($rates as $value) {
@@ -1702,7 +1706,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'philhealth' => ($this_rate->PhilhealthEmployee / 2)
             , 'hdmf' => ($this_rate->HDMFEmployee / 2)
             , 'cash_bond' => ($this_rate->CashBond / 2)
-            , 'insurance' => 25
+            // , 'insurance' => 25
             , 'bike_rehab' => 0
             , 'bike_insurance_reg' => 0
             );

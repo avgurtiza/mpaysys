@@ -743,10 +743,10 @@ class Messervelib_Payroll
                             $time_array['legal_ot'] = $ot;
                             $time_array['legal_nd_ot'] = $nd_ot;
 
-                            if (!$holiday_tomorrow) {
+                            // if (!$holiday_tomorrow) {
                                 $time_array['legal_nd'] += $tomorrow_nd;
                                 $time_array['legal_nd_ot'] += $tomorrow_nd_ot;
-                            }
+                            // }
                         }
 
                         break;
@@ -756,10 +756,10 @@ class Messervelib_Payroll
                         $time_array['spec_ot'] = $ot;
                         $time_array['spec_nd_ot'] = $nd_ot;
 
-                        if (!$holiday_tomorrow) {
+                        // if (!$holiday_tomorrow) {
                             $time_array['spec_ot'] += $tomorrow_nd;
                             $time_array['spec_nd_ot'] += $tomorrow_nd_ot;
-                        }
+                        // }
                         break;
                     default:
                         throw new Exception('Holiday type is invalid: ' . $holiday_today->getType());
@@ -767,6 +767,8 @@ class Messervelib_Payroll
                 }
             }
 
+
+            /*
             if ($holiday_tomorrow) {
                 switch ($holiday_tomorrow->getType()) {
                     case 'legal':
@@ -793,7 +795,7 @@ class Messervelib_Payroll
                         break;
                 }
             }
-
+            */
 
             if ($Attendance->getOtApproved() != 'yes' && !$has_extended_shift) {
                 echo "Resetting OT <br>";
@@ -925,10 +927,12 @@ class Messervelib_Payroll
                     , $PayrollTomorrow
                 );
 
+                /*
                 if ($holiday_tomorrow) {
                     $holiday_type_tomorrow = ucfirst($holiday_tomorrow->getType());
                     $pay_rate_prefix = strtolower($holiday_tomorrow->getType());
                 }
+                */
 
                 if ($pay_rate_prefix == 'special') $pay_rate_prefix = "spec";
 

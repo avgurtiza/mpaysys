@@ -842,6 +842,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         $employee_hours = array();
 
+
         foreach ($employees as $evalue) {
             $select = $AttendDB->select(true);
             $select
@@ -959,9 +960,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $group_id = (int)$this->_request->getParam('group_id');
         $this->view->group_id = $group_id;
 
-        if ($this->_request->isPost()) {
-            // $this->_save_the_day($employee_id, $group_id, $this->_request->getPost());
-        }
 
         $Employee = new Messerve_Model_Employee();
         $Employee->find($employee_id);
@@ -990,36 +988,50 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         $AttendanceMap = new Messerve_Model_Mapper_Attendance();
 
+        // $Db = $AttendanceMap->getDbTable()->getAdapter();
+
         $first_day_id = 0;
 
         for ($i = 1; $i <= $period_size; $i++) {
+
             $Attendance = $AttendanceMap->findOneByField(
                 array('employee_id', 'datetime_start', 'group_id')
                 , array($employee_id, $current_date, $group_id)
             );
 
+
             if (!$Attendance) {
-                $Attendance = new Messerve_Model_Attendance();
+                $new_attendance = new Messerve_Model_Attendance();
 
-                $Attendance->setEmployeeId($employee_id)
+                $new_attendance->setEmployeeId($employee_id)
                     ->setDatetimeStart($current_date)
+                    ->setDatetimeEnd($current_date)
                     ->setGroupId($group_id)
-                    ->save();
+                    ->setEmployeeNumber($Employee->getEmployeeNumber())
+                ;
 
-                $Attendance->find($Attendance->getId());
+                if(!$new_attendance->save(true)) {
+                    throw new Exception('Did not insert initial attendance.');
+                } else {
+                    echo "New attendance"; preprint($new_attendance->toArray());
+                }
+
+                try {
+                    $Attendance = new Messerve_Model_Attendance();
+                    $Attendance->find($new_attendance->id);
+                } catch ( Exception $e) {
+                    die( 'Caught exception: ' . $e->getMessage() . "\n");
+                }
+
             }
 
             $dates[$current_date] = $Attendance;
 
 
-            if ($Attendance->getOtApproved() == 'yes') {
-                // $dates[$current_date]->setOtApprovedHours($hours . ':' . $minutes);
-            }
 
             $current_date = date('Y-m-d', strtotime('+1 day', strtotime($current_date)));
 
             if ($i == 1) $first_day_id = $Attendance->getId();
-            // preprint($Attendance->toArray());
 
         }
 
@@ -1060,7 +1072,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                     ->save();
 
                 $this->_save_the_day($employee_id, $group_id, $this->_request->getPost()); // TODO:  figure out why this needs to run twice
-                // $this->_save_the_day($employee_id, $group_id, $this->_request->getPost());
+                $this->_save_the_day($employee_id, $group_id, $this->_request->getPost());
 
                 $this->_redirect("/dataentry/attendance/employee/id/{$employee_id}/pay_period/{$pay_period}/date_start/{$date_start}/date_end/{$date_end}/group_id/{$group_id}");
             }

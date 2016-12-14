@@ -46,9 +46,10 @@ class Default_AuthController extends Zend_Controller_Action
 					->setCredentialColumn('password');
 
 
+
 				$authAdapter->setIdentity($data['username'])
 					->setCredential($data['password'])
-					->setCredentialTreatment("MD5(CONCAT(?,password_salt)) AND status LIKE 'active'");
+					->setCredentialTreatment("MD5(CONCAT(?,password_salt)) AND status = 'active'");
 
 				// ->setCredentialTreatment("MD5(CONCAT(?,password_salt) AND status LIKE 'active')");
 

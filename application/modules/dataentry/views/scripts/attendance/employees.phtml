@@ -82,7 +82,6 @@ $(function() {
 		window.location.href = '/dataentry/attendance/employees?pay_period=<?php echo $this->pay_period; ?>&group_id=' + group_id; 
 	} );
 
-	/*	<?php echo $this->pay_period; ?> */
 	
 	$('#add-reliever').submit(function(evt) {
 		evt.preventDefault();
@@ -108,27 +107,7 @@ $(function() {
 } );
 //--></script>
 <?php if($this->user_auth->type == 'admin'):?>
-<!-- <fieldset>
-	<legend>Government reports</legend>
-	<form method="post" action="/payroll/index/hdmfexport/date_start/<?php 
-		echo $this->date_start; ?>/date_end/<?php 
-		echo $this->date_end; ?>/group_id/<?php 
-		echo $this->group->getId(); ?>/pay_period/<?php 
-		echo $this->pay_period; ?>">
-		 
-		<input type="submit" value="HDMF report" />
-	</form>
-	<br />
-	<form method="post" action="/payroll/index/philhealthexport/date_start/<?php 
-		echo $this->date_start; ?>/date_end/<?php 
-		echo $this->date_end; ?>/group_id/<?php 
-		echo $this->group->getId(); ?>/pay_period/<?php 
-		echo $this->pay_period; ?>">
-		 
-		<input type="submit" value="Philhealth report" />
-	</form>
-</fieldset>
- -->
+
 <fieldset>
 	<legend>Upload DTR File (.mes)</legend>
 	<form method="post" action="" enctype="multipart/form-data">
@@ -136,7 +115,6 @@ $(function() {
 		<input type="submit" value="Upload" />
 	</form>
 </fieldset>
-
 
 
 <fieldset>
