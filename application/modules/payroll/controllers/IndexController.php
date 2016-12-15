@@ -2531,7 +2531,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , 'Last name' => $pvalue->getLastName()
                 , 'First name' => $pvalue->getFirstName()
                 , 'Middle name' => $pvalue->getMiddleName()
-                , 'PayrollMeta' => $pvalue->getPayrollMeta()
 
                 , 'BasicPay' => number_format($pvalue->getBasicPay(), 2)
 
@@ -2595,6 +2594,9 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 , 'BOP motorcycle' => $pvalue->getBopMotorcycle() * -1
                 , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1
+            , 'PayrollMeta' => $pvalue->getPayrollMeta()
+
+
             );
 
 
