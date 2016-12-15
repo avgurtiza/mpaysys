@@ -2603,9 +2603,11 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             if (count($misc_deduction) > 0) {
 
-                foreach ($misc_deduction as $mvalue) {
-                    $amount = number_format(round($mvalue->amount * -1, 2), 2);
-                    $misc_deduction_string .= "{$mvalue->type}: {$amount}, ";
+                foreach ($misc_deduction as $mkey=>$mvalue) {
+                    if(is_numeric($mkey) && property_exists($mvalue,'type')) {
+                        $amount = number_format(round($mvalue->amount * -1, 2), 2);
+                        $misc_deduction_string .= "{$mvalue->type}: {$amount}, ";
+                    }
                 }
             }
 
