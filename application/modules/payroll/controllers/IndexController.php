@@ -639,7 +639,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                         }
                     }
 
-                    if ($Group->getClientId() != 6 && $Group->getClientId() != 10) {
+                    // if ($Group->getClientId() != 6 && $Group->getClientId() != 10) {
                         // BOP deductions
 
                         $BOPAttendance = new Messerve_Model_BopAttendance();
@@ -657,7 +657,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                             'type' => 'BOP insurance/registration'
                         , 'amount' => $BOPAttendance->getInsuranceDeduction()
                         );
-                    }
+                    // }
 
                     // For BOP acknowledgement slip
                     /*
@@ -1020,7 +1020,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $fuel_overage = 0;  // Reset
             $fuel_deduction = 0;  // Reset
 
-            if ($Group->getClientId() != 6 && $Group->getClientId() != 10) {
+            // if ($Group->getClientId() != 6 && $Group->getClientId() != 10) {
 
                 if ($Attendance->getFuelHours() > 0) {
 
@@ -1032,7 +1032,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                         // $total_deduct += $fuel_deduction;
                     }
                 }
-            }
+            // }
             // $messerve_deduct = 0;
 
             $dim_y -= 10;
