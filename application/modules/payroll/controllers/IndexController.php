@@ -1970,8 +1970,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $dim_x = 32;
                 $dim_y = $pageHeight - 25;
-
             }
+
             $total_reg = 0;
             $total_reg_ot = 0;
             $total_reg_nd = 0;
@@ -2051,16 +2051,16 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $all_hours = array(
                     $attendance_array['reg']
-                , $attendance_array['reg_nd']
-                , $attendance_array['spec']
-                , $attendance_array['spec_nd']
-                , $attendance_array['sun']
-                , $attendance_array['sun_nd']
-                , $attendance_array['legal']
-                , $attendance_array['legal_nd']
-                , $attendance_array['legal_unattend']
-                , $attendance_array['rest']
-                , $attendance_array['rest_nd']
+                    , $attendance_array['reg_nd']
+                    , $attendance_array['spec']
+                    , $attendance_array['spec_nd']
+                    , $attendance_array['sun']
+                    , $attendance_array['sun_nd']
+                    , $attendance_array['legal']
+                    , $attendance_array['legal_nd']
+                    , $attendance_array['legal_unattend']
+                    , $attendance_array['rest']
+                    , $attendance_array['rest_nd']
 
                 );
 
@@ -2111,9 +2111,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                     ];
 
                     $messerve_ot += array_sum($messerve_ot_array);
-                    // $messerve_ot = round_this($messerve_ot);
 
-                    $all_messerve_ot += $messerve_ot;
 
                     $messerve_reg_ot += $attendance_array['reg_ot'];
                     $messerve_reg_nd_ot += $attendance_array['reg_nd_ot'];
@@ -2127,9 +2125,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $messerve_legal_ot += $attendance_array['legal_ot'];
                     $messerve_legal_nd_ot += $attendance_array['legal_nd_ot'];
                 }
-
-                // array_walk($attendance_array, 'round_this');
-
 
                 $total_reg += $attendance_array['reg'];
                 $total_reg_nd += $attendance_array['reg_nd'];
@@ -2163,8 +2158,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $total_total_hours += round($total_hours, 2);
 
                 $employee_attendance_text[] = round($total_hours, 2);
-
-                // $page->setFont($font, 8)->drawText(round($total_hours,2), $dim_x + ($i * 25) + 150, $dim_y, 'UTF8');
             }
 
             if ($total_total_hours > 0) {
@@ -2218,6 +2211,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $page->setFont($font, 8)->drawText('Total ' . round_this($total_total_hours, 2), $dim_x + $now_x, $dim_y, 'UTF8');
 
                 if ($messerve_ot > 0) {
+                    $all_messerve_ot += $messerve_ot;
                     $page->setFont($italic, 8)->drawText($messerve_ot, $dim_x + $now_x + 47, $dim_y, 'UTF8');
                 }
 
@@ -2333,15 +2327,23 @@ class Payroll_IndexController extends Zend_Controller_Action
             + round($all_total_legal_unattend, 2);
 
 
-        $page->setFont($font, 8)->drawText('Total ' . round($all_total_total_hours, 2), $dim_x + $now_x, $dim_y, 'UTF8');
 
         if ($all_messerve_ot > 0) {
+            $page->setFont($font, 8)->drawText('Total ' . round($all_total_total_hours + $all_messerve_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
             $page->setFont($italic, 8)->drawText($all_messerve_ot, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+        } else {
+            $page->setFont($font, 8)->drawText('Total ' . round($all_total_total_hours, 2), $dim_x + $now_x, $dim_y, 'UTF8');
         }
 
         $now_x += $now_inc;
 
-        $page->setFont($font, 8)->drawText('Reg ' . round($all_total_reg, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+
+        if ($all_messerve_ot > 0) {
+            $page->setFont($font, 8)->drawText('Reg ' . round($all_total_reg + $all_messerve_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+        } else {
+            $page->setFont($font, 8)->drawText('Reg ' . round($all_total_reg, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+        }
+
         $now_x += $now_inc;
 
         $page->setFont($font, 8)->drawText('RegOT ' . round($all_total_reg_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
