@@ -2460,7 +2460,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $select->from($AttendanceDb, array("COUNT(*) AS amount"))
             ->where("employee_id = $employee_id
                 AND datetime_start >= '$date_start 00:00'
-                AND datetime_end <= '$date_end 23:59'
+                AND datetime_start <= '$date_end 23:59'
                 AND (start_1 >= 1 OR legal_unattend > 0)");
 
         $rows = $AttendanceDb->fetchAll($select);
