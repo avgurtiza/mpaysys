@@ -490,9 +490,6 @@ class Messervelib_Payroll
 
                     if (isset($time_array[$i])) {
 
-                        echo "<br>OT $i - ";
-                        preprint($time_array[$i]);
-
                         if (isset($time_array[$i]['tomorrow']) && $time_array[$i]['tomorrow'] > 0) {
                             if (($time_array[$i]['tomorrow'] - $ot_balance) >= 0) {
                                 $tomorrow += $time_array[$i]['tomorrow'] - $ot_balance;
@@ -1535,10 +1532,6 @@ class Messervelib_Payroll
         $payroll = array();
 
         foreach ($payroll_raw as $pvalue) { // TODO:  Construct array properly
-            if ($employee_id == 893) {
-                preprint($pvalue->toArray());
-
-            }
 
             if ($pvalue->getRateData() != '') {
                 @$payroll[$pvalue->getRateId()]['meta'] = json_decode($pvalue->getRateData());
