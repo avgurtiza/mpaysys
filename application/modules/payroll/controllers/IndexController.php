@@ -2063,6 +2063,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 );
 
                 $total_reg += $attendance_array['reg'];
+                $total_reg_nd += $attendance_array['reg_nd'];
 
 
                 if ($Attendance->getOtApproved() == 'yes'
@@ -2097,22 +2098,31 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $all_messerve_rest_ot += $attendance_array['rest_ot'];
                     $all_messerve_rest_nd_ot += $attendance_array['rest_ot'];
 
-                    $messerve_ot_array = [
+
+                    $temp_ot = [
                         'reg_ot' => $attendance_array['reg_ot']
-                        , 'reg_nd_ot' => $attendance_array['reg_nd_ot']
                         , 'spec_ot' => $attendance_array['spec_ot']
-                        , 'spec_nd_ot' => $attendance_array['spec_nd_ot']
                         , 'sun_ot' => $attendance_array['sun_ot']
-                        , 'sun_nd_ot' => $attendance_array['sun_nd_ot']
                         , 'legal_ot' => $attendance_array['legal_ot']
-                        , 'legal_nd_ot' => $attendance_array['legal_nd_ot']
                         , 'rest_ot' => $attendance_array['rest_ot']
+                    ];
+
+                    $temp_nd_ot = [
+                        'reg_nd_ot' => $attendance_array['reg_nd_ot']
+                        , 'spec_nd_ot' => $attendance_array['spec_nd_ot']
+                        , 'sun_nd_ot' => $attendance_array['sun_nd_ot']
+                        , 'legal_nd_ot' => $attendance_array['legal_nd_ot']
                         , 'rest_nd_ot' => $attendance_array['rest_nd_ot']
                     ];
 
-                    $all_hours['reg'] += array_sum($messerve_ot_array);
+                    $messerve_ot_array = $temp_ot + $temp_nd_ot;
                     $messerve_ot += array_sum($messerve_ot_array); // Bill OT to Messerve
-                    $total_reg += array_sum($messerve_ot_array); // Bill OT as Reg to client
+
+                    $all_hours['reg'] += array_sum($temp_ot);
+                    $total_reg += array_sum($temp_ot); // Bill OT as Reg to client
+
+                    $all_hours['reg_nd'] += array_sum($temp_nd_ot);
+                    $total_reg_nd += array_sum($temp_nd_ot); // Bill NDOT as RegND to client
 
 
                     $messerve_reg_ot += $attendance_array['reg_ot'];
@@ -2128,7 +2138,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $messerve_legal_nd_ot += $attendance_array['legal_nd_ot'];
                 }
 
-                $total_reg_nd += $attendance_array['reg_nd'];
 
                 $total_sun += $attendance_array['sun'] + $attendance_array['spec'];
                 $total_sun_nd += $attendance_array['sun_nd'] + $attendance_array['spec_nd'];
