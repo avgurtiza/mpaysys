@@ -514,6 +514,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
     public function payslipsAction()
     {
+        $start = time();
         $this->_helper->layout()->disableLayout();
         $this->_helper->viewRenderer->setNoRender(true);
 
@@ -552,6 +553,8 @@ class Payroll_IndexController extends Zend_Controller_Action
         $this->_compute(); // TODO:  Fix this!  Why does it need to be ran twice. Clue:  creation of new model
 
         $this->view->payroll = $this->_employee_payroll;
+
+        // die("STOP: " . (time() - $start) );
 
         $pdf = new Zend_Pdf();
         $dole_pdf = new Zend_Pdf();
@@ -2059,6 +2062,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 );
 
+                $total_reg += $attendance_array['reg'];
+
 
                 if ($Attendance->getOtApproved() == 'yes'
                 ) {
@@ -2105,7 +2110,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                         , 'rest_nd_ot' => $attendance_array['rest_nd_ot']
                     ];
 
-                    $messerve_ot += array_sum($messerve_ot_array);
+                    $all_hours['reg'] += array_sum($messerve_ot_array);
+                    $messerve_ot += array_sum($messerve_ot_array); // Bill OT to Messerve
+                    $total_reg += array_sum($messerve_ot_array); // Bill OT as Reg to client
 
 
                     $messerve_reg_ot += $attendance_array['reg_ot'];
@@ -2121,7 +2128,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $messerve_legal_nd_ot += $attendance_array['legal_nd_ot'];
                 }
 
-                $total_reg += $attendance_array['reg'];
                 $total_reg_nd += $attendance_array['reg_nd'];
 
                 $total_sun += $attendance_array['sun'] + $attendance_array['spec'];
@@ -2518,7 +2524,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             $payroll_meta = json_decode($pvalue->getDeductionData());
 
 
-
             $bop_maintenance = $pvalue->getBopMaintenance();
             $bop_rental = 0;
 
@@ -2545,35 +2550,52 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $other_deductions = number_format(round($other_deductions * -1, 2), 2);
 
-            $this_row = array(
+            $this_row = [
                 'Period covered' => $pvalue->getPeriodCovered()
-            , 'Client name' => $pvalue->getClientName()
-            , 'Group name' => strtoupper($pvalue->getGroupName())
-            , 'Employee type' => $employee_type
-            , 'Employee number' => $pvalue->getEmployeeNumber()
-
-            , 'Account number' => $pvalue->getAccountNumber()
-
-            , 'Last name' => $pvalue->getLastName()
-            , 'First name' => $pvalue->getFirstName()
-            , 'Middle name' => $pvalue->getMiddleName()
-
-            , 'BasicPay' => number_format($pvalue->getBasicPay(), 2)
-
-            , 'Ecola' => number_format(round($pvalue->getEcola(), 2), 2)
+                , 'Client name' => $pvalue->getClientName()
+                , 'Group name' => strtoupper($pvalue->getGroupName())
+                , 'Employee type' => $employee_type
+                , 'TIN number' => $Employee->getTin()
+                , 'Employee number' => $pvalue->getEmployeeNumber()
 
 
-            , 'Ecola' => number_format(round($pvalue->getEcola(), 2), 2)
+                , 'Last name' => $pvalue->getLastName()
+                , 'First name' => $pvalue->getFirstName()
+                , 'Middle name' => $pvalue->getMiddleName()
+                , 'Ecola' => number_format(round($pvalue->getEcola(), 2), 2)
+            ];
+
+
+            $hours_meta = json_decode($pvalue->getPayrollMeta(), true);
+
+            foreach ($hours_struct as $type => $pay) {
+                foreach ($pay as $title => $breakdown) {
+
+                    if (isset($hours_meta[$type]) && isset($hours_meta[$type][$title])) {
+                        $this_row["$type $title hours"] = $hours_meta[$type][$title]['hours'];
+                        $this_row["$type $title pay"] = $hours_meta[$type][$title]['pay'];
+                    } else {
+                        $this_row["$type $title hours"] = $breakdown['hours'];
+                        $this_row["$type $title pay"] = $breakdown['pay'];
+                    }
+                }
+            }
+
+            $this_row += [
+            'BasicPay' => number_format($pvalue->getBasicPay(), 2)
+
 
             , 'Incentives' => number_format(round($pvalue->getIncentives(), 2), 2)
-            , '13th month pay' => number_format(round($pvalue->getThirteenthMonth(), 2), 2)
-
             , 'BOP maintenance' => $bop_maintenance
             , 'BOP rental' => $bop_rental
+
+            , '13th month pay' => number_format(round($pvalue->getThirteenthMonth(), 2), 2)
+
 
             , 'Fuel addition' => number_format(round($pvalue->getFuelAddition(), 2), 2)
 
             , 'Misc addition' => number_format(round($pvalue->getMiscAddition(), 2), 2)
+
             , 'Paternity' => number_format(round($pvalue->getPaternity(), 2), 2)
 
             , 'Gross pay' => number_format(round($pvalue->getGrossPay(), 2), 2)
@@ -2596,6 +2618,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
             , 'Net pay' => number_format(round($pvalue->getNetPay(), 2), 2)
+            , 'Account number' => $pvalue->getAccountNumber()
 
             , 'SSS deductions (Table/Calculated)' => $payroll_meta->sss_pair[0] . ' / ' . $payroll_meta->sss_pair[1]
             , 'SSS More data' => @$payroll_meta->sss_debug
@@ -2623,7 +2646,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'PayrollMeta' => $pvalue->getPayrollMeta()
 
 
-            );
+            ];
 
 
             $misc_deduction = json_decode($pvalue->getDeductionData());
@@ -2641,29 +2664,10 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $this_row['Misc deduction data'] = $misc_deduction_string;
 
-            $hours_meta = json_decode($pvalue->getPayrollMeta(), true);
-
-            foreach ($hours_struct as $type => $pay) {
-                foreach ($pay as $title=>$breakdown) {
-
-                    if(isset($hours_meta[$type]) && isset($hours_meta[$type][$title])) {
-                        $this_row["$type $title hours"] = $hours_meta[$type][$title]['hours'];
-                        $this_row["$type $title pay"] = $hours_meta[$type][$title]['pay'];
-                    } else {
-                        $this_row["$type $title hours"] = $breakdown['hours'];
-                        $this_row["$type $title pay"] = $breakdown['pay'];
-                    }
-                }
-            }
-
-            // preprint($this_row, true);
-
 
             $payroll_array[] = $this_row;
 
-            // preprint($this_row,1);
         }
-        // preprint($payroll_array);
 
         $this->view->payroll = $payroll_array;
     }

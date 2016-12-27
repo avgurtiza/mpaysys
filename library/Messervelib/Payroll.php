@@ -42,7 +42,7 @@ class Messervelib_Payroll
         $first_day_id = null; // cache record of first day for fuel calcs
 
         foreach ($data as $date => $attendance) {
-
+            $time_start = microtime(true);
             if (!isset($attendance['id']) || !$attendance['id'] > 0) continue;
 
             $Attendance = new Messerve_Model_Attendance();

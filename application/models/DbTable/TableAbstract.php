@@ -16,6 +16,8 @@
  * @subpackage DbTable
  * @author Slide Gurtiza
  */
+
+
 abstract class Messerve_Model_DbTable_TableAbstract extends Zend_Db_Table_Abstract
 {
     /**
@@ -50,6 +52,29 @@ abstract class Messerve_Model_DbTable_TableAbstract extends Zend_Db_Table_Abstra
     public function getTableName()
     {
         return $this->_name;
+    }
+
+    public function __construct($config = array())
+    {
+        parent::__construct($config);
+
+        // First, set up the Cache
+        $frontendOptions = array(
+            'automatic_serialization' => true
+        );
+
+        $backendOptions  = array(
+            'cache_dir'                => APPLICATION_PATH . '/../tmp'
+        );
+
+        $cache = Zend_Cache::factory('Core',
+            'File',
+            $frontendOptions,
+            $backendOptions);
+
+        // Next, set the cache to be used with all table objects
+        Zend_Db_Table_Abstract::setDefaultMetadataCache($cache);
+
     }
 
     /**
