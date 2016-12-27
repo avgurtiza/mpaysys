@@ -2057,28 +2057,31 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , $attendance_array['legal']
                 , $attendance_array['legal_nd']
                 , $attendance_array['legal_unattend']
-                , $attendance_array['rest']
-                , $attendance_array['rest_nd']
+                    // , $attendance_array['rest']
+                    // , $attendance_array['rest_nd']
 
                 );
 
                 $total_reg += $attendance_array['reg'];
                 $total_reg_nd += $attendance_array['reg_nd'];
 
+                $total_rest += $attendance_array['rest'];
+                $total_rest_nd += $attendance_array['rest_nd'];
 
-                if ($Attendance->getOtApproved() == 'yes'
-                ) {
+                if ($Attendance->getOtApproved() == 'yes') {
                     $all_hours = array_merge($all_hours, array(
                         $attendance_array['reg_ot']
-                    , $attendance_array['reg_nd_ot']
-                    , $attendance_array['spec_ot']
-                    , $attendance_array['spec_nd_ot']
-                    , $attendance_array['sun_ot']
-                    , $attendance_array['sun_nd_ot']
-                    , $attendance_array['legal_ot']
-                    , $attendance_array['legal_nd_ot']
-                    , $attendance_array['rest_ot']
-                    , $attendance_array['rest_nd_ot']
+                        , $attendance_array['reg_nd_ot']
+                        , $attendance_array['spec_ot']
+                        , $attendance_array['spec_nd_ot']
+                        , $attendance_array['sun_ot']
+                        , $attendance_array['sun_nd_ot']
+                        , $attendance_array['legal_ot']
+                        , $attendance_array['legal_nd_ot']
+                        , $attendance_array['rest_ot']
+                        , $attendance_array['rest_nd_ot']
+                        , $attendance_array['rest']
+                        , $attendance_array['rest_nd']
                     ));
 
                 } elseif ($Attendance->getExtendedShift() == 'yes') { // Bill to Messerve
@@ -2105,6 +2108,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                         , 'sun_ot' => $attendance_array['sun_ot']
                         , 'legal_ot' => $attendance_array['legal_ot']
                         , 'rest_ot' => $attendance_array['rest_ot']
+                        , 'rest' => $attendance_array['rest']
                     ];
 
                     $temp_nd_ot = [
@@ -2113,6 +2117,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                         , 'sun_nd_ot' => $attendance_array['sun_nd_ot']
                         , 'legal_nd_ot' => $attendance_array['legal_nd_ot']
                         , 'rest_nd_ot' => $attendance_array['rest_nd_ot']
+                        , 'rest_nd' => $attendance_array['rest_nd']
                     ];
 
                     $messerve_ot_array = $temp_ot + $temp_nd_ot;
@@ -2123,7 +2128,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $all_hours['reg_nd'] += array_sum($temp_nd_ot);
                     $total_reg_nd += array_sum($temp_nd_ot); // Bill NDOT as RegND to client
-
 
                     $messerve_reg_ot += $attendance_array['reg_ot'];
                     $messerve_reg_nd_ot += $attendance_array['reg_nd_ot'];
@@ -2136,6 +2140,12 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $messerve_legal_ot += $attendance_array['legal_ot'];
                     $messerve_legal_nd_ot += $attendance_array['legal_nd_ot'];
+
+                } elseif ($Attendance->getExtendedShift() != 'yes') { // Not bill to Messerve, not OT.  Rest day pay
+                    $all_hours = array_merge($all_hours, array(
+                        'rest' => $attendance_array['rest']
+                        , 'rest_nd' => $attendance_array['rest_nd']
+                    ));
                 }
 
 
@@ -2147,8 +2157,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $total_legal_unattend += $attendance_array['legal_unattend'];
 
-                $total_rest += $attendance_array['rest'];
-                $total_rest_nd += $attendance_array['rest_nd'];
 
                 if ($Attendance->getOtApproved() == 'yes') {
                     $total_reg_ot += $attendance_array['reg_ot'];
@@ -2591,68 +2599,68 @@ class Payroll_IndexController extends Zend_Controller_Action
             }
 
             $this_row += [
-            'BasicPay' => number_format($pvalue->getBasicPay(), 2)
+                'BasicPay' => number_format($pvalue->getBasicPay(), 2)
 
 
-            , 'Incentives' => number_format(round($pvalue->getIncentives(), 2), 2)
-            , 'BOP maintenance' => $bop_maintenance
-            , 'BOP rental' => $bop_rental
+                , 'Incentives' => number_format(round($pvalue->getIncentives(), 2), 2)
+                , 'BOP maintenance' => $bop_maintenance
+                , 'BOP rental' => $bop_rental
 
-            , '13th month pay' => number_format(round($pvalue->getThirteenthMonth(), 2), 2)
-
-
-            , 'Fuel addition' => number_format(round($pvalue->getFuelAddition(), 2), 2)
-
-            , 'Misc addition' => number_format(round($pvalue->getMiscAddition(), 2), 2)
-
-            , 'Paternity' => number_format(round($pvalue->getPaternity(), 2), 2)
-
-            , 'Gross pay' => number_format(round($pvalue->getGrossPay(), 2), 2)
+                , '13th month pay' => number_format(round($pvalue->getThirteenthMonth(), 2), 2)
 
 
-            , 'SSS' => number_format(round($pvalue->getSss() * -1, 2), 2)
-            , 'Philhealth' => number_format(round($pvalue->getPhilhealth() * -1, 2), 2)
-            , 'HDMF' => number_format(round($pvalue->getHdmf() * -1, 2), 2)
+                , 'Fuel addition' => number_format(round($pvalue->getFuelAddition(), 2), 2)
+
+                , 'Misc addition' => number_format(round($pvalue->getMiscAddition(), 2), 2)
+
+                , 'Paternity' => number_format(round($pvalue->getPaternity(), 2), 2)
+
+                , 'Gross pay' => number_format(round($pvalue->getGrossPay(), 2), 2)
+
+
+                , 'SSS' => number_format(round($pvalue->getSss() * -1, 2), 2)
+                , 'Philhealth' => number_format(round($pvalue->getPhilhealth() * -1, 2), 2)
+                , 'HDMF' => number_format(round($pvalue->getHdmf() * -1, 2), 2)
 
                 // , 'Cash bond' => number_format(round($pvalue->getCashBond() * -1, 2), 2)
                 // , 'Insurance' => number_format(round($pvalue->getInsurance() * -1, 2), 2)
                 // , 'Misc deduction'=>number_format(round($pvalue->getMiscDeduction() * -1,2),2)
 
-            , 'SSS loan' => number_format(round($pvalue->getSSSLoan() * -1, 2), 2)
-            , 'HDMF loan' => number_format(round($pvalue->getHDMFLoan() * -1, 2), 2)
+                , 'SSS loan' => number_format(round($pvalue->getSSSLoan() * -1, 2), 2)
+                , 'HDMF loan' => number_format(round($pvalue->getHDMFLoan() * -1, 2), 2)
 
                 // , 'Other deductions' => $other_deductions
 
                 // , 'Net pay' => 0
 
 
-            , 'Net pay' => number_format(round($pvalue->getNetPay(), 2), 2)
-            , 'Account number' => $pvalue->getAccountNumber()
+                , 'Net pay' => number_format(round($pvalue->getNetPay(), 2), 2)
+                , 'Account number' => $pvalue->getAccountNumber()
 
-            , 'SSS deductions (Table/Calculated)' => $payroll_meta->sss_pair[0] . ' / ' . $payroll_meta->sss_pair[1]
-            , 'SSS More data' => @$payroll_meta->sss_debug
+                , 'SSS deductions (Table/Calculated)' => $payroll_meta->sss_pair[0] . ' / ' . $payroll_meta->sss_pair[1]
+                , 'SSS More data' => @$payroll_meta->sss_debug
 
-            , 'Fuel hours' => number_format(round($pvalue->getFuelHours(), 2), 2)
-            , 'Fuel allotment' => number_format(round($pvalue->getFuelAllotment(), 2), 2)
-            , 'Fuel purchased' => number_format(round($pvalue->getFuelUsage(), 2), 2)
-            , 'Fuel overage L' => number_format(round($pvalue->getFuelUsage() - $pvalue->getFuelAllotment(), 2), 2)
-            , 'Fuel price' => number_format(round($pvalue->getFuelPrice(), 2), 2)
-            , 'Fuel overage' => number_format(round($pvalue->getFuelOverage() * -1, 2), 2)
-
-
-            , 'Accident' => number_format(round($pvalue->getAccident() * -1, 2), 2)
-            , 'Uniform' => number_format(round($pvalue->getUniform() * -1, 2), 2)
-            , 'Adjustment' => number_format(round($pvalue->getAdjustment() * -1, 2), 2)
-            , 'Miscellaneous' => number_format(round($pvalue->getMiscellaneous() * -1, 2), 2)
-            , 'Communication' => number_format(round($pvalue->getCommunication() * -1, 2), 2)
-            , 'Fuel deduction' => number_format(round($pvalue->getFuelDeduction() * -1, 2), 2)
-            , 'Lost card' => number_format(round($pvalue->lost_card * -1, 2), 2)
-            , 'Food' => number_format(round($pvalue->food * -1, 2), 2)
+                , 'Fuel hours' => number_format(round($pvalue->getFuelHours(), 2), 2)
+                , 'Fuel allotment' => number_format(round($pvalue->getFuelAllotment(), 2), 2)
+                , 'Fuel purchased' => number_format(round($pvalue->getFuelUsage(), 2), 2)
+                , 'Fuel overage L' => number_format(round($pvalue->getFuelUsage() - $pvalue->getFuelAllotment(), 2), 2)
+                , 'Fuel price' => number_format(round($pvalue->getFuelPrice(), 2), 2)
+                , 'Fuel overage' => number_format(round($pvalue->getFuelOverage() * -1, 2), 2)
 
 
-            , 'BOP motorcycle' => $pvalue->getBopMotorcycle() * -1
-            , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1
-            , 'PayrollMeta' => $pvalue->getPayrollMeta()
+                , 'Accident' => number_format(round($pvalue->getAccident() * -1, 2), 2)
+                , 'Uniform' => number_format(round($pvalue->getUniform() * -1, 2), 2)
+                , 'Adjustment' => number_format(round($pvalue->getAdjustment() * -1, 2), 2)
+                , 'Miscellaneous' => number_format(round($pvalue->getMiscellaneous() * -1, 2), 2)
+                , 'Communication' => number_format(round($pvalue->getCommunication() * -1, 2), 2)
+                , 'Fuel deduction' => number_format(round($pvalue->getFuelDeduction() * -1, 2), 2)
+                , 'Lost card' => number_format(round($pvalue->lost_card * -1, 2), 2)
+                , 'Food' => number_format(round($pvalue->food * -1, 2), 2)
+
+
+                , 'BOP motorcycle' => $pvalue->getBopMotorcycle() * -1
+                , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1
+                , 'PayrollMeta' => $pvalue->getPayrollMeta()
 
 
             ];
