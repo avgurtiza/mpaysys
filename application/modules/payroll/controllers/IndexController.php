@@ -1585,8 +1585,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $summary_bill['spec'] += $day->spec;
                 $summary_bill['spec_nd'] += $day->spec_nd;
 
-                $summary_bill['rest'] += $day->rest;
-                $summary_bill['rest_nd'] += $day->rest_nd;
 
                 $summary_bill['legal'] += $day->legal;
                 $summary_bill['legal_nd'] += $day->legal_nd;
@@ -1616,11 +1614,20 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $summary_bill['legal'] += $day->legal;
                     $summary_bill['legal_nd'] += $day->legal_nd;
 
-                    $summary_bill['rest'] += $day->rest_ot;
-                    $summary_bill['rest_nd'] += $day->rest_nd_ot;
+                    // $summary_bill['rest'] += $day->rest_ot;
+                    // $summary_bill['rest_nd'] += $day->rest_nd_ot;
 
+                    $messerve_bill['rest'] += $day->rest;
+                    $messerve_bill['rest_nd'] += $day->rest_nd;
                     $messerve_bill['rest_ot'] += $day->rest_ot;
                     $messerve_bill['rest_nd_ot'] += $day->rest_nd_ot;
+
+
+                    $summary_bill['reg'] += $day->rest;
+                    $summary_bill['reg_nd'] += $day->rest_nd;
+                    $messerve_bill['reg_ot'] += $day->rest_ot;
+                    $messerve_bill['reg_nd_ot'] += $day->rest_nd_ot;
+
                 } else {
                     $summary_bill['reg_ot'] += $day->reg_ot;
                     $summary_bill['reg_nd_ot'] += $day->reg_nd_ot;
@@ -1631,6 +1638,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $summary_bill['legal_ot'] += $day->legal_ot;
                     $summary_bill['legal_nd_ot'] += $day->legal_nd_ot;
 
+                    $summary_bill['rest'] += $day->rest;
+                    $summary_bill['rest_nd'] += $day->rest_nd;
                     $summary_bill['rest_ot'] += $day->rest_ot;
                     $summary_bill['rest_nd_ot'] += $day->rest_nd_ot;
                 }
@@ -1657,7 +1666,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             } elseif ($Group->getRateId() > 0) {//  Using group rate
                 $this_rate = $rates_array[$Group->getRateid()];
             } else {
-                die('Process halted:  no rates found for either employee or group.');
+                throw new Exception('Process halted:  no rates found for either employee or group.');
             }
 
 
