@@ -2391,7 +2391,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
         if ($all_messerve_ot > 0) { // Messerve pays OT,  add OT to client's billable reg hours
-            $page->setFont($font, 8)->drawText('Reg ' . round($all_total_reg + $all_messerve_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+            $page->setFont($font, 8)->drawText('Reg ' . round($all_total_reg, 2), $dim_x + $now_x, $dim_y, 'UTF8');
         } else {
             $page->setFont($font, 8)->drawText('Reg ' . round($all_total_reg, 2), $dim_x + $now_x, $dim_y, 'UTF8');
         }
