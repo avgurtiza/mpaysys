@@ -1695,31 +1695,31 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $employee_payroll[$evalue->getId()]['pay'] = array(
                 'reg' => $attendance->sum_reg * $this_rate->Reg
-            , 'reg_nd' => $attendance->sum_reg_nd * $this_rate->RegNd
+                , 'reg_nd' => $attendance->sum_reg_nd * $this_rate->RegNd
 
-            , 'reg_ot' => $attendance->sum_reg_ot * $this_rate->RegOT
-            , 'reg_nd_ot' => $attendance->sum_reg_nd_ot * $this_rate->RegNdOT
+                , 'reg_ot' => $attendance->sum_reg_ot * $this_rate->RegOT
+                , 'reg_nd_ot' => $attendance->sum_reg_nd_ot * $this_rate->RegNdOT
 
-            , 'sun' => $attendance->sum_sun * $this_rate->Sun
-            , 'sun_nd' => $attendance->sum_sun_nd * $this_rate->SunNd
-            , 'sun_ot' => $attendance->sum_sun_ot * $this_rate->SunOT
-            , 'sun_nd_ot' => $attendance->sum_sun_nd_ot * $this_rate->SunNdOt
+                , 'sun' => $attendance->sum_sun * $this_rate->Sun
+                , 'sun_nd' => $attendance->sum_sun_nd * $this_rate->SunNd
+                , 'sun_ot' => $attendance->sum_sun_ot * $this_rate->SunOT
+                , 'sun_nd_ot' => $attendance->sum_sun_nd_ot * $this_rate->SunNdOt
 
-            , 'spec' => $attendance->sum_spec * $this_rate->Spec
-            , 'spec_nd' => $attendance->sum_spec_nd * $this_rate->SpecNd
-            , 'spec_ot' => $attendance->sum_spec_ot * $this_rate->SpecOT
-            , 'spec_nd_ot' => $attendance->sum_spec_nd_ot * $this_rate->SpecNdOt
+                , 'spec' => $attendance->sum_spec * $this_rate->Spec
+                , 'spec_nd' => $attendance->sum_spec_nd * $this_rate->SpecNd
+                , 'spec_ot' => $attendance->sum_spec_ot * $this_rate->SpecOT
+                , 'spec_nd_ot' => $attendance->sum_spec_nd_ot * $this_rate->SpecNdOt
 
-            , 'legal' => $attendance->sum_legal * $this_rate->Legal
-            , 'legal_nd' => $attendance->sum_legal_nd * $this_rate->LegalNd
-            , 'legal_ot' => $attendance->sum_legal_ot * $this_rate->LegalOT
-            , 'legal_nd_ot' => $attendance->sum_legal_nd_ot * $this_rate->LegalNdOt
-            , 'legal_unattend' => $attendance->sum_legal_unattend * $this_rate->LegalUnattend
+                , 'legal' => $attendance->sum_legal * $this_rate->Legal
+                , 'legal_nd' => $attendance->sum_legal_nd * $this_rate->LegalNd
+                , 'legal_ot' => $attendance->sum_legal_ot * $this_rate->LegalOT
+                , 'legal_nd_ot' => $attendance->sum_legal_nd_ot * $this_rate->LegalNdOt
+                , 'legal_unattend' => $attendance->sum_legal_unattend * $this_rate->LegalUnattend
 
-            , 'rest' => $attendance->sum_rest * $this_rate->Spec
-            , 'rest_nd' => $attendance->sum_rest_nd * $this_rate->SpecNd
-            , 'rest_ot' => $attendance->sum_rest_ot * $this_rate->SpecOT
-            , 'rest_nd_ot' => $attendance->sum_rest_nd_ot * $this_rate->SpecNdOt
+                , 'rest' => $attendance->sum_rest * $this_rate->Spec
+                , 'rest_nd' => $attendance->sum_rest_nd * $this_rate->SpecNd
+                , 'rest_ot' => $attendance->sum_rest_ot * $this_rate->SpecOT
+                , 'rest_nd_ot' => $attendance->sum_rest_nd_ot * $this_rate->SpecNdOt
             );
 
 
@@ -1956,6 +1956,9 @@ class Payroll_IndexController extends Zend_Controller_Action
         $all_messerve_legal_ot = 0;
         $all_messerve_legal_nd_ot = 0;
 
+        $all_messerve_rest = 0;;
+        $all_messerve_rest_nd = 0;
+
         $all_messerve_rest_ot = 0;;
         $all_messerve_rest_nd_ot = 0;
 
@@ -2008,7 +2011,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $AttendanceMap = new Messerve_Model_Mapper_Attendance();
 
-            $first_id = 0;
+            // $first_id = 0;
 
             $current_date = $date_start;
 
@@ -2019,6 +2022,9 @@ class Payroll_IndexController extends Zend_Controller_Action
             $messerve_reg_ot = 0;
             $messerve_reg_nd_ot = 0;
 
+            $messerve_rest = 0;
+            $messerve_rest_nd = 0;
+            
             $messerve_rest_ot = 0;
             $messerve_rest_nd_ot = 0;
 
@@ -2056,28 +2062,33 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $attendance_array = $Attendance->toArray();
 
-                $all_hours = array(
+                $all_hours = [
                     $attendance_array['reg']
-                , $attendance_array['reg_nd']
-                , $attendance_array['spec']
-                , $attendance_array['spec_nd']
-                , $attendance_array['sun']
-                , $attendance_array['sun_nd']
-                , $attendance_array['legal']
-                , $attendance_array['legal_nd']
-                , $attendance_array['legal_unattend']
+                    , $attendance_array['reg_nd']
+                    , $attendance_array['spec']
+                    , $attendance_array['spec_nd']
+                    , $attendance_array['sun']
+                    , $attendance_array['sun_nd']
+                    , $attendance_array['legal']
+                    , $attendance_array['legal_nd']
+                    , $attendance_array['legal_unattend']
                     // , $attendance_array['rest']
                     // , $attendance_array['rest_nd']
-
-                );
+                ];
 
                 $total_reg += $attendance_array['reg'];
                 $total_reg_nd += $attendance_array['reg_nd'];
 
-                $total_rest += $attendance_array['rest'];
-                $total_rest_nd += $attendance_array['rest_nd'];
 
                 if ($Attendance->getOtApproved() == 'yes') {
+                    $total_rest += $attendance_array['rest'];
+                    $total_rest_nd += $attendance_array['rest_nd'];
+
+                    $all_hours = array_merge($all_hours, array(
+                        'rest' => $attendance_array['rest']
+                        , 'rest_nd' => $attendance_array['rest_nd']
+                    ));
+
                     $all_hours = array_merge($all_hours, array(
                         $attendance_array['reg_ot']
                         , $attendance_array['reg_nd_ot']
@@ -2138,9 +2149,15 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $all_hours['reg_nd'] += array_sum($temp_nd_ot);
                     $total_reg_nd += array_sum($temp_nd_ot); // Bill NDOT as RegND to client
 
+                    $all_messerve_rest += $attendance_array['rest'];
+                    $all_messerve_rest_nd += $attendance_array['rest_nd'];
+
                     $messerve_reg_ot += $attendance_array['reg_ot'];
                     $messerve_reg_nd_ot += $attendance_array['reg_nd_ot'];
 
+                    $messerve_rest += $attendance_array['rest'];
+                    $messerve_rest_nd += $attendance_array['rest_nd'];
+                    
                     $messerve_rest_ot += $attendance_array['rest_ot'];
                     $messerve_rest_nd_ot += $attendance_array['rest_nd_ot'];
 
@@ -2151,6 +2168,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $messerve_legal_nd_ot += $attendance_array['legal_nd_ot'];
 
                 } elseif ($Attendance->getExtendedShift() != 'yes') { // Not bill to Messerve, not OT.  Rest day pay
+                    $total_rest += $attendance_array['rest'];
+                    $total_rest_nd += $attendance_array['rest_nd'];
+
                     $all_hours = array_merge($all_hours, array(
                         'rest' => $attendance_array['rest']
                         , 'rest_nd' => $attendance_array['rest_nd']
@@ -2229,7 +2249,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $all_total_rest_ot += $total_rest_ot;
                 $all_total_rest_nd_ot += $total_rest_nd_ot;
 
-                $all_total_total_hours += $total_total_hours;
+                // $all_total_total_hours += $total_total_hours;
 
                 $now_x = $dim_x + ($i * 22) + 110 + 66;
                 $now_inc = 70;
@@ -2293,6 +2313,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $dim_y -= 10;
 
                 $page->setFont($font, 8)->drawText('RestSp ' . round_this($total_rest, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                if ($messerve_rest > 0) {
+                    $page->setFont($italic, 8)->drawText($messerve_rest, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                }
                 $now_x += $now_inc;
 
                 $page->setFont($ot_font, 8)->drawText('RestSpOT ' . round_this($total_rest_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
@@ -2302,6 +2325,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $now_x += $now_inc;
 
                 $page->setFont($font, 8)->drawText('RestSpND ' . round_this($total_rest_nd, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                if ($messerve_rest_nd > 0) {
+                    $page->setFont($italic, 8)->drawText($messerve_rest_nd, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                }
                 $now_x += $now_inc;
 
                 $page->setFont($ot_font, 8)->drawText('RestSpNDOT ' . round_this($total_rest_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
@@ -2355,7 +2381,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
         if ($all_messerve_ot > 0) {
-            $page->setFont($font, 8)->drawText('Total ' . round($all_total_total_hours + $all_messerve_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+            $page->setFont($font, 8)->drawText('Total ' . round($all_total_total_hours, 2), $dim_x + $now_x, $dim_y, 'UTF8');
             $page->setFont($italic, 8)->drawText($all_messerve_ot, $dim_x + $now_x + 47, $dim_y, 'UTF8');
         } else {
             $page->setFont($font, 8)->drawText('Total ' . round($all_total_total_hours, 2), $dim_x + $now_x, $dim_y, 'UTF8');
@@ -2364,7 +2390,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $now_x += $now_inc;
 
 
-        if ($all_messerve_ot > 0) {
+        if ($all_messerve_ot > 0) { // Messerve pays OT,  add OT to client's billable reg hours
             $page->setFont($font, 8)->drawText('Reg ' . round($all_total_reg + $all_messerve_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
         } else {
             $page->setFont($font, 8)->drawText('Reg ' . round($all_total_reg, 2), $dim_x + $now_x, $dim_y, 'UTF8');
@@ -2416,6 +2442,9 @@ class Payroll_IndexController extends Zend_Controller_Action
         $dim_y -= 10;
 
         $page->setFont($font, 8)->drawText('RestSp ' . round($all_total_rest, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+        if ($all_messerve_rest > 0) {
+            $page->setFont($italic, 8)->drawText($all_messerve_rest, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+        }
         $now_x += $now_inc;
 
         $page->setFont($font, 8)->drawText('RestSpOT ' . round($all_total_rest_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
@@ -2425,6 +2454,9 @@ class Payroll_IndexController extends Zend_Controller_Action
         $now_x += $now_inc;
 
         $page->setFont($font, 8)->drawText('RestSpND ' . round($all_total_rest_nd, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+        if ($all_messerve_rest_nd > 0) {
+            $page->setFont($italic, 8)->drawText($all_messerve_rest_nd, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+        }
         $now_x += $now_inc;
 
         $page->setFont($font, 8)->drawText('RestSpNDOT ' . round($all_total_rest_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
