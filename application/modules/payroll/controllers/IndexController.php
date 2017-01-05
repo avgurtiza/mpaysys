@@ -578,6 +578,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $bop_acknowledgement = [];
 
+        // preprint($this->_employee_payroll,1);
+
         foreach ($this->_employee_payroll as $value) {
             $page = new Zend_Pdf_Page(612, 396);
 
@@ -607,6 +609,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 array('employee_id', 'datetime_start', 'group_id')
                 , array($Employee->getId(), $date_start . ' 00:00:00', $group_id)
             );
+
 
             // Process scheduled deductions
             $bop_motorcycle = 0;
@@ -740,11 +743,15 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $PayrollLib = new Messervelib_Payroll();
 
-            $employee_pay = $PayrollLib->GetEmployeePayroll(
+            $employee_pay = $PayrollLib->GetEmployeePayroll( // TODO:  fix this hack
                 $Employee->getId()
                 , $group_id
                 , $this->_request->getParam('date_start')
             );
+
+            if($Employee->getId() == 1938) {
+                // preprint($employee_pay, true);
+            }
 
             $total_no_hours = 0;
             $total_pay = 0;
@@ -1648,6 +1655,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
             $attendance->id = $day->employee_id;
+            $attendance->employee_id = $day->employee_id;
             $attendance->group_id = $day->group_id;
             $attendance->employee_number = $day->employee_number;
             $attendance->firstname = $day->firstname;
