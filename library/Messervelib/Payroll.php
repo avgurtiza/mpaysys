@@ -704,7 +704,7 @@ class Messervelib_Payroll
                     $time_array['rest_nd_ot'] = $nd_ot;
                 }
             } else { // Regular
-                if (!$holiday_tomorrow) {
+                /*if (!$holiday_tomorrow) {
                     echo "Reg, not hol tom <br>";
                     $time_array['reg'] = $reg + $tomorrow;
                     $time_array['reg_ot'] = $ot + $tomorrow_ot;
@@ -715,7 +715,12 @@ class Messervelib_Payroll
                     $time_array['reg_ot'] = $ot;
                     $time_array['reg_nd'] = $nd;
                     $time_array['reg_nd_ot'] = $nd_ot;
-                }
+                }*/
+
+                $time_array['reg'] = $reg + $tomorrow;
+                $time_array['reg_ot'] = $ot + $tomorrow_ot;
+                $time_array['reg_nd'] = $nd + $tomorrow_nd;
+                $time_array['reg_nd_ot'] = $nd_ot + $tomorrow_nd_ot;
             }
 
             if ($holiday_today) {
@@ -825,19 +830,21 @@ class Messervelib_Payroll
                 }
             }
 
-            /*
-            if($Attendance->id == 492582) {
-                preprint($time_array);
-                echo "THIS: " . $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
-                die('495922');
-            }
-            */
+
+
 
             $options = $time_array;
 
             if (is_array($attendance)) {
                 $options = array_merge($options, $attendance);
-
+                /*
+                if($Attendance->id == 514753) {
+                    echo 'L ' . __LINE__ . '<br>';
+                    preprint($options);
+                    echo "THIS: " . $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
+                    die('514753');
+                }
+                */
                 $Attendance
                     ->setGroupId($group_id)
                     ->setOptions($options)
