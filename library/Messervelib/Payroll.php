@@ -606,9 +606,9 @@ class Messervelib_Payroll
 
                 $reg_balance = $this->_max_regular_hours;
 
-
+                echo "<br> Start1 : {$attendance['start_1'] }";
                 for ($i = 2; $i >= 0; $i--) {
-                    if ((int)date('H', strtotime($start_1)) < 6) { // If shift starts before 6AM (ND cutoff), do today's ND first
+                    if ((int)$attendance['start_1'] < 600) { // If shift starts before 6AM (ND cutoff), do today's ND first
 
                         if (isset($time_array[$i]['today_nd']) && $reg_balance > 0) {
                             if (($reg_balance - $time_array[$i]['today_nd']) >= 0) {
