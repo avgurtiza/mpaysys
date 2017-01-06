@@ -749,7 +749,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , $this->_request->getParam('date_start')
             );
 
-            if($Employee->getId() == 1938) {
+            if ($Employee->getId() == 1938) {
                 // preprint($employee_pay, true);
             }
 
@@ -1068,7 +1068,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 // $dim_y = $split_dim_y;
 
                 $page->setFont($font, 8)->drawText('Fuel overage', $dim_x + 380, $dim_y);
-                $page->setFont($mono, 8)->drawText(str_pad($fuel_deduction, 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
+                $page->setFont($mono, 8)->drawText(str_pad(number_format($fuel_deduction, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
                 $dim_y -= 8;
 
                 $page->setFont($font, 8)->drawText(' - Allotment L', $dim_x + 380, $dim_y);
@@ -1703,31 +1703,31 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $employee_payroll[$evalue->getId()]['pay'] = array(
                 'reg' => $attendance->sum_reg * $this_rate->Reg
-                , 'reg_nd' => $attendance->sum_reg_nd * $this_rate->RegNd
+            , 'reg_nd' => $attendance->sum_reg_nd * $this_rate->RegNd
 
-                , 'reg_ot' => $attendance->sum_reg_ot * $this_rate->RegOT
-                , 'reg_nd_ot' => $attendance->sum_reg_nd_ot * $this_rate->RegNdOT
+            , 'reg_ot' => $attendance->sum_reg_ot * $this_rate->RegOT
+            , 'reg_nd_ot' => $attendance->sum_reg_nd_ot * $this_rate->RegNdOT
 
-                , 'sun' => $attendance->sum_sun * $this_rate->Sun
-                , 'sun_nd' => $attendance->sum_sun_nd * $this_rate->SunNd
-                , 'sun_ot' => $attendance->sum_sun_ot * $this_rate->SunOT
-                , 'sun_nd_ot' => $attendance->sum_sun_nd_ot * $this_rate->SunNdOt
+            , 'sun' => $attendance->sum_sun * $this_rate->Sun
+            , 'sun_nd' => $attendance->sum_sun_nd * $this_rate->SunNd
+            , 'sun_ot' => $attendance->sum_sun_ot * $this_rate->SunOT
+            , 'sun_nd_ot' => $attendance->sum_sun_nd_ot * $this_rate->SunNdOt
 
-                , 'spec' => $attendance->sum_spec * $this_rate->Spec
-                , 'spec_nd' => $attendance->sum_spec_nd * $this_rate->SpecNd
-                , 'spec_ot' => $attendance->sum_spec_ot * $this_rate->SpecOT
-                , 'spec_nd_ot' => $attendance->sum_spec_nd_ot * $this_rate->SpecNdOt
+            , 'spec' => $attendance->sum_spec * $this_rate->Spec
+            , 'spec_nd' => $attendance->sum_spec_nd * $this_rate->SpecNd
+            , 'spec_ot' => $attendance->sum_spec_ot * $this_rate->SpecOT
+            , 'spec_nd_ot' => $attendance->sum_spec_nd_ot * $this_rate->SpecNdOt
 
-                , 'legal' => $attendance->sum_legal * $this_rate->Legal
-                , 'legal_nd' => $attendance->sum_legal_nd * $this_rate->LegalNd
-                , 'legal_ot' => $attendance->sum_legal_ot * $this_rate->LegalOT
-                , 'legal_nd_ot' => $attendance->sum_legal_nd_ot * $this_rate->LegalNdOt
-                , 'legal_unattend' => $attendance->sum_legal_unattend * $this_rate->LegalUnattend
+            , 'legal' => $attendance->sum_legal * $this_rate->Legal
+            , 'legal_nd' => $attendance->sum_legal_nd * $this_rate->LegalNd
+            , 'legal_ot' => $attendance->sum_legal_ot * $this_rate->LegalOT
+            , 'legal_nd_ot' => $attendance->sum_legal_nd_ot * $this_rate->LegalNdOt
+            , 'legal_unattend' => $attendance->sum_legal_unattend * $this_rate->LegalUnattend
 
-                , 'rest' => $attendance->sum_rest * $this_rate->Spec
-                , 'rest_nd' => $attendance->sum_rest_nd * $this_rate->SpecNd
-                , 'rest_ot' => $attendance->sum_rest_ot * $this_rate->SpecOT
-                , 'rest_nd_ot' => $attendance->sum_rest_nd_ot * $this_rate->SpecNdOt
+            , 'rest' => $attendance->sum_rest * $this_rate->Spec
+            , 'rest_nd' => $attendance->sum_rest_nd * $this_rate->SpecNd
+            , 'rest_ot' => $attendance->sum_rest_ot * $this_rate->SpecOT
+            , 'rest_nd_ot' => $attendance->sum_rest_nd_ot * $this_rate->SpecNdOt
             );
 
 
@@ -2032,7 +2032,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $messerve_rest = 0;
             $messerve_rest_nd = 0;
-            
+
             $messerve_rest_ot = 0;
             $messerve_rest_nd_ot = 0;
 
@@ -2094,22 +2094,22 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $all_hours = array_merge($all_hours, array(
                         'rest' => $attendance_array['rest']
-                        , 'rest_nd' => $attendance_array['rest_nd']
+                    , 'rest_nd' => $attendance_array['rest_nd']
                     ));
 
                     $all_hours = array_merge($all_hours, array(
                         $attendance_array['reg_ot']
-                        , $attendance_array['reg_nd_ot']
-                        , $attendance_array['spec_ot']
-                        , $attendance_array['spec_nd_ot']
-                        , $attendance_array['sun_ot']
-                        , $attendance_array['sun_nd_ot']
-                        , $attendance_array['legal_ot']
-                        , $attendance_array['legal_nd_ot']
-                        , $attendance_array['rest_ot']
-                        , $attendance_array['rest_nd_ot']
-                        , $attendance_array['rest']
-                        , $attendance_array['rest_nd']
+                    , $attendance_array['reg_nd_ot']
+                    , $attendance_array['spec_ot']
+                    , $attendance_array['spec_nd_ot']
+                    , $attendance_array['sun_ot']
+                    , $attendance_array['sun_nd_ot']
+                    , $attendance_array['legal_ot']
+                    , $attendance_array['legal_nd_ot']
+                    , $attendance_array['rest_ot']
+                    , $attendance_array['rest_nd_ot']
+                    , $attendance_array['rest']
+                    , $attendance_array['rest_nd']
                     ));
 
                 } elseif ($Attendance->getExtendedShift() == 'yes') { // Bill to Messerve
@@ -2165,7 +2165,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $messerve_rest += $attendance_array['rest'];
                     $messerve_rest_nd += $attendance_array['rest_nd'];
-                    
+
                     $messerve_rest_ot += $attendance_array['rest_ot'];
                     $messerve_rest_nd_ot += $attendance_array['rest_nd_ot'];
 
@@ -2181,7 +2181,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $all_hours = array_merge($all_hours, array(
                         'rest' => $attendance_array['rest']
-                        , 'rest_nd' => $attendance_array['rest_nd']
+                    , 'rest_nd' => $attendance_array['rest_nd']
                     ));
                 }
 
