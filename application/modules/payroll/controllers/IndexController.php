@@ -343,7 +343,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                     , $dim_x + 165, $dim_y);
 
 
-                $page->setFont($mono, $bill_font_size)->drawText(str_pad(round($client_rate_array[$key], 2), 8, ' ', STR_PAD_LEFT)
+                $page->setFont($mono, $bill_font_size)->drawText(str_pad(number_format(round($client_rate_array[$key], 2),2), 8, ' ', STR_PAD_LEFT)
                     , $dim_x + 220, $dim_y);
 
                 $total_hours += round($this->_employer_bill[$key], 2);
@@ -2219,7 +2219,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $i = 1;
 
                 foreach ($employee_attendance_text as $evalue) {
-                    $page->setFont($font, 8)->drawText($evalue, $dim_x + ($i * 25) + 150, $dim_y, 'UTF8');
+                    $page->setFont($font, 8)->drawText(round_this($evalue, 2), $dim_x + ($i * 25) + 150, $dim_y, 'UTF8');
                     $i++;
                 }
 
