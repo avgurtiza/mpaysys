@@ -39,9 +39,16 @@ class Payroll_IndexController extends Zend_Controller_Action
             $period_covered = date("Y-m-01");
             $period_end = date("Y-m-15");
         } else {
-            $period_covered = date("Y-$last_month-16");
-            $period_end = date('Y-m-d', strtotime('next month -1 day', strtotime(date("Y-$last_month"))));
+            if($last_month == 12) {
+                $period_covered = date("Y-12-16", strtotime('last year'));
+                $period_end = date("Y-12-t", strtotime('last year'));
+                // $period_end = date('Y-m-d', strtotime('next month -1 day', strtotime(date("Y-$last_month"))));
+            } else {
+                $period_covered = date("Y-$last_month-16");
+                $period_end = date('Y-m-d', strtotime('next month -1 day', strtotime(date("Y-$last_month"))));
+            }
         }
+
 
         $this->view->period_covered = $period_covered;
         $this->view->period_end = $period_end;
