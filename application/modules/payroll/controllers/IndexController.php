@@ -39,7 +39,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $period_covered = date("Y-m-01");
             $period_end = date("Y-m-15");
         } else {
-            if($last_month == 12) {
+            if ($last_month == 12) {
                 $period_covered = date("Y-12-16", strtotime('last year'));
                 $period_end = date("Y-12-t", strtotime('last year'));
                 // $period_end = date('Y-m-d', strtotime('next month -1 day', strtotime(date("Y-$last_month"))));
@@ -75,7 +75,10 @@ class Payroll_IndexController extends Zend_Controller_Action
 
     public function clientreportAction()
     {
-        $this->_compute();
+        throw new Exception('This feature is no longer available.');
+        die();
+
+        // $this->_compute();
 
         $client = $this->_client;
 
@@ -350,7 +353,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                     , $dim_x + 165, $dim_y);
 
 
-                $page->setFont($mono, $bill_font_size)->drawText(str_pad(number_format(round($client_rate_array[$key], 2),2), 8, ' ', STR_PAD_LEFT)
+                $page->setFont($mono, $bill_font_size)->drawText(str_pad(number_format(round($client_rate_array[$key], 2), 2), 8, ' ', STR_PAD_LEFT)
                     , $dim_x + 220, $dim_y);
 
                 $total_hours += round($this->_employer_bill[$key], 2);
@@ -670,11 +673,14 @@ class Payroll_IndexController extends Zend_Controller_Action
                     );
                     // }
 
-                    // For BOP acknowledgement slip
-                    /*
 
                     $bop_motorcycle = $BOPAttendance->getMotorcycleDeduction();
                     $bop_insurance = $BOPAttendance->getInsuranceDeduction();
+
+
+                    // For BOP acknowledgement slip
+                    /*
+
 
                     if ($bop_motorcycle > 0) {
                         $bop_acknowledgement[] =
@@ -1236,7 +1242,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
         $this->summaryreportAction();
-        $this->clientreportAction();
+        // $this->clientreportAction();
 
         if ($this->_request->getParam("is_ajax") != "true") {
             $this->_redirect($_SERVER['HTTP_REFERER']);
@@ -2394,7 +2400,28 @@ class Payroll_IndexController extends Zend_Controller_Action
             + round($all_total_legal, 2) + round($all_total_legal_ot, 2) + round($all_total_legal_nd, 2) + round($all_total_legal_nd_ot, 2)
             + round($all_total_legal_unattend, 2);
 
+        $all_hours_array = [
+            'reg' => $all_total_reg
+            , 'reg_ot' => $all_total_reg_ot
+            , 'reg_nd' => $all_total_reg_nd
+            , 'reg_nd_ot' => $all_total_reg_nd_ot
+            , 'spec' => $all_total_sun
+            , 'spec_ot' => $all_total_sun_ot
+            , 'spec_nd' => $all_total_sun_nd
+            , 'spec_nd_ot' => $all_total_sun_nd_ot
+            , 'rest' => $all_total_rest
+            , 'rest_ot' => $all_total_rest_ot
+            , 'rest_nd' => $all_total_rest_nd
+            , 'rest_nd_ot' => $all_total_rest_nd_ot
+            , 'legal' => $all_total_legal
+            , 'legal_ot' => $all_total_legal_ot
+            , 'legal_nd' => $all_total_legal_nd
+            , 'legal_nd_ot' => $all_total_legal_nd_ot
+            , 'legal_unattend' => $all_total_legal_unattend
+        ];
 
+        // preprint($all_hours_array,1);
+        
         if ($all_messerve_ot > 0) {
             $page->setFont($font, 8)->drawText('Total ' . round($all_total_total_hours, 2), $dim_x + $now_x, $dim_y, 'UTF8');
             $page->setFont($italic, 8)->drawText($all_messerve_ot, $dim_x + $now_x + 47, $dim_y, 'UTF8');
@@ -2521,10 +2548,382 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $pdf->save($filename);
 
-        if ($standalone != '' && $standalone == 'true') $this->_redirect($_SERVER['HTTP_REFERER']);
+        $this->_createBillPdf($all_hours_array);
+
+        if ($standalone != '' && $standalone == 'true') {
+
+
+            $this->_redirect($_SERVER['HTTP_REFERER']);
+        }
 
     }
 
+    protected function _createBillPdf($all_hours_array)
+    {
+        $client = $this->_client;
+
+        $group_id = $this->_request->getParam('group_id');
+
+        $Group = new Messerve_Model_Group();
+
+        $Group->find($group_id);
+
+        $ClientRate = new Messerve_Model_RateClient();
+
+        // TODO:  find by date!
+
+        $RateSchedule = new Messerve_Model_EmployeeRateSchedule();
+        $rates = $RateSchedule->getMapper()->fetchList("group_id = $group_id", "date_active DESC");
+
+        if (count($rates) > 0) {
+            $ClientRate->find($rates[0]->getClientRateId());
+        } else {
+            $ClientRate->find($Group->getRateClientId());
+        }
+
+        $date_start = $this->_request->getParam('date_start');
+
+        $cutoff_modifier = 1;
+
+        if (strstr($date_start, '-16')) $cutoff_modifier = 0;
+
+        $folder = realpath(APPLICATION_PATH . '/../public/export') . "/$date_start/$group_id/client/";
+
+        $cmd = "mkdir -p $folder";
+
+        $date_now = date("Y-m-d-hi");
+        $filename = $folder . "Client_Report_{$this->_client->getName()}_{$Group->getName()}_{$group_id}_{$date_start}_{$date_now}.pdf";
+
+        shell_exec($cmd);
+
+        $client_rate_array = array(
+            'reg' => $ClientRate->getReg()
+        , 'reg_nd' => $ClientRate->getRegNd()
+        , 'reg_ot' => $ClientRate->getRegOt()
+        , 'reg_nd_ot' => $ClientRate->getRegNdOt()
+
+        , 'spec' => $ClientRate->getSpec()
+        , 'spec_nd' => $ClientRate->getSpecNd()
+        , 'spec_ot' => $ClientRate->getSpecOt()
+        , 'spec_nd_ot' => $ClientRate->getSpecNdOt()
+
+        , 'legal' => $ClientRate->getLegal()
+        , 'legal_nd' => $ClientRate->getLegalNd()
+        , 'legal_ot' => $ClientRate->getLegalOt()
+        , 'legal_nd_ot' => $ClientRate->getLegalNdOt()
+
+
+        , 'rest' => $ClientRate->getSpec()
+        , 'rest_nd' => $ClientRate->getSpecNd()
+        , 'rest_ot' => $ClientRate->getSpecOt()
+        , 'rest_nd_ot' => $ClientRate->getSpecNdOt()
+
+        , 'legal_unattend' => $ClientRate->getLegalUnattend()
+        );
+
+        $total_bill = array(
+            'reg' => $all_hours_array['reg'] * $ClientRate->getReg()
+        , 'reg_nd' => $all_hours_array['reg_nd'] * $ClientRate->getRegNd()
+        , 'reg_ot' => $all_hours_array['reg_ot'] * $ClientRate->getRegOt()
+        , 'reg_nd_ot' => $all_hours_array['reg_nd_ot'] * $ClientRate->getRegNdOt()
+
+        , 'spec' => $all_hours_array['spec'] * $ClientRate->getSpec()
+        , 'spec_nd' => $all_hours_array['spec_nd'] * $ClientRate->getSpecNd()
+        , 'spec_ot' => $all_hours_array['spec_ot'] * $ClientRate->getSpecOt()
+        , 'spec_nd_ot' => $all_hours_array['spec_nd_ot'] * $ClientRate->getSpecNdOt()
+
+        , 'legal' => $all_hours_array['legal'] * $ClientRate->getLegal()
+        , 'legal_nd' => $all_hours_array['legal_nd'] * $ClientRate->getLegalNd()
+        , 'legal_ot' => $all_hours_array['legal_ot'] * $ClientRate->getLegalOt()
+        , 'legal_nd_ot' => $all_hours_array['legal_nd_ot'] * $ClientRate->getLegalNdOt()
+
+
+        , 'rest' => $all_hours_array['rest'] * $ClientRate->getSpec()
+        , 'rest_nd' => $all_hours_array['rest_nd'] * $ClientRate->getSpecNd()
+        , 'rest_ot' => $all_hours_array['rest_ot'] * $ClientRate->getSpecOt()
+        , 'rest_nd_ot' => $all_hours_array['rest_nd_ot'] * $ClientRate->getSpecNdOt()
+
+        , 'legal_unattend' => $all_hours_array['legal_unattend'] * $ClientRate->getLegalUnattend()
+        );
+
+
+        $hours_label = array(
+            'reg' => 'RH'
+        , 'reg_nd' => 'RND '
+        , 'reg_ot' => 'ROT'
+        , 'reg_nd_ot' => 'RNDOT'
+
+        , 'spec' => 'SPH'
+        , 'spec_nd' => 'SPHND'
+        , 'spec_ot' => 'SPHOT'
+        , 'spec_nd_ot' => 'SPHNDOT'
+
+        , 'legal' => 'LH'
+        , 'legal_nd' => 'LHND'
+        , 'legal_ot' => 'LHOT'
+        , 'legal_nd_ot' => 'LHNDOT'
+
+
+        , 'legal_unattend' => 'UNLH'
+
+        , 'rest' => 'RST/SUN'
+        , 'rest_nd' => 'RSTND'
+        , 'rest_ot' => 'RSTOT'
+        , 'rest_nd_ot' => 'RSTNDOT'
+        );
+
+        $hours_description = array(
+            'reg' => 'Reg. Hours'
+        , 'reg_nd' => 'Reg. Hours ND '
+        , 'reg_ot' => 'Reg. Overtime'
+        , 'reg_nd_ot' => 'Reg. ND/OT'
+
+        , 'spec' => 'Special Holiday'
+        , 'spec_nd' => 'Special Holiday ND'
+        , 'spec_ot' => 'Special Holiday OT'
+        , 'spec_nd_ot' => 'Special Holiday ND/OT'
+
+        , 'legal' => 'Legal Holiday'
+        , 'legal_nd' => 'Legal Holiday ND'
+        , 'legal_ot' => 'Legal Holiday OT'
+        , 'legal_nd_ot' => 'Legal Holiday ND/OT'
+
+
+        , 'legal_unattend' => 'Unworked Legal Holiday'
+
+        , 'rest' => 'Restday/Sunday'
+        , 'rest_nd' => 'Restday/Sunday ND'
+        , 'rest_ot' => 'Restday/Sunday OT'
+        , 'rest_nd_ot' => 'Restday/Sunday ND/OT'
+        );
+
+        // $this->view->client = $this->_client;
+        // $this->view->group = $Group;
+        // $this->view->bill = $total_bill;
+        // $this->view->hours = $this->_employer_bill;
+
+        /* PDF */
+
+        $template = realpath(APPLICATION_PATH . "/../library/Templates/oh.pdf");
+        if (!file_exists($template)) die($template . ': template does not exist.');
+
+        $pdf = Zend_Pdf::load($template);
+        $page = $pdf->pages[0];
+
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $bold = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_BOLD);
+        $italic = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_ITALIC);
+        $mono = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_COURIER);
+        $mono_bold = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_COURIER_BOLD);
+
+        $bill_font_size = 10;
+
+        $pageHeight = $page->getHeight();
+
+        $dim_y = $pageHeight - 36;
+        $total = 0;
+
+        $dim_x = 46;
+        $dim_y -= 75;
+
+        $page->setFont($font, 10)->drawText("Address: 91 Congressional Avenue, Brgy. Bahay Toro, Project 8, Quezon City", $dim_x, $dim_y, 'UTF8');
+        $dim_y -= 14;
+        $page->setFont($font, 10)->drawText("VAT REG. TIN NO. 219-634-798-000", $dim_x, $dim_y, 'UTF8');
+        $dim_y -= 14;
+        $page->setFont($bold, 10)->drawText("BILLING", $dim_x, $dim_y, 'UTF8');
+        $dim_y -= 14;
+        $carr_return_dim_y = $dim_y;
+
+        $total_hours = 0;
+        $total_amount = 0;
+
+
+        $page->setFont($font, 10)->drawText("Client:", $dim_x, $dim_y, 'UTF8');
+
+        if ($Group->getBillingName() != '') {
+            $page->setFont($bold, 10)->drawText($Group->getBillingName(), $dim_x + 50, $dim_y, 'UTF8');
+            $dim_y -= 12;
+            $page->setFont($bold, 10)->drawText($Group->getName(), $dim_x + 50, $dim_y, 'UTF8');
+        } else {
+            $page->setFont($bold, 10)->drawText($this->_client->getName() . ' ' . $Group->getName(), $dim_x + 50, $dim_y, 'UTF8');
+        }
+
+        $dim_y -= 12;
+
+        $page->setFont($font, 10)->drawText("Address:", $dim_x, $dim_y, 'UTF8');
+
+        $lines = explode("\n", $Group->getAddress());
+
+        foreach ($lines as $line) {
+            $page->setFont($font, 10)->drawText($line, $dim_x + 50, $dim_y);
+            $dim_y -= 12;
+        }
+
+        $page->setFont($font, 10)->drawText("TIN:", $dim_x, $dim_y, 'UTF8');
+        $page->setFont($font, 10)->drawText($Group->getTin(), $dim_x + 50, $dim_y);
+
+        $pay_period = str_replace('_', ' to ', $this->_request->getParam('pay_period'));
+
+        $billing_number = date('Y', strtotime($date_start)) . str_pad($this->_client->getId(), 2, 0, STR_PAD_LEFT)
+            . str_pad($group_id, 2, 0, STR_PAD_LEFT) . ((date('m', strtotime($date_start)) * 2) - $cutoff_modifier);
+
+        $dim_y = $carr_return_dim_y;
+
+        $page->setFont($font, 10)->drawText("Billing No:", $dim_x + 300, $dim_y, 'UTF8');
+        $page->setFont($font, 10)->drawText($billing_number . "-A", $dim_x + 380, $dim_y);
+
+        $dim_y -= 12;
+        $dim_y -= 12;
+
+        $page->setFont($font, 10)->drawText("Billing Period:", $dim_x + 300, $dim_y, 'UTF8');
+        $good_pay_period = $date_start . " to " . $this->_request->getParam("date_end");
+        $page->setFont($font, 10)->drawText($good_pay_period, $dim_x + 380, $dim_y);
+
+        $dim_y -= 12;
+        $dim_y -= 12;
+
+
+        $page->setFont($font, 10)->drawText("Billing date:", $dim_x + 300, $dim_y, 'UTF8');
+        $page->setFont($font, 10)->drawText(date('Y-m-d'), $dim_x + 380, $dim_y);
+
+        $dim_y -= 12;
+        $dim_y -= 8;
+
+        $page->setFont($bold, $bill_font_size)->drawText("Hrs code", $dim_x - 2, $dim_y);
+        $page->setFont($bold, $bill_font_size)->drawText("Description", $dim_x + 80, $dim_y);
+        $page->setFont($bold, $bill_font_size)->drawText("No of hrs", $dim_x + 172, $dim_y);
+        $page->setFont($bold, $bill_font_size)->drawText("Rate per hr", $dim_x + 220, $dim_y);
+        $page->setFont($bold, $bill_font_size)->drawText("Gross amount", $dim_x + 283, $dim_y);
+        $page->setFont($bold, $bill_font_size)->drawText("Net of VAT", $dim_x + 368, $dim_y);
+        $page->setFont($bold, $bill_font_size)->drawText("Output VAT", $dim_x + 448, $dim_y);
+
+        $dim_y -= 12;
+        $dim_y -= 8;
+
+        function romanic_number($integer, $upcase = true)
+        {
+            $table = array('M' => 1000, 'CM' => 900, 'D' => 500, 'CD' => 400, 'C' => 100, 'XC' => 90, 'L' => 50, 'XL' => 40, 'X' => 10, 'IX' => 9, 'V' => 5, 'IV' => 4, 'I' => 1);
+            $return = '';
+            while ($integer > 0) {
+                foreach ($table as $rom => $arb) {
+                    if ($integer >= $arb) {
+                        $integer -= $arb;
+                        $return .= $rom;
+                        break;
+                    }
+                }
+            }
+
+            return $return;
+        }
+
+        $i = 0;
+
+        foreach ($total_bill as $key => $value) {
+            $i++;
+
+            $page->setFont($font, $bill_font_size)->drawText(str_pad(romanic_number($i, true), 5, ' ', STR_PAD_RIGHT), $dim_x - 28, $dim_y);
+
+            $page->setFont($font, $bill_font_size)->drawText($hours_label[$key], $dim_x, $dim_y);
+
+            $page->setFont($font, $bill_font_size)->drawText($hours_description[$key]
+                , $dim_x + 60, $dim_y);
+
+            if ($this->_employer_bill[$key] > 0) {
+                $page->setFont($mono, $bill_font_size)->drawText(str_pad(number_format(round($all_hours_array[$key], 2), 2), 8, ' ', STR_PAD_LEFT)
+                    , $dim_x + 165, $dim_y);
+
+
+                $page->setFont($mono, $bill_font_size)->drawText(str_pad(number_format(round($client_rate_array[$key], 2), 2), 8, ' ', STR_PAD_LEFT)
+                    , $dim_x + 220, $dim_y);
+
+                $total_hours += round($this->_employer_bill[$key], 2);
+            }
+
+            if ($value > 0) {
+                $page->setFont($mono, $bill_font_size)->drawText(str_pad(number_format($value, 2), 12, ' ', STR_PAD_LEFT), $dim_x + 280, $dim_y);
+                $total_amount += round($value, 2);
+
+                if (!$client->getNoVat() > 0) {
+                    $vat_net = $value / 1.12;
+
+                    $page->setFont($mono, $bill_font_size)->drawText(str_pad(number_format($vat_net, 2), 12, ' ', STR_PAD_LEFT)
+                        , $dim_x + 355, $dim_y);
+
+                    $page->setFont($mono, $bill_font_size)->drawText(str_pad(number_format($vat_net * 0.12, 2), 12, ' ', STR_PAD_LEFT)
+                        , $dim_x + 435, $dim_y);
+
+                }
+
+            }
+
+            $dim_y -= 17;
+        }
+
+        $dim_y -= 0;
+
+        $page->setFont($bold, $bill_font_size)->drawText('TOTAL', $dim_x + 90, $dim_y);
+        $page->setFont($mono_bold, $bill_font_size)->drawText(str_pad(round($total_hours, 2), 8, ' ', STR_PAD_LEFT), $dim_x + 165, $dim_y);
+        $page->setFont($mono_bold, $bill_font_size)->drawText(str_pad(number_format($total_amount, 2), 12, ' ', STR_PAD_LEFT), $dim_x + 280, $dim_y);
+
+        $vat_net = $total_amount / 1.12;
+
+
+        if (!$client->getNoVat() > 0) $page->setFont($mono_bold, $bill_font_size)->drawText(str_pad(number_format($vat_net, 2), 12, ' ', STR_PAD_LEFT)
+            , $dim_x + 355, $dim_y);
+
+        if (!$client->getNoVat() > 0) $page->setFont($mono_bold, $bill_font_size)->drawText(str_pad(number_format($vat_net * 0.12, 2), 12, ' ', STR_PAD_LEFT)
+            , $dim_x + 435, $dim_y);
+
+        $dim_y -= 32;
+
+        $page->setFont($font, $bill_font_size)->drawText('VATABLE SALES', $dim_x, $dim_y);
+
+
+        if (!$client->getNoVat() > 0) $page->setFont($mono, $bill_font_size)->drawText(str_pad(number_format($vat_net, 2), 12, ' ', STR_PAD_LEFT), $dim_x + 285, $dim_y);
+
+        $dim_y -= 12;
+
+        $page->setFont($font, $bill_font_size)->drawText('VALUE ADDED TAX (VAT)', $dim_x, $dim_y);
+        $page->setFont($bold, $bill_font_size)->drawText('12%', $dim_x + 185, $dim_y);
+
+        if (!$client->getNoVat() > 0) $page->setFont($mono, $bill_font_size)->drawText(str_pad(number_format($vat_net * 0.12, 2), 12, ' ', STR_PAD_LEFT), $dim_x + 285, $dim_y);
+
+        $dim_y -= 12;
+
+        $page->setFont($font, $bill_font_size)->drawText('TOTAL AMOUNT PAYABLE', $dim_x, $dim_y);
+        $page->setFont($mono_bold, $bill_font_size)->drawText(str_pad(number_format($total_amount, 2), 12, ' ', STR_PAD_LEFT), $dim_x + 285, $dim_y);
+
+        $dim_y -= 12;
+        $dim_y -= 12;
+        $dim_y -= 12;
+
+        $page->setFont($font, $bill_font_size)->drawText('Billing statement verified by:', $dim_x, $dim_y);
+
+        $dim_y -= 12;
+        $dim_y -= 12;
+        $dim_y -= 12;
+        $page->setFont($font, 8)->drawText('(Signature over printed name)', $dim_x, $dim_y);
+        $page->setFont($font, 8)->drawText('Designation', $dim_x + 275, $dim_y);
+        $page->setFont($font, 8)->drawText('Date received', $dim_x + 385, $dim_y);
+
+        $dim_y -= 12;
+        $dim_y -= 12;
+        $dim_y -= 8;
+
+        $page->setFont($font, $bill_font_size)->drawText('Prepared by:', $dim_x, $dim_y);
+        $page->setFont($font, 8)->drawText('Noted by', $dim_x + 295, $dim_y);
+
+        $dim_y -= 12;
+        $dim_y -= 12;
+        $dim_y -= 6;
+        $page->setFont($font, 8)->drawText('(Signature over printed name / Date)', $dim_x, $dim_y);
+        $page->setFont($font, 8)->drawText('(Signature)', $dim_x + 295, $dim_y);
+
+        $pdf->pages[0] = $page;
+
+        $pdf->save($filename);
+    }
 
     protected function get_cutoff_attended_days($employee_id, $date_start, $date_end)
     {

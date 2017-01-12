@@ -145,7 +145,7 @@ $(function() {
     echo $this->date_start; ?>/date_end/<?php
     echo $this->date_end; ?>/group_id/<?php
     echo $this->group->getId(); ?>/pay_period/<?php
-    echo $this->pay_period; ?>?standalone=true">Create report</a>
+    echo $this->pay_period; ?>?standalone=true" class="btn">Create report</a>
 
     <ul class="report-list">
         <?php $i = 0; foreach($this->summaries as $svalue): if($i >= 5) break;  $i++; ?>
@@ -158,14 +158,14 @@ $(function() {
 
     <fieldset>
 	<legend>Billing report</legend>
-	<form method="post" action="/payroll/index/clientreport/date_start/<?php
-		echo $this->date_start; ?>/date_end/<?php 
-		echo $this->date_end; ?>/group_id/<?php 
-		echo $this->group->getId(); ?>/pay_period/<?php 
+	<!--<form method="post" action="/payroll/index/clientreport/date_start/<?php
+		echo $this->date_start; ?>/date_end/<?php
+		echo $this->date_end; ?>/group_id/<?php
+		echo $this->group->getId(); ?>/pay_period/<?php
 		echo $this->pay_period; ?>">
 		
 		<input type="submit" value="Create report" />
-	</form>
+	</form>-->
 	
 		<ul class="report-list">
 			<?php $i = 0; foreach($this->client_reports as $crvalue): if($i >= 5) break;  $i++; ?>
