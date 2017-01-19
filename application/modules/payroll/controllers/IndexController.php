@@ -1463,7 +1463,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         {
             if (is_numeric($in)) {
                 // return round($in, 2);
-                return number_format($in, 2, '.', '');
+                return (float) number_format($in, 2, '.', '');
             } else {
                 return $in;
             }
@@ -2444,6 +2444,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $i = 0;
 
+        $total_hours = 0;
+
         foreach ($total_bill as $key => $value) {
             $i++;
 
@@ -2455,14 +2457,15 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , $dim_x + 60, $dim_y);
 
             if ($this->_employer_bill[$key] > 0) {
-                $page->setFont($mono, $bill_font_size)->drawText(str_pad(number_format(round($all_hours_array[$key], 2), 2), 8, ' ', STR_PAD_LEFT)
+                $this_hours = number_format(round($all_hours_array[$key], 2), 2);
+                $page->setFont($mono, $bill_font_size)->drawText(str_pad($this_hours, 8, ' ', STR_PAD_LEFT)
                     , $dim_x + 165, $dim_y);
 
 
                 $page->setFont($mono, $bill_font_size)->drawText(str_pad(number_format(round($client_rate_array[$key], 2), 2), 8, ' ', STR_PAD_LEFT)
                     , $dim_x + 220, $dim_y);
 
-                $total_hours += round($this->_employer_bill[$key], 2);
+                $total_hours += $this_hours;
             }
 
             if ($value > 0) {
