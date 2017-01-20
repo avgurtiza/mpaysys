@@ -488,7 +488,6 @@ class Messervelib_Payroll
                                     echo "Can split reg and ot {$time_array[$i]['tomorrow']}<br>";
 
                                     $tomorrow += bcsub($time_array[$i]['tomorrow'], $ot_balance, 2);
-
                                     $tomorrow_ot += $ot_balance;
                                     $ot_balance = 0;
                                 } elseif ($ot_balance > 0) {
@@ -823,17 +822,23 @@ class Messervelib_Payroll
                 switch ($holiday_today->getType()) {
                     case 'legal':
                         if (!$work_duration > 0) { // Do unattended OT calcs
+                            echo "Doing unattended <br>";
                             $time_array['legal_unattend'] = $this->_max_regular_hours;
                         } else {
+                            echo "Doing attended $ot <br>";
                             $time_array['legal'] = $reg;
                             $time_array['legal_nd'] = $nd;
                             $time_array['legal_ot'] = $ot;
                             $time_array['legal_nd_ot'] = $nd_ot;
 
                             $time_array['legal'] += $tomorrow;
-                            $time_array['legal_ot'] = $tomorrow_ot;
+                            $time_array['legal_ot'] += $tomorrow_ot;
                             $time_array['legal_nd'] += $tomorrow_nd;
                             $time_array['legal_nd_ot'] += $tomorrow_nd_ot;
+
+                            preprint($time_array);
+
+                            echo  "<br> Not the end  $ot ";
                         }
 
                         break;
@@ -881,8 +886,7 @@ class Messervelib_Payroll
 
             foreach ($time_array as $tkey => $tvalue) {
                 if (is_numeric($tvalue)) {
-                    // $time_array[$tkey] = round($tvalue, 2);
-                    $time_array[$tkey] = number_format($tvalue, 2, '.', '');
+                    // $time_array[$tkey] = round($tvalue, 2);$time_array[$tkey] = number_format($tvalue, 2, '.', '');
                 }
             }
 
@@ -891,8 +895,9 @@ class Messervelib_Payroll
             if (is_array($attendance)) {
                 $options = array_merge($options, $attendance);
 
-                if ($Attendance->id == 536324) {
+                if ($Attendance->id == 536548) {
                     echo 'L ' . __LINE__ . '<br>';
+                    // preprint($time_array);
                     preprint($options);
                     echo "OT START:  " . date('Y-m-d h:i A', $ot_start) . "  THIS: " . $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
                     // die('STOP');
