@@ -585,72 +585,94 @@ class Messervelib_Payroll
 
                 $reg_balance = $this->_max_regular_hours;
 
-                echo "<br> Start1 : {$attendance['start_1'] }";
+                echo "<br> Start1 : {$attendance['start_1']} $reg";
                 for ($i = 2; $i >= 0; $i--) {
-                    if ((int)$attendance['start_1'] < 600) { // If shift starts before 6AM (ND cutoff), do today's ND first
 
+
+                    if ((int)$attendance['start_1'] < 600) { // If shift starts before 6AM (ND cutoff), do today's ND first
+                        echo "<br> Shift $i Pre-6AM";
                         if (isset($time_array[$i]['today_nd']) && $reg_balance > 0) {
                             if (($reg_balance - $time_array[$i]['today_nd']) >= 0) {
                                 $nd += $time_array[$i]['today_nd'];
+                                $reg_balance -= $time_array[$i]['today_nd'];
                             } else {
                                 $nd += $reg_balance;
+                                $reg_balance = 0;
                             }
-                            $reg_balance -= $nd;
+
 
                             if (isset($time_array[$i]['today'])) {
                                 if (($reg_balance - $time_array[$i]['today']) >= 0) {
                                     $reg += $time_array[$i]['today'];
+                                    $reg_balance -= $time_array[$i]['today'];
                                 } else {
                                     $reg += $reg_balance;
+                                    $reg_balance = 0;
                                 }
 
-                                $reg_balance -= $reg;
                             }
                         }
                     } else {
+                        echo "<br> Shift $i Post-6am";
+                        echo "<br>REG bal $reg_balance : ";
+
                         if (isset($time_array[$i]['today'])) {
                             if (($reg_balance - $time_array[$i]['today']) >= 0) {
+                                echo "( adding value to today)";
                                 $reg += $time_array[$i]['today'];
+                                $reg_balance -= $time_array[$i]['today'];
                             } else {
+                                echo "( adding balance $reg_balance to reg $reg)";
                                 $reg += $reg_balance;
+                                $reg_balance = 0;
                             }
 
-                            $reg_balance -= $reg;
+
+                            echo " [ Today : ";
                         }
 
 
                         if (isset($time_array[$i]['today_nd']) && $reg_balance > 0) {
                             if (($reg_balance - $time_array[$i]['today_nd']) >= 0) {
                                 $nd += $time_array[$i]['today_nd'];
+                                $reg_balance -= $time_array[$i]['today_nd'];
+
                             } else {
                                 $nd += $reg_balance;
+                                $reg_balance = 0;
                             }
-                            $reg_balance -= $nd;
+
                         }
+
                     }
 
 
                     if (isset($time_array[$i]['tomorrow_nd']) && $reg_balance > 0) {
                         if (($reg_balance - $time_array[$i]['tomorrow_nd']) >= 0) {
                             $tomorrow_nd += $time_array[$i]['tomorrow_nd'];
+                            $reg_balance -= $time_array[$i]['tomorrow_nd'];
                         } else {
                             $tomorrow_nd += $reg_balance;
+                            $reg_balance = 0;
                         }
 
-                        $reg_balance -= $tomorrow_nd;
 
                     }
 
                     if (isset($time_array[$i]['tomorrow']) && $reg_balance > 0) {
                         if (($reg_balance - $time_array[$i]['tomorrow']) >= 0) {
                             $tomorrow += $time_array[$i]['tomorrow'];
-                            // $reg_balance -= $time_array[$i]['tomorrow'];
+                            $reg_balance -= $time_array[$i]['tomorrow'];
                         } else {
                             $tomorrow += $reg_balance;
+                            $reg_balance = 0;
                         }
 
-                        $reg_balance -= $tomorrow;
+
                     }
+
+                    echo "Total reg $reg : Duration reg {$time_array[$i]['today']} <br>";
+
                 }
             }
 
@@ -869,7 +891,7 @@ class Messervelib_Payroll
             if (is_array($attendance)) {
                 $options = array_merge($options, $attendance);
 
-                if ($Attendance->id == 524842) {
+                if ($Attendance->id == 536324) {
                     echo 'L ' . __LINE__ . '<br>';
                     preprint($options);
                     echo "OT START:  " . date('Y-m-d h:i A', $ot_start) . "  THIS: " . $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
