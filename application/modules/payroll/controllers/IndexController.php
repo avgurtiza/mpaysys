@@ -1781,12 +1781,12 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     // Bill client OT as non-OT
                     $total_reg += $attendance_array['reg_ot'];
-                    $total_sun += $attendance_array['sun_ot'];
+                    $total_sun += $attendance_array['sun_ot'] + $attendance_array['spec_ot'];
                     $total_legal += $attendance_array['legal_ot'];
                     $total_reg += $attendance_array['rest_ot'];
 
                     $total_reg_nd += $attendance_array['reg_nd_ot'];
-                    $total_sun_nd += $attendance_array['sun_nd_ot'];
+                    $total_sun_nd += $attendance_array['sun_nd_ot'] + $attendance_array['spec_nd_ot'];
                     $total_legal_nd += $attendance_array['legal_nd_ot'];
                     $total_reg_nd += $attendance_array['rest_nd_ot'];
                     // $total_reg_nd += array_sum($temp_nd_ot); // Bill NDOT as RegND to client
@@ -1819,7 +1819,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $all_hours = array_merge($all_hours, array(
                         'rest' => $attendance_array['rest']
-                    , 'rest_nd' => $attendance_array['rest_nd']
+                        , 'rest_nd' => $attendance_array['rest_nd']
                     ));
                 }
 

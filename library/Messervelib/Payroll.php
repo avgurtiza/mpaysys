@@ -585,6 +585,7 @@ class Messervelib_Payroll
                 $reg_balance = $this->_max_regular_hours;
 
                 echo "<br> Start1 : {$attendance['start_1']} $reg";
+
                 for ($i = 2; $i >= 0; $i--) {
 
 
@@ -895,7 +896,7 @@ class Messervelib_Payroll
             if (is_array($attendance)) {
                 $options = array_merge($options, $attendance);
 
-                if ($Attendance->id == 536548) {
+                if ($Attendance->id == 528614) {
                     echo 'L ' . __LINE__ . '<br>';
                     // preprint($time_array);
                     preprint($options);
