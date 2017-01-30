@@ -1783,12 +1783,12 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $total_reg += $attendance_array['reg_ot'];
                     $total_sun += $attendance_array['sun_ot'] + $attendance_array['spec_ot'];
                     $total_legal += $attendance_array['legal_ot'];
-                    $total_reg += $attendance_array['rest_ot'];
+                    $total_reg += $attendance_array['rest_ot'] + $attendance_array['rest'];
 
                     $total_reg_nd += $attendance_array['reg_nd_ot'];
                     $total_sun_nd += $attendance_array['sun_nd_ot'] + $attendance_array['spec_nd_ot'];
                     $total_legal_nd += $attendance_array['legal_nd_ot'];
-                    $total_reg_nd += $attendance_array['rest_nd_ot'];
+                    $total_reg_nd += $attendance_array['rest_nd_ot'] + $attendance_array['rest_nd'];
                     // $total_reg_nd += array_sum($temp_nd_ot); // Bill NDOT as RegND to client
 
 
@@ -1929,8 +1929,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 if ($messerve_reg_nd_ot > 0) {
                     $page->setFont($italic, 8)->drawText($messerve_reg_nd_ot, $dim_x + $now_x + 56, $dim_y, 'UTF8');
-                } else {
-                    // $page->setFont($italic, 8)->drawText("NO MESS ND OT", $dim_x + $now_x + 56, $dim_y, 'UTF8');
                 }
 
                 /* New line */
@@ -1950,8 +1948,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $now_x += $now_inc;
 
                 $page->setFont($ot_font, 8)->drawText('SunSpNDOT ' . round_this($total_sun_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
-                if ($messerve_sun_ot > 0) {
-                    $page->setFont($italic, 8)->drawText($messerve_sun_ot, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                if ($messerve_sun_nd_ot > 0) {
+                    $page->setFont($italic, 8)->drawText($messerve_sun_nd_ot, $dim_x + $now_x + 56, $dim_y, 'UTF8');
                 }
 
                 /* New line */
