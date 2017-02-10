@@ -1463,7 +1463,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         {
             if (is_numeric($in)) {
                 // return round($in, 2);
-                return (float) number_format($in, 2, '.', '');
+                return (float)number_format($in, 2, '.', '');
             } else {
                 return $in;
             }
@@ -1719,22 +1719,22 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $all_hours = array_merge($all_hours, array(
                         'rest' => $attendance_array['rest']
-                        , 'rest_nd' => $attendance_array['rest_nd']
+                    , 'rest_nd' => $attendance_array['rest_nd']
                     ));  // TODO:  figure out if this is still needed
 
                     $all_hours = array_merge($all_hours, array(
                         $attendance_array['reg_ot']
-                        , $attendance_array['reg_nd_ot']
-                        , $attendance_array['spec_ot']
-                        , $attendance_array['spec_nd_ot']
-                        , $attendance_array['sun_ot']
-                        , $attendance_array['sun_nd_ot']
-                        , $attendance_array['legal_ot']
-                        , $attendance_array['legal_nd_ot']
-                        , $attendance_array['rest_ot']
-                        , $attendance_array['rest_nd_ot']
-                        , $attendance_array['rest']
-                        , $attendance_array['rest_nd']
+                    , $attendance_array['reg_nd_ot']
+                    , $attendance_array['spec_ot']
+                    , $attendance_array['spec_nd_ot']
+                    , $attendance_array['sun_ot']
+                    , $attendance_array['sun_nd_ot']
+                    , $attendance_array['legal_ot']
+                    , $attendance_array['legal_nd_ot']
+                    , $attendance_array['rest_ot']
+                    , $attendance_array['rest_nd_ot']
+                    , $attendance_array['rest']
+                    , $attendance_array['rest_nd']
                     ));
 
                 } elseif ($Attendance->getExtendedShift() == 'yes') { // Bill to Messerve
@@ -1819,7 +1819,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $all_hours = array_merge($all_hours, array(
                         'rest' => $attendance_array['rest']
-                        , 'rest_nd' => $attendance_array['rest_nd']
+                    , 'rest_nd' => $attendance_array['rest_nd']
                     ));
                 }
 
@@ -2490,7 +2490,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $dim_y -= 0;
 
         $page->setFont($bold, $bill_font_size)->drawText('TOTAL', $dim_x + 90, $dim_y);
-        $page->setFont($mono_bold, $bill_font_size)->drawText(str_pad(round($total_hours, 2), 8, ' ', STR_PAD_LEFT), $dim_x + 165, $dim_y);
+        $page->setFont($mono_bold, $bill_font_size)->drawText(str_pad(number_format(round($total_hours, 2), 2), 8, ' ', STR_PAD_LEFT), $dim_x + 165, $dim_y);
         $page->setFont($mono_bold, $bill_font_size)->drawText(str_pad(number_format($total_amount, 2), 12, ' ', STR_PAD_LEFT), $dim_x + 280, $dim_y);
 
         $vat_net = $total_amount / 1.12;
