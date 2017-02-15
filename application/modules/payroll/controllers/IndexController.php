@@ -389,10 +389,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , $this->_request->getParam('date_start')
             );
 
-            if ($Employee->getId() == 1938) {
-                // preprint($employee_pay, true);
-            }
-
             $total_no_hours = 0;
             $total_pay = 0;
             $total_deduct = 0;
@@ -406,6 +402,8 @@ class Payroll_IndexController extends Zend_Controller_Action
             $payroll_meta = [];
             $basic_pay = 0;
 
+            $pay_rate_id = 0;
+
             foreach ($employee_pay as $pkey => $pvalue) {
                 $ecola = 0;
                 $sss = 0;
@@ -414,6 +412,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                 foreach ($pvalue as $rkey => $rvalue) {
 
                     if ($rkey == "meta") {
+                        $pay_rate_id = $rvalue->employee->rate->id;
+
+                        $payroll_meta['rate_data'] = json_encode($rvalue);
 
                         $pay_rate = 8 * $rvalue->employee->rate->reg;
 
@@ -434,6 +435,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                         $page->setFont($font, 8)->drawText("{$rkey}", $dim_x, $dim_y);
 
                         if (!isset($payroll_meta[$rkey])) $payroll_meta[$rkey] = [];
+
 
                         foreach ($rvalue as $dkey => $dvalue) {
                             $payroll_meta[$rkey][$dkey] = $dvalue;
@@ -839,7 +841,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setFuelPrice($Attendance->getFuelCost())
                 ->setThirteenthMonth($value['more_income']['thirteenth_month_pay'])
                 ->setIncentives($value['more_income']['incentives'])
-                ->setIsReliever($is_reliever);
+                ->setIsReliever($is_reliever)
+                ->setRateId($pay_rate_id);
 
             $PayrollTemp->save();
 

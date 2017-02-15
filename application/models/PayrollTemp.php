@@ -319,7 +319,7 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
     protected $_Paternity;
     protected $_BasicPay;
     protected $_PayrollMeta;
-
+    protected $_RateId;
 
 
     /**
@@ -376,6 +376,7 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
             'paternity'=>'Paternity',
             'basic_pay'=>'BasicPay',
             'payroll_meta'=>'PayrollMeta',
+            'rate_id'=>'RateId',
         ));
 
         $this->setParentList(array(
@@ -1362,6 +1363,18 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
     public function getPayrollMeta()
     {
         return $this->_PayrollMeta;
+    }
+
+
+    public function setRateId($data)
+    {
+        $this->_RateId = $data;
+        return $this;
+    }
+
+    public function getRateId()
+    {
+        return $this->_RateId;
     }
 
     /**

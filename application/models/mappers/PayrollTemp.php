@@ -79,6 +79,7 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
             'food' => $model->getFood(),
             'basic_pay' => $model->getBasicPay(),
             'payroll_meta' => $model->getPayrollMeta(),
+            'rate_id' => $model->getRateId(),
         );
 
         return $result;
@@ -272,7 +273,9 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
                 ->setLostCard($data['lost_card'])
                 ->setFood($data['food'])
                 ->setBasicPay($data['basic_pay'])
-                ->setPayrollMeta($data['payroll_meta']);
+                ->setPayrollMeta($data['payroll_meta'])
+                ->setRateId($data['rate_id'])
+            ;
         } elseif ($data instanceof Zend_Db_Table_Row_Abstract || $data instanceof stdClass) {
             $entry->setId($data->id)
                 ->setGroupId($data->group_id)
@@ -320,7 +323,9 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
                 ->setLostCard($data->lost_card)
                 ->setFood($data->food)
                 ->setBasicPay($data->basic_pay)
-                ->setPayrollMeta($data->payroll_meta);
+                ->setPayrollMeta($data->payroll_meta)
+                ->setRateId($data->rate_id)
+            ;
         }
 
         $entry->setMapper($this);
