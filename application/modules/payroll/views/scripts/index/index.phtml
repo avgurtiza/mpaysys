@@ -60,7 +60,12 @@
                 short_duty.append('<tr><td>None</td></tr>');
             } else {
                 for (var i in data) {
-                    short_duty.append('<tr><td>'+ data[i].group+' </td><td> '
+                    var css = 'unapproved';
+
+                    if(data[i].approved == 'yes') {
+                        css = 'approved';
+                    }
+                    short_duty.append('<tr class="' + css +'"><td>'+ data[i].group+' </td><td> '
                         + data[i].rider + ' (' + data[i].employee_number + ') </td><td>  '
                         + data[i].ot_hours + ' Hour/s </td><td>' + data[i].date + '</td><td><a target="_blank" href="'+data[i].link+'">View attendance</a></td></tr>');
                 }

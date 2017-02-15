@@ -412,6 +412,7 @@ class Messerve_Model_Attendance extends Messerve_Model_ModelAbstract
      * @var string
      */
     protected $_TomorrowRateData;
+    protected $_ApprovedExtendedShift;
 
 
 
@@ -478,6 +479,8 @@ class Messerve_Model_Attendance extends Messerve_Model_ModelAbstract
             'today_rate_data'=>'TodayRateData',
             'tomorrow_rate_id'=>'TomorrowRateId',
             'tomorrow_rate_data'=>'TomorrowRateData',
+            'approved_extended_shift'=>'ApprovedExtendedShift',
+
         ));
 
         $this->setParentList(array(
@@ -1743,6 +1746,9 @@ class Messerve_Model_Attendance extends Messerve_Model_ModelAbstract
         return $this;
     }
 
+
+
+
     /**
      * Gets column tomorrow_rate_data
      *
@@ -1753,6 +1759,17 @@ class Messerve_Model_Attendance extends Messerve_Model_ModelAbstract
         return $this->_TomorrowRateData;
     }
 
+
+    public function getApprovedExtendedShift()
+    {
+        return $this->_ApprovedExtendedShift;
+    }
+
+    public function setApprovedExtendedShift($data)
+    {
+        $this->_ApprovedExtendedShift = $data;
+        return $this;
+    }
     /**
      * Returns the mapper class for this model
      *

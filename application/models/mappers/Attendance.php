@@ -27,7 +27,7 @@ class Messerve_Model_Mapper_Attendance extends Messerve_Model_Mapper_MapperAbstr
      */
     public function toArray($model)
     {
-        if (! $model instanceof Messerve_Model_Attendance) {
+        if (!$model instanceof Messerve_Model_Attendance) {
             throw new Exception('Unable to create array: invalid model passed to mapper');
         }
 
@@ -88,6 +88,8 @@ class Messerve_Model_Mapper_Attendance extends Messerve_Model_Mapper_MapperAbstr
             'today_rate_data' => $model->getTodayRateData(),
             'tomorrow_rate_id' => $model->getTomorrowRateId(),
             'tomorrow_rate_data' => $model->getTomorrowRateData(),
+            'approved_extended_shift' => $model->getApprovedExtendedShift(),
+
         );
 
         return $result;
@@ -116,7 +118,7 @@ class Messerve_Model_Mapper_Attendance extends Messerve_Model_Mapper_MapperAbstr
      */
     public function delete($model)
     {
-        if (! $model instanceof Messerve_Model_Attendance) {
+        if (!$model instanceof Messerve_Model_Attendance) {
             throw new Exception('Unable to delete: invalid model passed to mapper');
         }
 
@@ -144,8 +146,9 @@ class Messerve_Model_Mapper_Attendance extends Messerve_Model_Mapper_MapperAbstr
      * @return boolean If the save action was successful
      */
     public function save(Messerve_Model_Attendance $model,
-        $ignoreEmptyValues = true, $recursive = false, $useTransaction = true
-    ) {
+                         $ignoreEmptyValues = true, $recursive = false, $useTransaction = true
+    )
+    {
         $data = $model->toArray();
         if ($ignoreEmptyValues) {
             foreach ($data as $key => $value) {
@@ -174,11 +177,11 @@ class Messerve_Model_Mapper_Attendance extends Messerve_Model_Mapper_MapperAbstr
                 }
             } else {
                 $this->getDbTable()
-                     ->update($data,
-                              array(
-                                 'id = ?' => $primary_key
-                              )
-                );
+                    ->update($data,
+                        array(
+                            'id = ?' => $primary_key
+                        )
+                    );
             }
 
             if ($useTransaction && $success) {
@@ -235,118 +238,121 @@ class Messerve_Model_Mapper_Attendance extends Messerve_Model_Mapper_MapperAbstr
 
         if (is_array($data)) {
             $entry->setId($data['id'])
-                  ->setType($data['type'])
-                  ->setStart1($data['start_1'])
-                  ->setEnd1($data['end_1'])
-                  ->setStart2($data['start_2'])
-                  ->setEnd2($data['end_2'])
-                  ->setStart3($data['start_3'])
-                  ->setEnd3($data['end_3'])
-                  ->setToday($data['today'])
-                  ->setTodayNd($data['today_nd'])
-                  ->setTodayOt($data['today_ot'])
-                  ->setTodayNdOt($data['today_nd_ot'])
-                  ->setTomorrow($data['tomorrow'])
-                  ->setTomorrowNd($data['tomorrow_nd'])
-                  ->setTomorrowOt($data['tomorrow_ot'])
-                  ->setTomorrowNdOt($data['tomorrow_nd_ot'])
-                  ->setOtApproved($data['ot_approved'])
-                  ->setOtApprovedHours($data['ot_approved_hours'])
-                  ->setOtActualHours($data['ot_actual_hours'])
-                  ->setExtendedShift($data['extended_shift'])
-                  ->setEmployeeId($data['employee_id'])
-                  ->setEmployeeNumber($data['employee_number'])
-                  ->setGroupId($data['group_id'])
-                  ->setDatetimeStart($data['datetime_start'])
-                  ->setDatetimeEnd($data['datetime_end'])
-                  ->setTotalHours($data['total_hours'])
-                  ->setReg($data['reg'])
-                  ->setRegNd($data['reg_nd'])
-                  ->setRegOt($data['reg_ot'])
-                  ->setRegNdOt($data['reg_nd_ot'])
-                  ->setSun($data['sun'])
-                  ->setSunNd($data['sun_nd'])
-                  ->setSunOt($data['sun_ot'])
-                  ->setSunNdOt($data['sun_nd_ot'])
-                  ->setSpec($data['spec'])
-                  ->setSpecNd($data['spec_nd'])
-                  ->setSpecOt($data['spec_ot'])
-                  ->setSpecNdOt($data['spec_nd_ot'])
-                  ->setLegal($data['legal'])
-                  ->setLegalNd($data['legal_nd'])
-                  ->setLegalOt($data['legal_ot'])
-                  ->setLegalNdOt($data['legal_nd_ot'])
-                  ->setLegalUnattend($data['legal_unattend'])
-                  ->setRest($data['rest'])
-                  ->setRestNd($data['rest_nd'])
-                  ->setRestOt($data['rest_ot'])
-                  ->setRestNdOt($data['rest_nd_ot'])
-                  ->setFuelOverage($data['fuel_overage'])
-                  ->setFuelHours($data['fuel_hours'])
-                  ->setFuelAlloted($data['fuel_alloted'])
-                  ->setFuelConsumed($data['fuel_consumed'])
-                  ->setFuelCost($data['fuel_cost'])
-                  ->setTodayRateId($data['today_rate_id'])
-                  ->setTodayRateData($data['today_rate_data'])
-                  ->setTomorrowRateId($data['tomorrow_rate_id'])
-                  ->setTomorrowRateData($data['tomorrow_rate_data']);
+                ->setType($data['type'])
+                ->setStart1($data['start_1'])
+                ->setEnd1($data['end_1'])
+                ->setStart2($data['start_2'])
+                ->setEnd2($data['end_2'])
+                ->setStart3($data['start_3'])
+                ->setEnd3($data['end_3'])
+                ->setToday($data['today'])
+                ->setTodayNd($data['today_nd'])
+                ->setTodayOt($data['today_ot'])
+                ->setTodayNdOt($data['today_nd_ot'])
+                ->setTomorrow($data['tomorrow'])
+                ->setTomorrowNd($data['tomorrow_nd'])
+                ->setTomorrowOt($data['tomorrow_ot'])
+                ->setTomorrowNdOt($data['tomorrow_nd_ot'])
+                ->setOtApproved($data['ot_approved'])
+                ->setOtApprovedHours($data['ot_approved_hours'])
+                ->setOtActualHours($data['ot_actual_hours'])
+                ->setExtendedShift($data['extended_shift'])
+                ->setEmployeeId($data['employee_id'])
+                ->setEmployeeNumber($data['employee_number'])
+                ->setGroupId($data['group_id'])
+                ->setDatetimeStart($data['datetime_start'])
+                ->setDatetimeEnd($data['datetime_end'])
+                ->setTotalHours($data['total_hours'])
+                ->setReg($data['reg'])
+                ->setRegNd($data['reg_nd'])
+                ->setRegOt($data['reg_ot'])
+                ->setRegNdOt($data['reg_nd_ot'])
+                ->setSun($data['sun'])
+                ->setSunNd($data['sun_nd'])
+                ->setSunOt($data['sun_ot'])
+                ->setSunNdOt($data['sun_nd_ot'])
+                ->setSpec($data['spec'])
+                ->setSpecNd($data['spec_nd'])
+                ->setSpecOt($data['spec_ot'])
+                ->setSpecNdOt($data['spec_nd_ot'])
+                ->setLegal($data['legal'])
+                ->setLegalNd($data['legal_nd'])
+                ->setLegalOt($data['legal_ot'])
+                ->setLegalNdOt($data['legal_nd_ot'])
+                ->setLegalUnattend($data['legal_unattend'])
+                ->setRest($data['rest'])
+                ->setRestNd($data['rest_nd'])
+                ->setRestOt($data['rest_ot'])
+                ->setRestNdOt($data['rest_nd_ot'])
+                ->setFuelOverage($data['fuel_overage'])
+                ->setFuelHours($data['fuel_hours'])
+                ->setFuelAlloted($data['fuel_alloted'])
+                ->setFuelConsumed($data['fuel_consumed'])
+                ->setFuelCost($data['fuel_cost'])
+                ->setTodayRateId($data['today_rate_id'])
+                ->setTodayRateData($data['today_rate_data'])
+                ->setTomorrowRateId($data['tomorrow_rate_id'])
+                ->setTomorrowRateData($data['tomorrow_rate_data'])
+                ->setApprovedExtendedShift($data['approved_extended_shift']);
+
         } elseif ($data instanceof Zend_Db_Table_Row_Abstract || $data instanceof stdClass) {
             $entry->setId($data->id)
-                  ->setType($data->type)
-                  ->setStart1($data->start_1)
-                  ->setEnd1($data->end_1)
-                  ->setStart2($data->start_2)
-                  ->setEnd2($data->end_2)
-                  ->setStart3($data->start_3)
-                  ->setEnd3($data->end_3)
-                  ->setToday($data->today)
-                  ->setTodayNd($data->today_nd)
-                  ->setTodayOt($data->today_ot)
-                  ->setTodayNdOt($data->today_nd_ot)
-                  ->setTomorrow($data->tomorrow)
-                  ->setTomorrowNd($data->tomorrow_nd)
-                  ->setTomorrowOt($data->tomorrow_ot)
-                  ->setTomorrowNdOt($data->tomorrow_nd_ot)
-                  ->setOtApproved($data->ot_approved)
-                  ->setOtApprovedHours($data->ot_approved_hours)
-                  ->setOtActualHours($data->ot_actual_hours)
-                  ->setExtendedShift($data->extended_shift)
-                  ->setEmployeeId($data->employee_id)
-                  ->setEmployeeNumber($data->employee_number)
-                  ->setGroupId($data->group_id)
-                  ->setDatetimeStart($data->datetime_start)
-                  ->setDatetimeEnd($data->datetime_end)
-                  ->setTotalHours($data->total_hours)
-                  ->setReg($data->reg)
-                  ->setRegNd($data->reg_nd)
-                  ->setRegOt($data->reg_ot)
-                  ->setRegNdOt($data->reg_nd_ot)
-                  ->setSun($data->sun)
-                  ->setSunNd($data->sun_nd)
-                  ->setSunOt($data->sun_ot)
-                  ->setSunNdOt($data->sun_nd_ot)
-                  ->setSpec($data->spec)
-                  ->setSpecNd($data->spec_nd)
-                  ->setSpecOt($data->spec_ot)
-                  ->setSpecNdOt($data->spec_nd_ot)
-                  ->setLegal($data->legal)
-                  ->setLegalNd($data->legal_nd)
-                  ->setLegalOt($data->legal_ot)
-                  ->setLegalNdOt($data->legal_nd_ot)
-                  ->setLegalUnattend($data->legal_unattend)
-                  ->setRest($data->rest)
-                  ->setRestNd($data->rest_nd)
-                  ->setRestOt($data->rest_ot)
-                  ->setRestNdOt($data->rest_nd_ot)
-                  ->setFuelOverage($data->fuel_overage)
-                  ->setFuelHours($data->fuel_hours)
-                  ->setFuelAlloted($data->fuel_alloted)
-                  ->setFuelConsumed($data->fuel_consumed)
-                  ->setFuelCost($data->fuel_cost)
-                  ->setTodayRateId($data->today_rate_id)
-                  ->setTodayRateData($data->today_rate_data)
-                  ->setTomorrowRateId($data->tomorrow_rate_id)
-                  ->setTomorrowRateData($data->tomorrow_rate_data);
+                ->setType($data->type)
+                ->setStart1($data->start_1)
+                ->setEnd1($data->end_1)
+                ->setStart2($data->start_2)
+                ->setEnd2($data->end_2)
+                ->setStart3($data->start_3)
+                ->setEnd3($data->end_3)
+                ->setToday($data->today)
+                ->setTodayNd($data->today_nd)
+                ->setTodayOt($data->today_ot)
+                ->setTodayNdOt($data->today_nd_ot)
+                ->setTomorrow($data->tomorrow)
+                ->setTomorrowNd($data->tomorrow_nd)
+                ->setTomorrowOt($data->tomorrow_ot)
+                ->setTomorrowNdOt($data->tomorrow_nd_ot)
+                ->setOtApproved($data->ot_approved)
+                ->setOtApprovedHours($data->ot_approved_hours)
+                ->setOtActualHours($data->ot_actual_hours)
+                ->setExtendedShift($data->extended_shift)
+                ->setEmployeeId($data->employee_id)
+                ->setEmployeeNumber($data->employee_number)
+                ->setGroupId($data->group_id)
+                ->setDatetimeStart($data->datetime_start)
+                ->setDatetimeEnd($data->datetime_end)
+                ->setTotalHours($data->total_hours)
+                ->setReg($data->reg)
+                ->setRegNd($data->reg_nd)
+                ->setRegOt($data->reg_ot)
+                ->setRegNdOt($data->reg_nd_ot)
+                ->setSun($data->sun)
+                ->setSunNd($data->sun_nd)
+                ->setSunOt($data->sun_ot)
+                ->setSunNdOt($data->sun_nd_ot)
+                ->setSpec($data->spec)
+                ->setSpecNd($data->spec_nd)
+                ->setSpecOt($data->spec_ot)
+                ->setSpecNdOt($data->spec_nd_ot)
+                ->setLegal($data->legal)
+                ->setLegalNd($data->legal_nd)
+                ->setLegalOt($data->legal_ot)
+                ->setLegalNdOt($data->legal_nd_ot)
+                ->setLegalUnattend($data->legal_unattend)
+                ->setRest($data->rest)
+                ->setRestNd($data->rest_nd)
+                ->setRestOt($data->rest_ot)
+                ->setRestNdOt($data->rest_nd_ot)
+                ->setFuelOverage($data->fuel_overage)
+                ->setFuelHours($data->fuel_hours)
+                ->setFuelAlloted($data->fuel_alloted)
+                ->setFuelConsumed($data->fuel_consumed)
+                ->setFuelCost($data->fuel_cost)
+                ->setTodayRateId($data->today_rate_id)
+                ->setTodayRateData($data->today_rate_data)
+                ->setTomorrowRateId($data->tomorrow_rate_id)
+                ->setTomorrowRateData($data->tomorrow_rate_data)
+                ->setApprovedExtendedShift($data->approved_extended_shift);
         }
 
         $entry->setMapper($this);

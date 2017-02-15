@@ -1742,20 +1742,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 } elseif ($Attendance->getExtendedShift() == 'yes') { // Bill to Messerve
 
-                    $all_messerve_reg_ot += $attendance_array['reg_ot'];
-                    $all_messerve_reg_nd_ot += $attendance_array['reg_nd_ot'];
 
-                    $all_messerve_sun_ot += $attendance_array['sun_ot'];
-                    $all_messerve_sun_nd_ot += $attendance_array['sun_ot'];
-
-                    $all_messerve_spec_ot += $attendance_array['spec_ot'];
-                    $all_messerve_spec_nd_ot += $attendance_array['spec_ot'];
-
-                    $all_messerve_legal_ot += $attendance_array['legal_ot'];
-                    $all_messerve_legal_nd_ot += $attendance_array['legal_ot'];
-
-                    $all_messerve_rest_ot += $attendance_array['rest_ot'];
-                    $all_messerve_rest_nd_ot += $attendance_array['rest_ot'];
 
 
                     $temp_ot = [
@@ -1779,8 +1766,22 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $messerve_ot_array = $temp_ot + $temp_nd_ot;
                     $messerve_ot += array_sum($messerve_ot_array); // Bill OT to Messerve
 
+                    $all_messerve_reg_ot += $attendance_array['reg_ot'];
+                    $all_messerve_reg_nd_ot += $attendance_array['reg_nd_ot'];
+
+                    $all_messerve_sun_ot += $attendance_array['sun_ot'];
+                    $all_messerve_sun_nd_ot += $attendance_array['sun_ot'];
+
+                    $all_messerve_spec_ot += $attendance_array['spec_ot'];
+                    $all_messerve_spec_nd_ot += $attendance_array['spec_ot'];
+
+                    $all_messerve_legal_ot += $attendance_array['legal_ot'];
+                    $all_messerve_legal_nd_ot += $attendance_array['legal_ot'];
+
+                    $all_messerve_rest_ot += $attendance_array['rest_ot'];
+                    $all_messerve_rest_nd_ot += $attendance_array['rest_ot'];
+
                     $all_hours['reg'] += array_sum($temp_ot);
-                    // $total_reg += array_sum($temp_ot); // Bill OT as Reg to client
 
                     // Bill client OT as non-OT
                     $total_reg += $attendance_array['reg_ot'];

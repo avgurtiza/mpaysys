@@ -283,3 +283,10 @@ th { color: #fff !important; }
 .bop #content { font-size: 0.8em;  }
 
 .user .inactive td { color: #aaa !important; font-style: italic; }
+
+.messerve-ot tr.approved { background-color: greenyellow; }
+
+.dtr .unapproved_extended { background-color: lightcoral; }
+.dtr .approved_extended { background-color: greenyellow; }
+.dtr tr.hidden { display: none; }
+

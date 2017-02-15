@@ -892,6 +892,12 @@ class Messervelib_Payroll
             }
 
             $options = $time_array;
+            $options['extended_shift'] = 'no';
+
+            if($has_extended_shift) { // TODO:  Fix hack
+                $options['extended_shift'] = 'yes';
+            }
+
 
             if (is_array($attendance)) {
                 $options = array_merge($options, $attendance);
