@@ -70,6 +70,40 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $this->view->api_host = $messerve_config->api_host;
 
+        // ETPS logs
+
+        $etps_report_1k = [];
+        $etps_dir = realpath(APPLICATION_PATH . '/../public/export/etps');
+
+
+        if (file_exists($etps_dir)) {
+            foreach (glob($etps_dir . '/*.csv') as $file) {
+
+                $matches = [];
+
+                $file_created = filectime($file);
+
+                $file_array = explode('/', $file);
+                $filename = array_pop($file_array);
+
+                if (preg_match('/etps_\d{4}-\d{2}-\d{2}/', $filename, $matches)) {
+
+                    $match = $matches[0];
+
+                    if ($match) {
+                        $etps_date = str_replace('etps_', '', $match);
+                        $etps_report_1k[] = [
+                            'link' => '/export/etps/' . $filename
+                            , 'period' => $etps_date
+                            , 'date' => date('Y-m-d H:i', $file_created)];
+                    }
+                }
+
+            }
+        }
+
+        $this->view->etps_report_1k = $etps_report_1k;
+
 
     }
 
@@ -1743,8 +1777,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 } elseif ($Attendance->getExtendedShift() == 'yes') { // Bill to Messerve
 
 
-
-
                     $temp_ot = [
                         'reg_ot' => $attendance_array['reg_ot']
                         , 'spec_ot' => $attendance_array['spec_ot']
@@ -2789,7 +2821,17 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $payroll_array = array();
 
+        $etps_dir = realpath(APPLICATION_PATH . '/../public/export/') . '/etps';
+
+        if (!file_exists($etps_dir)) {
+            mkdir($etps_dir);
+            chmod($etps_dir, 0777);
+        }
+
+        $etps_csv = $etps_dir . "/etps_" . $period_covered . date('_Y-m-d_H-i-is') . ".csv";
+
         foreach ($payroll as $pvalue) {
+
             $account_number = (int)$pvalue->getAccountNumber();
             if (!$account_number > 0) continue;
 
@@ -2814,12 +2856,17 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , 'depbrcode' => '73'
                 );
 
-
                 $payroll_array[$employee_number] = $this_row;
             }
         }
 
-        // preprint($payroll_array,1);
+        foreach ($payroll_array as $pavalue) {
+            $salary = (float)$pavalue['salary'];
+
+            if ($salary <= 1000) {
+                error_log(implode(',', $pavalue), 3, $etps_csv);
+            }
+        }
 
         $this->view->payroll = $payroll_array;
     }
