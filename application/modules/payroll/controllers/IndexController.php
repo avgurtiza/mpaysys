@@ -49,7 +49,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             }
         }
 
-
         $this->view->period_covered = $period_covered;
         $this->view->period_end = $period_end;
 
@@ -103,8 +102,6 @@ class Payroll_IndexController extends Zend_Controller_Action
         }
 
         $this->view->etps_report_1k = $etps_report_1k;
-
-
     }
 
     public function clientreportAction()
