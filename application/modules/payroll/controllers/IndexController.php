@@ -719,26 +719,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $dole_page = clone $page;
 
-            // Scheduled deductions
-            if (count($scheduled_deductions) > 0) {
-                foreach ($scheduled_deductions as $sdvalue) {
-                    if ($sdvalue['amount'] > 0) {
-                        $messerve_deduct += $sdvalue['amount'];
-                        $total_misc_deduct += $sdvalue['amount'];
-
-                        $page->setFont($font, 8)->drawText(ucwords(str_replace('_', ' ', $sdvalue['type'])), $dim_x + 380, $dim_y);
-
-                        $page->setFont($mono, 8)->drawText(str_pad(number_format($sdvalue['amount'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
-
-                        $dim_y -= 10;
-                    }
-                }
-
-                $dim_y -= 10;
-            }
 
             if ($fuel_overage > 0) {
-                // $dim_y = $split_dim_y;
 
                 $page->setFont($font, 8)->drawText('Fuel overage', $dim_x + 380, $dim_y);
                 $page->setFont($mono, 8)->drawText(str_pad(number_format($fuel_deduction, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
@@ -754,14 +736,69 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $dim_y -= 8;
             }
 
+
+            // Scheduled deductions
+            if (count($scheduled_deductions) > 0) {
+                foreach ($scheduled_deductions as $sdvalue) {
+                    if ($sdvalue['amount'] > 0) {
+
+                        $deficit = $total_pay - $total_deduct - $messerve_deduct - $sdvalue['amount'];
+
+                        if ($deficit < 0 && isset($sdvalue['deduction_id']) && $sdvalue['deduction_id'] > 0) {
+                            echo "Deficit: $deficit";
+
+                            $pk = [
+                                'deduction_attendance_id' => $sdvalue['deduction_id'],
+                                'attendance_id' => $Attendance->id
+                            ];
+
+                            $negative_deduction = new Messerve_Model_DeductionAttendance();
+                            // preprint([$sdvalue['deduction_id'], $Attendance->id], 1);
+                            $negative_deduction->find($pk);
+
+                            if ($negative_deduction) {
+
+                                $new_amount = $negative_deduction->getAmount() + $deficit;
+
+                                if($new_amount < 0) {
+                                    $new_amount = 0;
+                                    // throw  new Exception('Salary is still negative after auto adjust: '. print_r($value['attendance'], 1));
+                                }
+
+                                $negative_deduction->setAmount($new_amount);
+                                $negative_deduction->save();
+                                $sdvalue['amount'] = $new_amount;
+                            } else {
+                                throw  new Exception('Invalid deduction attendance object: '. print_r($pk, 1));
+                            }
+                            // preprint($negative_deduction, 1);
+                        }
+
+                        $messerve_deduct += $sdvalue['amount'];
+                        $total_misc_deduct += $sdvalue['amount'];
+
+                        $page->setFont($font, 8)->drawText(ucwords(str_replace('_', ' ', $sdvalue['type'])), $dim_x + 380, $dim_y);
+
+                        $page->setFont($mono, 8)->drawText(str_pad(number_format($sdvalue['amount'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
+
+                        $dim_y -= 10;
+                    }
+                }
+
+            }
+
             if ($messerve_deduct > 0) {
                 $dole_page->setFont($font, 8)->drawText('Other deductions', $dim_x + 380, $split_dim_y);
                 $dole_page->setFont($mono, 8)->drawText(str_pad(number_format($messerve_deduct, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $split_dim_y);
             }
 
 
+            $dim_y -= 10;
+
+
             $total_deduct += $messerve_deduct;
             /* End Messerve deductions */
+
 
             $dim_y = 82;
             $dim_y -= 8;
