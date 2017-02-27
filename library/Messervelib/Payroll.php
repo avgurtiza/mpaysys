@@ -1,4 +1,5 @@
 <?php
+use Messerve_Model_EloquentFloatingAttendance as Floating;
 
 class Messervelib_Payroll
 {
@@ -21,7 +22,6 @@ class Messervelib_Payroll
 
     public function save_the_day($employee_id, $group_id, $data)
     {
-
         $Employee = new Messerve_Model_Employee();
 
         $Employee->find($employee_id);
@@ -233,6 +233,9 @@ class Messervelib_Payroll
                     if ($employee_id > 0 && $attendance["id"] > 0) { // TODO: Fix hacky hack
                         $PayrollToday->save();
                     }
+
+                    // die('CCC');
+
 
                     $Attendance
                         ->setGroupId($group_id)
@@ -839,7 +842,7 @@ class Messervelib_Payroll
 
                             preprint($time_array);
 
-                            echo  "<br> Not the end  $ot ";
+                            echo "<br> Not the end  $ot ";
                         }
 
                         break;
@@ -862,6 +865,7 @@ class Messervelib_Payroll
 
 
             if ($Attendance->getOtApproved() != 'yes' && !$has_extended_shift) {
+
                 echo __LINE__ . " Resetting OT <br>";
 
                 $time_array['reg_ot'] = 0;
@@ -892,23 +896,55 @@ class Messervelib_Payroll
             }
 
             $options = $time_array;
-            $options['extended_shift'] = 'no';
 
-            if($has_extended_shift) { // TODO:  Fix hack
+            if ($has_extended_shift) { // TODO:  Fix hack
                 $options['extended_shift'] = 'yes';
+            } else {
+                $options['extended_shift'] = 'no';
             }
 
+
+            if ($ot_duration > 0) {
+
+                if (!isset($attendance['approved_extended_shift']) || $attendance['approved_extended_shift'] == '') {
+
+                    $options['approved_extended_shift'] = 'no';
+
+                    $floating = Floating::firstOrCreate(['attendance_id' => $Attendance->getId()]);
+
+                    $floating->update([
+                        'reg_ot' => $time_array['reg_ot'],
+                        'reg_nd_ot' => $time_array['reg_nd_ot'],
+
+                        'spec_ot' => $time_array['spec_ot'],
+                        'spec_nd_ot' => $time_array['spec_nd_ot'],
+
+                        'rest_ot' => $time_array['rest_ot'],
+                        'rest_nd_ot' => $time_array['rest_nd_ot'],
+
+                        'legal_ot' => $time_array['legal_ot'],
+                        'legal_nd_ot' => $time_array['legal_nd_ot'],
+                    ]);
+                } else {
+                    $floating = Floating::where('attendance_id', $Attendance->getId())->first();
+
+                    if($floating) {
+                        $floating->delete();
+                    }
+                }
+            }
 
             if (is_array($attendance)) {
                 $options = array_merge($options, $attendance);
 
-                if ($Attendance->id == 528614) {
+                if ($Attendance->id == 564531) {
                     echo 'L ' . __LINE__ . '<br>';
                     // preprint($time_array);
-                    preprint($options);
+                    // preprint($options);
                     echo "OT START:  " . date('Y-m-d h:i A', $ot_start) . "  THIS: " . $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
                     // die('STOP');
                 }
+
 
                 $Attendance
                     ->setGroupId($group_id)

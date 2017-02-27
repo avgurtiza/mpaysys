@@ -91,7 +91,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     if ($match) {
                         $etps_date = str_replace('etps_', '', $match);
-                        $etps_report_1k[] = [
+                        $etps_report_1k[$file_created] = [
                             'link' => '/export/etps/' . $filename
                             , 'period' => $etps_date
                             , 'date' => date('Y-m-d H:i', $file_created)];
@@ -100,6 +100,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             }
         }
+
+        krsort($etps_report_1k);
 
         $this->view->etps_report_1k = $etps_report_1k;
     }
@@ -753,7 +755,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                             ];
 
                             $negative_deduction = new Messerve_Model_DeductionAttendance();
-                            // preprint([$sdvalue['deduction_id'], $Attendance->id], 1);
+
                             $negative_deduction->find($pk);
 
                             if ($negative_deduction) {
@@ -767,11 +769,11 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                                 $negative_deduction->setAmount($new_amount);
                                 $negative_deduction->save();
+
                                 $sdvalue['amount'] = $new_amount;
                             } else {
-                                throw  new Exception('Invalid deduction attendance object: '. print_r($pk, 1));
+                                throw new Exception('Invalid deduction attendance object: '. print_r($pk, 1));
                             }
-                            // preprint($negative_deduction, 1);
                         }
 
                         $messerve_deduct += $sdvalue['amount'];
@@ -798,7 +800,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $total_deduct += $messerve_deduct;
             /* End Messerve deductions */
-
 
             $dim_y = 82;
             $dim_y -= 8;
@@ -1810,6 +1811,23 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 } elseif ($Attendance->getExtendedShift() == 'yes') { // Bill to Messerve
 
+                    if($Attendance->getApprovedExtendedShift() != 'yes') {
+                        $floating = Floating::firstOrCreate(['attendance_id', $Attendance->getId()]);
+
+                        $floating->update([
+                            'reg_ot' => $attendance_array['reg_ot'],
+                            'reg_nd_ot' => $attendance_array['reg_nd_ot'],
+
+                            'spec_ot' => $attendance_array['spec_ot'],
+                            'spec_nd_ot' => $attendance_array['spec_nd_ot'],
+
+                            'rest_ot' => $attendance_array['rest_ot'],
+                            'rest_nd_ot' => $attendance_array['rest_nd_ot'],
+
+                            'legal_ot' => $attendance_array['legal_ot'],
+                            'legal_nd_ot' => $attendance_array['legal_nd_ot'],
+                        ]);
+                    }
 
                     $temp_ot = [
                         'reg_ot' => $attendance_array['reg_ot']
@@ -1817,7 +1835,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                         , 'sun_ot' => $attendance_array['sun_ot']
                         , 'legal_ot' => $attendance_array['legal_ot']
                         , 'rest_ot' => $attendance_array['rest_ot']
-                        , 'rest' => $attendance_array['rest']
+                        , 'rest' => $attendance_array['rest'] // TODO:  why is this here?
                     ];
 
                     $temp_nd_ot = [
@@ -2898,7 +2916,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $salary = (float)$pavalue['salary'];
 
             if ($salary <= 1000) {
-                error_log(implode(',', $pavalue), 3, $etps_csv);
+                error_log(implode(',', $pavalue) . "\n", 3, $etps_csv);
             }
         }
 

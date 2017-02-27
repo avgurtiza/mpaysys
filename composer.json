@@ -10,6 +10,7 @@
     "require": {
         "zendframework/zendframework1": "^1.12",
         "phpoffice/phpexcel": "^1.8",
-        "nesbot/carbon": "^1.21"
+        "nesbot/carbon": "^1.21",
+        "illuminate/database": "^5.4"
     }
 }
