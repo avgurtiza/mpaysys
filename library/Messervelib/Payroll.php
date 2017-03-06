@@ -679,43 +679,10 @@ class Messervelib_Payroll
                 }
             }
 
-            $time_array = array_merge($time_array, [
-                'nd_start_time' => date('Y-m-d H:i', $night_diff_start)
-                , 'nd_end_time' => date('Y-m-d H:i', $night_diff_end)
-                , 'end_of_shift_time' => date('Y-m-d H:i', $end_of_shift)
 
-                , 'duration_1' => $duration_1
-                , 'duration_2' => $duration_2
-                , 'duration_3' => $duration_3
-
-                , 'break_duration_1' => $break_duration_1
-                , 'break_duration_2' => $break_duration_2
-                , 'total_break_duration' => $total_break_duration
-
-                , 'work_duration' => $work_duration
-                , 'total_duration' => $total_duration
-                , 'ot_duration' => $ot_duration
-
-                , 'today' => $reg
-                , 'today_ot' => $ot
-                , 'today_nd' => $nd
-                , 'today_nd_ot' => $nd_ot
-                , 'tomorrow' => $tomorrow
-
-                , 'tomorrow_nd' => $tomorrow_nd
-                , 'tomorrow_ot' => $tomorrow_ot
-                , 'tomorrow_nd_ot' => $tomorrow_nd_ot
-
-                , 'legal' => 0
-                , 'legal_nd' => 0
-                , 'legal_ot' => 0
-                , 'legal_nd_ot' => 0
-            ]);
 
 
             $time_array['ot_actual_hours'] = $tomorrow_ot + $tomorrow_nd_ot + $nd_ot + $ot;
-
-            echo "<br> $tomorrow_nd_ot -- TND";
 
             if (!$has_extended_shift && $ot_duration > $Attendance->getOtApprovedHours()) {
                 $excess_ot = bcsub($ot_duration, $Attendance->getOtApprovedHours(), 2);
@@ -766,8 +733,38 @@ class Messervelib_Payroll
 
             }
 
-            echo "<br> $tomorrow_nd_ot -- TND";
+            $time_array = array_merge($time_array, [
+                'nd_start_time' => date('Y-m-d H:i', $night_diff_start)
+                , 'nd_end_time' => date('Y-m-d H:i', $night_diff_end)
+                , 'end_of_shift_time' => date('Y-m-d H:i', $end_of_shift)
 
+                , 'duration_1' => $duration_1
+                , 'duration_2' => $duration_2
+                , 'duration_3' => $duration_3
+
+                , 'break_duration_1' => $break_duration_1
+                , 'break_duration_2' => $break_duration_2
+                , 'total_break_duration' => $total_break_duration
+
+                , 'work_duration' => $work_duration
+                , 'total_duration' => $total_duration
+                , 'ot_duration' => $ot_duration
+
+                , 'today' => $reg
+                , 'today_ot' => $ot
+                , 'today_nd' => $nd
+                , 'today_nd_ot' => $nd_ot
+                , 'tomorrow' => $tomorrow
+
+                , 'tomorrow_nd' => $tomorrow_nd
+                , 'tomorrow_ot' => $tomorrow_ot
+                , 'tomorrow_nd_ot' => $tomorrow_nd_ot
+
+                , 'legal' => 0
+                , 'legal_nd' => 0
+                , 'legal_ot' => 0
+                , 'legal_nd_ot' => 0
+            ]);
 
             $time_array['reg'] = 0;
             $time_array['reg_ot'] = 0;
