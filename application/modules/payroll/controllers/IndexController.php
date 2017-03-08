@@ -1,5 +1,7 @@
 <?php
 
+use Messerve_Model_Eloquent_FloatingAttendance as Floating;
+
 class Payroll_IndexController extends Zend_Controller_Action
 {
     protected $_employee_payroll, $_employer_bill, $_messerve_bill;
@@ -762,7 +764,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                                 $new_amount = $negative_deduction->getAmount() + $deficit;
 
-                                if($new_amount < 0) {
+                                if ($new_amount < 0) {
                                     $new_amount = 0;
                                     // throw  new Exception('Salary is still negative after auto adjust: '. print_r($value['attendance'], 1));
                                 }
@@ -772,7 +774,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                                 $sdvalue['amount'] = $new_amount;
                             } else {
-                                throw new Exception('Invalid deduction attendance object: '. print_r($pk, 1));
+                                throw new Exception('Invalid deduction attendance object: ' . print_r($pk, 1));
                             }
                         }
 
@@ -1811,8 +1813,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 } elseif ($Attendance->getExtendedShift() == 'yes') { // Bill to Messerve
 
-                    if($Attendance->getApprovedExtendedShift() != 'yes') {
-                        $floating = Floating::firstOrCreate(['attendance_id', $Attendance->getId()]);
+                    if ($Attendance->getApprovedExtendedShift() != 'yes') {
+                        $floating = Floating::firstOrCreate(['attendance_id' => $Attendance->getId()]);
 
                         $floating->update([
                             'reg_ot' => $attendance_array['reg_ot'],
