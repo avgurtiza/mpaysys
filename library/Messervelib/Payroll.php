@@ -1,5 +1,5 @@
 <?php
-use Messerve_Model_EloquentFloatingAttendance as Floating;
+use Messerve_Model_Eloquent_FloatingAttendance as Floating;
 
 class Messervelib_Payroll
 {
@@ -886,12 +886,6 @@ class Messervelib_Payroll
                 echo __LINE__ . " Not resetting OT <br>";
             }
 
-            foreach ($time_array as $tkey => $tvalue) {
-                if (is_numeric($tvalue)) {
-                    // $time_array[$tkey] = round($tvalue, 2);$time_array[$tkey] = number_format($tvalue, 2, '.', '');
-                }
-            }
-
             $options = $time_array;
 
             if ($has_extended_shift) { // TODO:  Fix hack
@@ -935,13 +929,10 @@ class Messervelib_Payroll
                 $options = array_merge($options, $attendance);
 
                 if ($Attendance->id == 564531) {
-                    echo 'L ' . __LINE__ . '<br>';
-                    // preprint($time_array);
-                    // preprint($options);
-                    echo "OT START:  " . date('Y-m-d h:i A', $ot_start) . "  THIS: " . $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
+                    // echo 'L ' . __LINE__ . '<br>';
+                    // echo "OT START:  " . date('Y-m-d h:i A', $ot_start) . "  THIS: " . $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
                     // die('STOP');
                 }
-
 
                 $Attendance
                     ->setGroupId($group_id)
@@ -1028,13 +1019,6 @@ class Messervelib_Payroll
                     , $PayrollTomorrow
                 );
 
-                /*
-                if ($holiday_tomorrow) {
-                    $holiday_type_tomorrow = ucfirst($holiday_tomorrow->getType());
-                    $pay_rate_prefix = strtolower($holiday_tomorrow->getType());
-                }
-                */
-
                 if ($pay_rate_prefix == 'special') $pay_rate_prefix = "spec";
 
                 $rates_tomorrow['_prefix'] = $pay_rate_prefix;
@@ -1053,9 +1037,6 @@ class Messervelib_Payroll
                         ->setPeriodStart($rate_date_start)
                         ->setRegHours($options['tomorrow'])
                         ->setOtHours($options['tomorrow_ot'])
-                        //->setNdHours($options['tomorrow_nd'])
-                        //->setNdOtHours($options['tomorrow_nd_ot'])
-
                         ->setRegPay($options['tomorrow'] * $rates_tomorrow['employee']['rate'][$pay_rate_prefix])
                         ->setOtPay($options['tomorrow_ot'] * $rates_tomorrow['employee']['rate'][$pay_rate_prefix . "_ot"])
                         ->setDateProcessed(date("Y-m-d H:i:s"));
@@ -1161,7 +1142,6 @@ class Messervelib_Payroll
                 }
 
             }*/
-
 
         }
     }
