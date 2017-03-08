@@ -22,6 +22,7 @@ class Messervelib_Payroll
 
     public function save_the_day($employee_id, $group_id, $data)
     {
+
         $Employee = new Messerve_Model_Employee();
 
         $Employee->find($employee_id);
@@ -41,9 +42,12 @@ class Messervelib_Payroll
         foreach ($data as $date => $attendance) {
             if (!isset($attendance['id']) || !$attendance['id'] > 0) continue;
 
-            $Attendance = new Messerve_Model_Attendance();
-            $Attendance->find($attendance['id']);
-
+            if(isset($attendance['model'])) {
+                $Attendance = $attendance['model'];
+            } else {
+                $Attendance = new Messerve_Model_Attendance();
+                $Attendance->find($attendance['id']);
+            }
 
             $holiday_today = false;
             $holiday_tomorrow = false;
@@ -102,10 +106,12 @@ class Messervelib_Payroll
                 , 'fuel_overage' => 0, 'fuel_hours' => 0, 'fuel_alloted' => 0, 'fuel_consumed' => 0
                 , 'fuel_cost' => 0];
 
+
             $Attendance
                 ->setGroupId($group_id)
                 ->setOptions($reset)
                 ->setEmployeeId($employee_id);
+
 
             if (isset($attendance['ot_approved']) && $attendance['ot_approved'] == 'yes') {
                 $Attendance->setOtApproved('yes');
@@ -407,7 +413,7 @@ class Messervelib_Payroll
 
             if (!$ot_approved && !$has_extended_shift && $work_duration > $this->_max_regular_hours) {
                 $work_duration = $this->_max_regular_hours;
-                echo "OVER: " . $work_duration . '<br>';
+                echo __LINE__ . " OVER: " . $work_duration . '<br>';
                 $ot_duration = 0;
             }
 
@@ -680,8 +686,6 @@ class Messervelib_Payroll
             }
 
 
-
-
             $time_array['ot_actual_hours'] = $tomorrow_ot + $tomorrow_nd_ot + $nd_ot + $ot;
 
             if (!$has_extended_shift && $ot_duration > $Attendance->getOtApprovedHours()) {
@@ -837,7 +841,7 @@ class Messervelib_Payroll
                             $time_array['legal_nd'] += $tomorrow_nd;
                             $time_array['legal_nd_ot'] += $tomorrow_nd_ot;
 
-                            preprint($time_array);
+                            // preprint($time_array);
 
                             echo "<br> Not the end  $ot ";
                         }
@@ -919,7 +923,7 @@ class Messervelib_Payroll
                 } else {
                     $floating = Floating::where('attendance_id', $Attendance->getId())->first();
 
-                    if($floating) {
+                    if ($floating) {
                         $floating->delete();
                     }
                 }

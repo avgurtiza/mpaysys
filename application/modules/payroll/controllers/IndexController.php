@@ -139,19 +139,17 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $current_date = $date_start;
 
-            $current_year = date('Y', strtotime($date_start));
-
             $AttendanceMap = new Messerve_Model_Mapper_Attendance();
 
-            $first_id = 0;
 
             for ($i = 1; $i <= $period_size; $i++) {
-                // echo "$employee_id, $current_date, $group_id <br />";
+
 
                 $Attendance = $AttendanceMap->findOneByField(
                     array('employee_id', 'datetime_start', 'group_id')
                     , array($employee_id, $current_date, $group_id)
                 );
+
 
                 if (!$Attendance) {
                     $Attendance = new Messerve_Model_Attendance();
@@ -175,12 +173,14 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , 'extended_shift' => $Attendance->getExtendedShift()
                 , 'ot_approved' => $Attendance->getOtApproved()
                 , 'ot_approved_hours' => $Attendance->getOtApprovedHours()
+                , 'approved_extended_shift' => $Attendance->getApprovedExtendedShift()
                 , 'type' => $Attendance->getType()
+                , 'model' => $Attendance
                 );
+
 
                 $current_date = date('Y-m-d', strtotime('+1 day', strtotime($current_date)));
 
-                if ($i == 1) $first_id = $Attendance->getId();
             }
 
             $Payroll->save_the_day($Attendance->getEmployeeId(), $group_id, $data); // TODO:  Figure out why this needs to be called twice
@@ -224,6 +224,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $Client->find($Group->getClientId());
 
         $this->_process_group_attendance($group_id, $date_start, $date_end);
+
 
         $this->_compute();
         $this->_compute(); // TODO:  Fix this!  Why does it need to be ran twice. Clue:  creation of new model
