@@ -893,6 +893,10 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setDeductionData(json_encode($scheduled_deductions))
                 ->setSssLoan($scheduled_deductions_array['sss_loan'])
                 ->setHdmfLoan($scheduled_deductions_array['hdmf_loan'])
+
+                ->setHdmfCalamityLoan($scheduled_deductions_array['hdmf_calamity'])
+
+
                 ->setUniform($scheduled_deductions_array['uniform'])
                 ->setAccident($scheduled_deductions_array['accident'])
                 ->setAdjustment($scheduled_deductions_array['adjustment'])
@@ -914,7 +918,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setThirteenthMonth($value['more_income']['thirteenth_month_pay'])
                 ->setIncentives($value['more_income']['incentives'])
                 ->setIsReliever($is_reliever)
-                ->setRateId($pay_rate_id);
+                ->setRateId($pay_rate_id)
+
+            ;
 
             $PayrollTemp->save();
 
@@ -1140,31 +1146,30 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $summary_bill = array(
             'reg' => 0
-        , 'reg_nd' => 0
-        , 'reg_ot' => 0
-        , 'reg_nd_ot' => 0
+            , 'reg_nd' => 0
+            , 'reg_ot' => 0
+            , 'reg_nd_ot' => 0
 
-        , 'spec' => 0
-        , 'spec_nd' => 0
-        , 'spec_ot' => 0
-        , 'spec_nd_ot' => 0
+            , 'spec' => 0
+            , 'spec_nd' => 0
+            , 'spec_ot' => 0
+            , 'spec_nd_ot' => 0
 
-        , 'legal' => 0
-        , 'legal_nd' => 0
-        , 'legal_ot' => 0
-        , 'legal_nd_ot' => 0
-        , 'legal_unattend' => 0
+            , 'legal' => 0
+            , 'legal_nd' => 0
+            , 'legal_ot' => 0
+            , 'legal_nd_ot' => 0
+            , 'legal_unattend' => 0
 
-        , 'rest' => 0
-        , 'rest_nd' => 0
-        , 'rest_ot' => 0
-        , 'rest_nd_ot' => 0
+            , 'rest' => 0
+            , 'rest_nd' => 0
+            , 'rest_ot' => 0
+            , 'rest_nd_ot' => 0
         );
 
         $messerve_bill = $summary_bill; // Reset to zero
 
         $AttendDB = new Messerve_Model_DbTable_Attendance();
-
 
         foreach ($employees as $evalue) {
             $total_hours = 0;
@@ -1190,6 +1195,10 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->where("datetime_start >= '{$date_start} 00:00' AND datetime_start <= '{$date_end} 23:59'");
 
             $all_attendance = $AttendDB->fetchAll($select);
+
+            if(!count($all_attendance) > 0) {
+                throw new Exception("Could not find attendance of rider " . $evalue->getId() . " in group " . $group_id . ".  Has the rider group assignments changed?");
+            }
 
             $attendance = (object)[
                 'employee_id' => '',
@@ -2801,6 +2810,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 , 'SSS loan' => number_format(round($pvalue->getSSSLoan() * -1, 2), 2)
                 , 'HDMF loan' => number_format(round($pvalue->getHDMFLoan() * -1, 2), 2)
+                , 'Calamity loan' => number_format(round($pvalue->getHdmfCalamity() * -1, 2), 2)
 
                 // , 'Other deductions' => $other_deductions
 

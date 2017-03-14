@@ -320,6 +320,7 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
     protected $_BasicPay;
     protected $_PayrollMeta;
     protected $_RateId;
+    protected $_HdmfCalamityLoan;
 
 
     /**
@@ -980,6 +981,22 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
         return $this->_HdmfLoan;
     }
 
+
+    public function setHdmfCalamityLoan($data)
+    {
+        $this->_HdmfCalamityLoan = $data;
+        return $this;
+    }
+
+    /**
+     * Gets column hdmf_loan
+     *
+     * @return float
+     */
+    public function getHdmfCalamityLoan()
+    {
+        return $this->_HdmfCalamityLoan;
+    }
     /**
      * Sets column accident
      *

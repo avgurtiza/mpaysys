@@ -60,6 +60,7 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
             'is_reliever' => $model->getIsReliever(),
             'sss_loan' => $model->getSssLoan(),
             'hdmf_loan' => $model->getHdmfLoan(),
+            'hdmf_calamity_loan' => $model->getHdmfCalamityLoan(),
             'accident' => $model->getAccident(),
             'uniform' => $model->getUniform(),
             'adjustment' => $model->getAdjustment(),
@@ -254,6 +255,7 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
                 ->setIsReliever($data['is_reliever'])
                 ->setSssLoan($data['sss_loan'])
                 ->setHdmfLoan($data['hdmf_loan'])
+                ->setHdmfCalamityLoan($data['hdmf_calamity_loan'])
                 ->setAccident($data['accident'])
                 ->setUniform($data['uniform'])
                 ->setAdjustment($data['adjustment'])
@@ -304,6 +306,7 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
                 ->setIsReliever($data->is_reliever)
                 ->setSssLoan($data->sss_loan)
                 ->setHdmfLoan($data->hdmf_loan)
+                ->setHdmfCalamityLoan($data->hdmf_calamity_loan)
                 ->setAccident($data->accident)
                 ->setUniform($data->uniform)
                 ->setAdjustment($data->adjustment)
