@@ -1197,7 +1197,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $all_attendance = $AttendDB->fetchAll($select);
 
             if(!count($all_attendance) > 0) {
-                throw new Exception("Could not find attendance of rider " . $evalue->getId() . " in group " . $group_id . ".  Has the rider group assignments changed?");
+                throw new Exception("Could not find attendance of rider " . $evalue->getId() . " in group " . $group_id . ".  Has the rider's group assignments changed?");
             }
 
             $attendance = (object)[
