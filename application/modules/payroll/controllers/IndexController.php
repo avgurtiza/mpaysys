@@ -1,6 +1,7 @@
 <?php
 
 use Messerve_Model_Eloquent_FloatingAttendance as Floating;
+use Messerve_Model_Eloquent_Employee as EmployeeEloq;
 
 class Payroll_IndexController extends Zend_Controller_Action
 {
@@ -274,6 +275,11 @@ class Payroll_IndexController extends Zend_Controller_Action
             $Employee = new Messerve_Model_Employee();
 
             $Employee->find($value['attendance']->id);
+
+            $EmployeeEloq = EmployeeEloq::findOrFail($Employee->getId());
+
+            $EmployeeRate = $EmployeeEloq->group->rate;
+
 
             // Get first attendance day
             $Attendance = new Messerve_Model_Attendance();
@@ -563,6 +569,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $sss_deduction = $this->get_sss_deduction($total_pay);
 
+
             $prev_sss = 0;
             $prev_gross_pay = 0;
 
@@ -608,8 +615,19 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $value['deductions']['sss'] = $sss_bal;
                 }
-
             }
+
+            // Get rider rate sss
+
+            echo "Checking SSS... ";
+            if ($EmployeeRate->sss_employee <= 0) { // Rider rate is 0 sss
+                echo "NO SSS.";
+                $sss_deduction = 0;
+                $value['deductions']['sss'] = 0;
+            }
+
+            // preprint($value['deductions']);
+            // preprint($EmployeeRate->toArray(), true);
 
             if (isset($value['more_income'])) {
                 if ($value['more_income']['misc_income'] > 0) {
@@ -893,10 +911,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setDeductionData(json_encode($scheduled_deductions))
                 ->setSssLoan($scheduled_deductions_array['sss_loan'])
                 ->setHdmfLoan($scheduled_deductions_array['hdmf_loan'])
-
                 ->setHdmfCalamityLoan($scheduled_deductions_array['hdmf_calamity'])
-
-
                 ->setUniform($scheduled_deductions_array['uniform'])
                 ->setAccident($scheduled_deductions_array['accident'])
                 ->setAdjustment($scheduled_deductions_array['adjustment'])
@@ -918,9 +933,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setThirteenthMonth($value['more_income']['thirteenth_month_pay'])
                 ->setIncentives($value['more_income']['incentives'])
                 ->setIsReliever($is_reliever)
-                ->setRateId($pay_rate_id)
-
-            ;
+                ->setRateId($pay_rate_id);
 
             $PayrollTemp->save();
 
@@ -1146,25 +1159,25 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $summary_bill = array(
             'reg' => 0
-            , 'reg_nd' => 0
-            , 'reg_ot' => 0
-            , 'reg_nd_ot' => 0
+        , 'reg_nd' => 0
+        , 'reg_ot' => 0
+        , 'reg_nd_ot' => 0
 
-            , 'spec' => 0
-            , 'spec_nd' => 0
-            , 'spec_ot' => 0
-            , 'spec_nd_ot' => 0
+        , 'spec' => 0
+        , 'spec_nd' => 0
+        , 'spec_ot' => 0
+        , 'spec_nd_ot' => 0
 
-            , 'legal' => 0
-            , 'legal_nd' => 0
-            , 'legal_ot' => 0
-            , 'legal_nd_ot' => 0
-            , 'legal_unattend' => 0
+        , 'legal' => 0
+        , 'legal_nd' => 0
+        , 'legal_ot' => 0
+        , 'legal_nd_ot' => 0
+        , 'legal_unattend' => 0
 
-            , 'rest' => 0
-            , 'rest_nd' => 0
-            , 'rest_ot' => 0
-            , 'rest_nd_ot' => 0
+        , 'rest' => 0
+        , 'rest_nd' => 0
+        , 'rest_ot' => 0
+        , 'rest_nd_ot' => 0
         );
 
         $messerve_bill = $summary_bill; // Reset to zero
@@ -1196,7 +1209,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $all_attendance = $AttendDB->fetchAll($select);
 
-            if(!count($all_attendance) > 0) {
+            if (!count($all_attendance) > 0) {
                 throw new Exception("Could not find attendance of rider " . $evalue->getId() . " in group " . $group_id . ".  Has the rider's group assignments changed?");
             }
 

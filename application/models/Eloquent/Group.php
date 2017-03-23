@@ -1,16 +1,12 @@
 <?php
 use Illuminate\Database\Eloquent\Model as Eloquent;
 
-class Messerve_Model_Eloquent_Employee extends Eloquent
+class Messerve_Model_Eloquent_Group extends Eloquent
 {
-    protected $table = 'employee';
+    protected $table = 'group';
 
     protected $fillable = [
     ];
-
-    public function group() {
-        return $this->belongsTo(Messerve_Model_Eloquent_Group::class, 'group_id','id');
-    }
 
     public function rate()
     {
