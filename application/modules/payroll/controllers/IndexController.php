@@ -2688,12 +2688,17 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $period_covered = $this->_request->getParam('period_covered');
 
-        header('Content-type: text/csv');
-        header('Content-Disposition: attachment; filename="Payroll_report-' . $period_covered . '.csv"');
 
 
         $PayrollMap = new Messerve_Model_Mapper_PayrollTemp();
-        $payroll = $PayrollMap->fetchList("period_covered = '{$period_covered}'", array("lastname", "firstname", "employee_number", "is_reliever DESC"));
+        $payroll = $PayrollMap->fetchList("period_covered = '{$period_covered}'"
+            , array("lastname", "firstname", "employee_number", "is_reliever DESC"));
+        /*
+        $payroll = Messerve_Model_Eloquent_PayrollTemp::where('period_covered', $period_covered)
+            ->orderBy('is_reliever', 'DESC')
+            ->get(["lastname", "firstname", "employee_number"])
+            ;
+        */
         $payroll_array = array();
 
         $hours_struct = [
@@ -2823,7 +2828,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 , 'SSS loan' => number_format(round($pvalue->getSSSLoan() * -1, 2), 2)
                 , 'HDMF loan' => number_format(round($pvalue->getHDMFLoan() * -1, 2), 2)
-                , 'Calamity loan' => number_format(round($pvalue->getHdmfCalamity() * -1, 2), 2)
+                , 'Calamity loan' => number_format(round($pvalue->getHdmfCalamityLoan() * -1, 2), 2)
 
                 // , 'Other deductions' => $other_deductions
 
@@ -2881,6 +2886,9 @@ class Payroll_IndexController extends Zend_Controller_Action
             $payroll_array[] = $this_row;
 
         }
+
+        header('Content-type: text/csv');
+        header('Content-Disposition: attachment; filename="Payroll_report-' . $period_covered . '.csv"');
 
         $this->view->payroll = $payroll_array;
     }
