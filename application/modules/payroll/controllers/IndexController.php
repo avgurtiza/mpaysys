@@ -1815,11 +1815,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $total_rest_nd += $attendance_array['rest_nd'];
 
                     $all_hours = array_merge($all_hours, array(
-                        'rest' => $attendance_array['rest']
-                    , 'rest_nd' => $attendance_array['rest_nd']
-                    ));  // TODO:  figure out if this is still needed
-
-                    $all_hours = array_merge($all_hours, array(
                         $attendance_array['reg_ot']
                     , $attendance_array['reg_nd_ot']
                     , $attendance_array['spec_ot']
@@ -1830,8 +1825,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                     , $attendance_array['legal_nd_ot']
                     , $attendance_array['rest_ot']
                     , $attendance_array['rest_nd_ot']
-                    , $attendance_array['rest']
-                    , $attendance_array['rest_nd']
+                        , $attendance_array['rest']
+                        , $attendance_array['rest_nd']
                     ));
 
                 } elseif ($Attendance->getExtendedShift() == 'yes') { // Bill to Messerve
@@ -1860,7 +1855,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                         , 'sun_ot' => $attendance_array['sun_ot']
                         , 'legal_ot' => $attendance_array['legal_ot']
                         , 'rest_ot' => $attendance_array['rest_ot']
-                        , 'rest' => $attendance_array['rest'] // TODO:  why is this here?
+                        , 'rest' => $attendance_array['rest'] // TODO:  why is this here? -- Because Messerve gets billed for rest day
                     ];
 
                     $temp_nd_ot = [
@@ -2687,7 +2682,6 @@ class Payroll_IndexController extends Zend_Controller_Action
         $this->_helper->layout()->disableLayout();
 
         $period_covered = $this->_request->getParam('period_covered');
-
 
 
         $PayrollMap = new Messerve_Model_Mapper_PayrollTemp();
