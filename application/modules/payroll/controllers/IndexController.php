@@ -232,6 +232,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $this->view->payroll = $this->_employee_payroll;
 
+
         $pdf = new Zend_Pdf();
         $dole_pdf = new Zend_Pdf();
 
@@ -255,6 +256,8 @@ class Payroll_IndexController extends Zend_Controller_Action
         $bop_acknowledgement = [];
 
         foreach ($this->_employee_payroll as $value) {
+
+
             $page = new Zend_Pdf_Page(612, 396);
 
             $pageHeight = $page->getHeight();
@@ -430,6 +433,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , $group_id
                 , $this->_request->getParam('date_start')
             );
+
+            // preprint($employee_pay, true);
 
             $total_no_hours = 0;
             $total_pay = 0;

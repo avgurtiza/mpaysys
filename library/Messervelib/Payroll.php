@@ -42,7 +42,7 @@ class Messervelib_Payroll
         foreach ($data as $date => $attendance) {
             if (!isset($attendance['id']) || !$attendance['id'] > 0) continue;
 
-            if(isset($attendance['model'])) {
+            if (isset($attendance['model'])) {
                 $Attendance = $attendance['model'];
             } else {
                 $Attendance = new Messerve_Model_Attendance();
@@ -1010,8 +1010,13 @@ class Messervelib_Payroll
                     $PayrollToday->save();
                 }
 
-                $holiday_type_tomorrow = "Regular";
-                $pay_rate_prefix = "reg";
+                if ($holiday_type_today == "Rest") {
+                    $holiday_type_tomorrow = $holiday_type_today;
+                    $pay_rate_prefix = "sun";
+                } else {
+                    $holiday_type_tomorrow = "Regular";
+                    $pay_rate_prefix = "reg";
+                }
 
                 $new_date_tomorrow = date("Y-m-d", strtotime('tomorrow', strtotime($Attendance->getDatetimeStart())));
 
