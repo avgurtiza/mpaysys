@@ -434,8 +434,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , $this->_request->getParam('date_start')
             );
 
-            // preprint($employee_pay, true);
-
             $total_no_hours = 0;
             $total_pay = 0;
             $total_deduct = 0;
@@ -1830,8 +1828,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                     , $attendance_array['legal_nd_ot']
                     , $attendance_array['rest_ot']
                     , $attendance_array['rest_nd_ot']
-                        , $attendance_array['rest']
-                        , $attendance_array['rest_nd']
+                    , $attendance_array['rest']
+                    , $attendance_array['rest_nd']
                     ));
 
                 } elseif ($Attendance->getExtendedShift() == 'yes') { // Bill to Messerve

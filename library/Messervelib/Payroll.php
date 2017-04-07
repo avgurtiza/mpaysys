@@ -680,7 +680,7 @@ class Messervelib_Payroll
 
                     }
 
-                    echo "Total reg $reg : Duration reg {$time_array[$i]['today']} <br>";
+                    if(isset($time_array[$i]['today'])) echo "Total reg $reg : Duration reg {$time_array[$i]['today']} <br>";
 
                 }
             }
@@ -929,14 +929,9 @@ class Messervelib_Payroll
                 }
             }
 
+
             if (is_array($attendance)) {
                 $options = array_merge($options, $attendance);
-
-                if ($Attendance->id == 564531) {
-                    // echo 'L ' . __LINE__ . '<br>';
-                    // echo "OT START:  " . date('Y-m-d h:i A', $ot_start) . "  THIS: " . $attendance['id'] . " -- R $reg ND $nd OT $ot NDOT $nd_ot T $tomorrow TOT $tomorrow_ot TND $tomorrow_nd TNDOT $tomorrow_nd_ot <br>";
-                    // die('STOP');
-                }
 
                 $Attendance
                     ->setGroupId($group_id)
@@ -986,14 +981,14 @@ class Messervelib_Payroll
                         ->setHolidayType($holiday_type_today)
                         ->setDate($new_date_today)
                         ->setPeriodStart($rate_date_start)
-                        ->setRegHours($options['today'])
-                        ->setOtHours($options['today_ot'])
-                        ->setRegPay($options['today'] * $rates_today['employee']['rate'][$pay_rate_prefix])
-                        ->setOtPay($options['today_ot'] * $rates_today['employee']['rate'][$pay_rate_prefix . "_ot"])
                         ->setDateProcessed(date("Y-m-d H:i:s"));
 
                     if ($holiday_today) {
                         $PayrollToday
+                            ->setRegHours($options['today'] + $options['tomorrow'])
+                            ->setOtHours($options['today_ot'] + $options['tomorrow_ot'])
+                            ->setRegPay(($options['today'] + $options['tomorrow']) * $rates_today['employee']['rate'][$pay_rate_prefix])
+                            ->setOtPay(($options['today_ot'] + $options['tomorrow_ot']) * $rates_today['employee']['rate'][$pay_rate_prefix . "_ot"])
                             ->setNdPay(($options['today_nd'] + $options['tomorrow_nd']) * $rates_today['employee']['rate'][$pay_rate_prefix . "_nd"])
                             ->setNdOtPay(($options['today_nd_ot'] + $options['tomorrow_nd_ot']) * $rates_today['employee']['rate'][$pay_rate_prefix . "_nd_ot"])
                             ->setNdHours($options['today_nd'] + $options['tomorrow_nd'])
@@ -1001,6 +996,10 @@ class Messervelib_Payroll
 
                     } else {
                         $PayrollToday
+                            ->setRegHours($options['today'])
+                            ->setOtHours($options['today_ot'])
+                            ->setRegPay($options['today'] * $rates_today['employee']['rate'][$pay_rate_prefix])
+                            ->setOtPay($options['today_ot'] * $rates_today['employee']['rate'][$pay_rate_prefix . "_ot"])
                             ->setNdPay($options['today_nd'] * $rates_today['employee']['rate'][$pay_rate_prefix . "_nd"])
                             ->setNdOtPay($options['today_nd_ot'] * $rates_today['employee']['rate'][$pay_rate_prefix . "_nd_ot"])
                             ->setNdHours($options['today_nd'])
@@ -1010,12 +1009,19 @@ class Messervelib_Payroll
                     $PayrollToday->save();
                 }
 
-                if ($holiday_type_today == "Rest") {
+                $holiday_type_tomorrow = "Regular";
+                $pay_rate_prefix = "reg";
+
+
+                if ($holiday_today && $holiday_type_today == "Rest") {
                     $holiday_type_tomorrow = $holiday_type_today;
                     $pay_rate_prefix = "sun";
-                } else {
-                    $holiday_type_tomorrow = "Regular";
-                    $pay_rate_prefix = "reg";
+                }
+
+                if ($holiday_today) {
+                    $holiday_type_tomorrow = $holiday_type_today;
+                    $pay_rate_prefix = strtolower($holiday_today->getType());
+                    echo "Holiday today <br>";
                 }
 
                 $new_date_tomorrow = date("Y-m-d", strtotime('tomorrow', strtotime($Attendance->getDatetimeStart())));
@@ -1033,6 +1039,8 @@ class Messervelib_Payroll
                 $rates_tomorrow['_prefix'] = $pay_rate_prefix;
 
                 if ($employee_id > 0 && $Attendance->getId() > 0) {
+                    echo "Setting payroll tomorrow <br>";
+
                     $PayrollTomorrow
                         ->setAttendanceId($Attendance->getId())
                         ->setEmployeeId($employee_id)
@@ -1044,20 +1052,24 @@ class Messervelib_Payroll
                         ->setHolidayType($holiday_type_tomorrow)
                         ->setDate($new_date_tomorrow)
                         ->setPeriodStart($rate_date_start)
-                        ->setRegHours($options['tomorrow'])
-                        ->setOtHours($options['tomorrow_ot'])
-                        ->setRegPay($options['tomorrow'] * $rates_tomorrow['employee']['rate'][$pay_rate_prefix])
-                        ->setOtPay($options['tomorrow_ot'] * $rates_tomorrow['employee']['rate'][$pay_rate_prefix . "_ot"])
                         ->setDateProcessed(date("Y-m-d H:i:s"));
 
                     if (!$holiday_today) {
                         $PayrollTomorrow
+                            ->setRegHours($options['tomorrow'])
+                            ->setOtHours($options['tomorrow_ot'])
+                            ->setRegPay($options['tomorrow'] * $rates_tomorrow['employee']['rate'][$pay_rate_prefix])
+                            ->setOtPay($options['tomorrow_ot'] * $rates_tomorrow['employee']['rate'][$pay_rate_prefix . "_ot"])
                             ->setNdPay($options['tomorrow_nd'] * $rates_tomorrow['employee']['rate'][$pay_rate_prefix . "_nd"])
                             ->setNdOtPay($options['tomorrow_nd_ot'] * $rates_tomorrow['employee']['rate'][$pay_rate_prefix . "_nd_ot"])
                             ->setNdHours($options['tomorrow_nd'])
                             ->setNdOtHours($options['tomorrow_nd_ot']);
                     } else {
                         $PayrollTomorrow
+                            ->setRegHours(0)
+                            ->setOtHours(0)
+                            ->setRegPay(0)
+                            ->setOtPay(0)
                             ->setNdPay(0)
                             ->setNdOtPay(0)
                             ->setNdHours(0)
@@ -1066,6 +1078,14 @@ class Messervelib_Payroll
 
                     $PayrollTomorrow->save();
                 }
+
+
+                if($Attendance->getId() == 615742) {
+                    preprint($PayrollToday->toArray());
+                    preprint($PayrollTomorrow->toArray());
+                    // preprint($options, true);
+                }
+
             }
 
         }
