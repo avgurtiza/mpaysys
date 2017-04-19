@@ -82,16 +82,17 @@ class Manager_EmployeeController extends Zend_Controller_Action
         if ($this->_request->isPost()) { // Save submit
             $postvars = $this->_request->getPost();
 
+
             if ($form->isValid($postvars)) {
 
                 if (!$form->getValue('id') > 0) {
                     $form->removeElement('id');
                 }
 
-
                 $Db = $Employee->getMapper()->getDbTable();
 
                 $data = $form->getValues();
+
 
                 if ($form->getValue('id') == '') {
                     $data['employee_number'] = 9000000 + rand(1111, 9999999); // TODO:  search for last id and add a number

@@ -154,6 +154,7 @@ class Messerve_Model_Employee extends Messerve_Model_ModelAbstract
      * @var string
      */
     protected $_BopStart;
+    protected $_BopCurrentRiderStart;
 
     /**
      * Database var type decimal(10,2)
@@ -632,6 +633,28 @@ class Messerve_Model_Employee extends Messerve_Model_ModelAbstract
     public function getBopStart()
     {
         return $this->_BopStart;
+    }
+
+    /**
+     * Sets column bop_start
+     *
+     * @param string $data
+     * @return Messerve_Model_Employee
+     */
+    public function setBopCurrentRiderStart($data)
+    {
+        $this->_BopCurrentRiderStart = $data;
+        return $this;
+    }
+
+    /**
+     * Gets column bop_start
+     *
+     * @return string
+     */
+    public function getBopCurrentRiderStart()
+    {
+        return $this->_BopCurrentRiderStart;
     }
 
     /**

@@ -51,6 +51,7 @@ class Messerve_Model_Mapper_Employee extends Messerve_Model_Mapper_MapperAbstrac
             'search' => $model->getSearch(),
             'bop_id' => $model->getBopId(),
             'bop_start' => $model->getBopStart(),
+            'bop_current_rider_start' => $model->getBopCurrentRiderStart(),
             'bop_startingbalance' => $model->getBopStartingbalance(),
             'bop_currentbalance' => $model->getBopCurrentbalance(),
             'gascard' => $model->getGascard(),
@@ -219,6 +220,7 @@ class Messerve_Model_Mapper_Employee extends Messerve_Model_Mapper_MapperAbstrac
                   ->setSearch($data['search'])
                   ->setBopId($data['bop_id'])
                   ->setBopStart($data['bop_start'])
+                  ->setBopCurrentRiderStart($data['bop_current_rider_start'])
                   ->setBopStartingbalance($data['bop_startingbalance'])
                   ->setBopCurrentbalance($data['bop_currentbalance'])
                   ->setGascard($data['gascard']);
@@ -242,6 +244,7 @@ class Messerve_Model_Mapper_Employee extends Messerve_Model_Mapper_MapperAbstrac
                   ->setSearch($data->search)
                   ->setBopId($data->bop_id)
                   ->setBopStart($data->bop_start)
+                  ->setBopCurrentRiderStart($data->bop_current_rider_start)
                   ->setBopStartingbalance($data->bop_startingbalance)
                   ->setBopCurrentbalance($data->bop_currentbalance)
                   ->setGascard($data->gascard);

@@ -157,10 +157,16 @@ class Messerve_Form_EditEmployee extends Zend_Form
         		->setRequired(true)
         		->addValidator(new Zend_Validate_Int())
         		->addFilter(new Zend_Filter_StringTrim())
-        );        
-        
+        );
+
         $this->addElement(
-        		$this->createElement('text', 'bop_start')
+            $this->createElement('text', 'bop_start')
+                ->setLabel('Bike purchase date')
+                ->setOptions(array('class'=>'datepicker'))
+        );
+
+        $this->addElement(
+        		$this->createElement('text', 'bop_current_rider_start')
         		->setLabel('BOP start date')
         		->setOptions(array('class'=>'datepicker'))
         );
