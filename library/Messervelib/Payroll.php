@@ -680,7 +680,7 @@ class Messervelib_Payroll
 
                     }
 
-                    if(isset($time_array[$i]['today'])) echo "Total reg $reg : Duration reg {$time_array[$i]['today']} <br>";
+                    if (isset($time_array[$i]['today'])) echo "Total reg $reg : Duration reg {$time_array[$i]['today']} <br>";
 
                 }
             }
@@ -791,17 +791,10 @@ class Messervelib_Payroll
             $time_array['spec_nd_ot'] = 0;
 
             if ($attendance['type'] == 'rest') {
-                if (!$holiday_tomorrow) {
-                    $time_array['rest'] = $reg + $tomorrow;
-                    $time_array['rest_ot'] = $ot + $tomorrow_ot;
-                    $time_array['rest_nd'] = $nd + $tomorrow_nd;
-                    $time_array['rest_nd_ot'] = $nd_ot + $tomorrow_nd_ot;
-                } else {
-                    $time_array['rest'] = $reg;
-                    $time_array['rest_ot'] = $ot;
-                    $time_array['rest_nd'] = $nd;
-                    $time_array['rest_nd_ot'] = $nd_ot;
-                }
+                $time_array['rest'] = $reg + $tomorrow;
+                $time_array['rest_ot'] = $ot + $tomorrow_ot;
+                $time_array['rest_nd'] = $nd + $tomorrow_nd;
+                $time_array['rest_nd_ot'] = $nd_ot + $tomorrow_nd_ot;
             } else { // Regular
                 echo "<br>Regular today<br>";
                 $time_array['reg'] = $reg + $tomorrow;
@@ -1013,8 +1006,9 @@ class Messervelib_Payroll
                 $pay_rate_prefix = "reg";
 
 
-                if ($holiday_today && $holiday_type_today == "Rest") {
+                if ($attendance['type'] == "rest") {
                     $holiday_type_tomorrow = $holiday_type_today;
+                    $holiday_type_today = "Rest";
                     $pay_rate_prefix = "sun";
                 }
 
@@ -1023,6 +1017,7 @@ class Messervelib_Payroll
                     $pay_rate_prefix = strtolower($holiday_today->getType());
                     echo "Holiday today <br>";
                 }
+
 
                 $new_date_tomorrow = date("Y-m-d", strtotime('tomorrow', strtotime($Attendance->getDatetimeStart())));
 
@@ -1080,10 +1075,9 @@ class Messervelib_Payroll
                 }
 
 
-                if($Attendance->getId() == 615742) {
+                if ($Attendance->getId() == 677325) {
                     preprint($PayrollToday->toArray());
                     preprint($PayrollTomorrow->toArray());
-                    // preprint($options, true);
                 }
 
             }

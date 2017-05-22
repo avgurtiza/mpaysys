@@ -621,7 +621,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             }
 
             // Get rider rate sss
-
             echo "Checking SSS... ";
             if ($EmployeeRate->sss_employee <= 0) { // Rider rate is 0 sss
                 echo "NO SSS.";
@@ -629,8 +628,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $value['deductions']['sss'] = 0;
             }
 
-            // preprint($value['deductions']);
-            // preprint($EmployeeRate->toArray(), true);
 
             if (isset($value['more_income'])) {
                 if ($value['more_income']['misc_income'] > 0) {
@@ -867,17 +864,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $pdf->pages[] = $page;
             $dole_pdf->pages[] = $dole_page;
-
-            /*
-            $pay_array = array(
-                $value['attendance']->lastname
-                , $value['attendance']->firstname
-                , $value['attendance']->middleinitial
-                , $value['attendance']->employee_number
-                , $value['attendance']->account_number
-                , round($total_pay - $total_deduct, 2)
-            );
-            */
 
             if ($group_id == $Employee->getGroupId()) {
                 $is_reliever = 'no';
@@ -1544,16 +1530,9 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         }
 
-
         $this->_employee_payroll = $employee_payroll;
         $this->_employer_bill = $summary_bill;
-
-        // preprint($summary_bill, true);
-
         $this->_messerve_bill = $messerve_bill;
-
-        // preprint($messerve_bill,1);
-
     }
 
     public function summaryreportAction()
