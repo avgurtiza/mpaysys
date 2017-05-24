@@ -1215,7 +1215,10 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
             $Attendance->setOptions($reset)->save();
 
-            print_r($Attendance->toArray());
+            $AttPay = Messerve_Model_Eloquent_AttendancePayroll::where('attendance_id', $attendance_id);
+
+            $AttPay->delete();
+
         }
     }
 }
