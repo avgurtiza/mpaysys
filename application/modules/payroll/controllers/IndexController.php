@@ -974,7 +974,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 // $dole_page->setFont($font, 8)->drawText('Other deductions', $dim_x + 380, $split_dim_y);
                 // $dole_page->setFont($mono, 8)->drawText(str_pad(number_format($messerve_deduct, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $split_dim_y);
 
-                $page->setFont($font, 8)->drawText('Other deductions', $dim_x + 380, $split_dim_y);
+                $page->setFont($font, 8)->drawText('Misc deduction', $dim_x + 380, $split_dim_y);
                 $page->setFont($mono, 8)->drawText(str_pad(number_format($messerve_deduct, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $split_dim_y);
             }
 
