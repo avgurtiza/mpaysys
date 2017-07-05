@@ -47,6 +47,13 @@ class Messerve_Form_EditGroup extends Zend_Form
         );
 
         $this->addElement(
+            $this->createElement('checkbox', 'non_vat')
+                ->setLabel('Non-VAT billing')
+                ->setCheckedValue('1')
+                ->setUncheckedValue('0')
+        );
+
+        $this->addElement(
             $this->createElement('textarea', 'address')
                 ->setLabel('Billing address')
                 ->setOptions(array('rows'=>4, 'cols'=>52, 'style'=>'width:300px;'))
@@ -99,13 +106,15 @@ class Messerve_Form_EditGroup extends Zend_Form
         		->setLabel('Calendars')
         );        
 
-        $this->addElement(
+/*        $this->addElement(
         		$this->createElement('checkbox', 'round_off_10')
         		->setLabel('Round off attendance to 10 minutes')
         		->setDescription('Mang Inasal setting')
         		->setCheckedValue('yes')
         		->setUncheckedValue('no')
-        );
+        );*/
+
+
 
         
         $this->addElement(

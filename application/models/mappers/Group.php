@@ -45,6 +45,7 @@ class Messerve_Model_Mapper_Group extends Messerve_Model_Mapper_MapperAbstract
             'tin' => $model->getTin(),
             'address' => $model->getAddress(),
             'fuelperhour' => $model->getFuelperhour(),
+            'non_vat' => $model->getNonVat(),
         );
 
         return $result;
@@ -203,7 +204,9 @@ class Messerve_Model_Mapper_Group extends Messerve_Model_Mapper_MapperAbstract
                   ->setRoundOff10($data['round_off_10'])
                   ->setTin($data['tin'])
                   ->setAddress($data['address'])
-                  ->setFuelperhour($data['fuelperhour']);
+                  ->setFuelperhour($data['fuelperhour'])
+                  ->setNonVat($data['non_vat'])
+            ;
         } elseif ($data instanceof Zend_Db_Table_Row_Abstract || $data instanceof stdClass) {
             $entry->setId($data->id)
                   ->setName($data->name)
@@ -217,7 +220,9 @@ class Messerve_Model_Mapper_Group extends Messerve_Model_Mapper_MapperAbstract
                   ->setRoundOff10($data->round_off_10)
                   ->setTin($data->tin)
                   ->setAddress($data->address)
-                  ->setFuelperhour($data->fuelperhour);
+                  ->setFuelperhour($data->fuelperhour)
+                  ->setNonVat($data->non_vat)
+            ;
         }
 
         $entry->setMapper($this);

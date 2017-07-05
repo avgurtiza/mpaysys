@@ -12,7 +12,7 @@
 
 
 /**
- * 
+ *
  *
  * @package Messerve_Model
  * @subpackage Model
@@ -113,7 +113,7 @@ class Messerve_Model_Group extends Messerve_Model_ModelAbstract
      */
     protected $_Fuelperhour;
 
-
+    protected $_NonVat;
 
     /**
      * Sets up column and relationship lists
@@ -122,26 +122,25 @@ class Messerve_Model_Group extends Messerve_Model_ModelAbstract
     {
         parent::init();
         $this->setColumnsList(array(
-            'id'=>'Id',
-            'name'=>'Name',
-            'billing_name'=>'BillingName',
-            'client_id'=>'ClientId',
-            'rate_id'=>'RateId',
-            'rate_client_id'=>'RateClientId',
-            'calendars'=>'Calendars',
-            'search'=>'Search',
-            'code'=>'Code',
-            'round_off_10'=>'RoundOff10',
-            'tin'=>'Tin',
-            'address'=>'Address',
-            'fuelperhour'=>'Fuelperhour',
+            'id' => 'Id',
+            'name' => 'Name',
+            'billing_name' => 'BillingName',
+            'client_id' => 'ClientId',
+            'rate_id' => 'RateId',
+            'rate_client_id' => 'RateClientId',
+            'calendars' => 'Calendars',
+            'search' => 'Search',
+            'code' => 'Code',
+            'round_off_10' => 'RoundOff10',
+            'tin' => 'Tin',
+            'address' => 'Address',
+            'fuelperhour' => 'Fuelperhour',
+            'non_vat' => 'NonVat',
         ));
 
-        $this->setParentList(array(
-        ));
+        $this->setParentList(array());
 
-        $this->setDependentList(array(
-        ));
+        $this->setDependentList(array());
     }
 
     /**
@@ -430,6 +429,18 @@ class Messerve_Model_Group extends Messerve_Model_ModelAbstract
         return $this->_Fuelperhour;
     }
 
+
+    public function setNonVat($data)
+    {
+        $this->_NonVat = (int) $data;
+        return $this;
+    }
+
+    public function getNonVat()
+    {
+        return $this->_NonVat;
+    }
+
     /**
      * Returns the mapper class for this model
      *
@@ -447,7 +458,7 @@ class Messerve_Model_Group extends Messerve_Model_ModelAbstract
     /**
      * Deletes current row by deleting the row that matches the primary key
      *
-	 * @see Messerve_Model_Mapper_Group::delete
+     * @see Messerve_Model_Mapper_Group::delete
      * @return int|boolean Number of rows deleted or boolean if doing soft delete
      */
     public function deleteRowByPrimaryKey()
@@ -457,11 +468,11 @@ class Messerve_Model_Group extends Messerve_Model_ModelAbstract
         }
 
         return $this->getMapper()
+            ->getDbTable()
+            ->delete('id = ' .
+                $this->getMapper()
                     ->getDbTable()
-                    ->delete('id = ' .
-                             $this->getMapper()
-                                  ->getDbTable()
-                                  ->getAdapter()
-                                  ->quote($this->getId()));
+                    ->getAdapter()
+                    ->quote($this->getId()));
     }
 }
