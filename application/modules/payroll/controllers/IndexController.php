@@ -193,7 +193,6 @@ class Payroll_IndexController extends Zend_Controller_Action
     protected function bopSlipPage($bop_slip_data)
     {
 
-        // preprint($bop_slip_data, true);
         $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
         $bold = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_BOLD);
         $italic = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_ITALIC);
@@ -843,7 +842,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             }
 
             if (isset($value['more_income']) && $value['more_income']['gasoline'] > 0) {
-                $fuel_excess = number_format($value['more_income']['gasoline'], 2);
+                $fuel_excess = number_format($value['more_income']['gasoline'], 2,'.','');
 
                 $other_additions += $fuel_excess;
 
