@@ -306,7 +306,8 @@ class Payroll_IndexController extends Zend_Controller_Action
         $deductions = 0;
 
         if (isset($bop_slip_data['metadata']['bop']) && stripos($bop_slip_data['metadata']['bop'], 'R1') == false) {
-            $page->setFont($bold, 8)->drawText($bop_slip_data['metadata']['bop'] . ' ' . $bop_slip_data['metadata']['bop_payment_count'] . '/' . $bop_slip_data['metadata']['bop_installments_count'], $dim_x + 380, $dim_y);
+            $page->setFont($bold, 8)->drawText($bop_slip_data['metadata']['bop'] /* . ' ' . $bop_slip_data['metadata']['bop_payment_count'] . '/' . $bop_slip_data['metadata']['bop_installments_count']*/
+                , $dim_x + 380, $dim_y);
             $page->setFont($mono, 8)->drawText(str_pad(number_format($bop_slip_data['deduction']['bop_motorcycle'], 2), 8, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y, 'UTF8');
             $deductions += $bop_slip_data['deduction']['bop_motorcycle'];
             $dim_y -= 16;
