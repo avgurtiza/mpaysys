@@ -55,6 +55,7 @@ class Messerve_Model_Mapper_Employee extends Messerve_Model_Mapper_MapperAbstrac
             'bop_startingbalance' => $model->getBopStartingbalance(),
             'bop_currentbalance' => $model->getBopCurrentbalance(),
             'gascard' => $model->getGascard(),
+            'gascard2' => $model->getGascard2(),
         );
 
         return $result;
@@ -223,7 +224,8 @@ class Messerve_Model_Mapper_Employee extends Messerve_Model_Mapper_MapperAbstrac
                   ->setBopCurrentRiderStart($data['bop_current_rider_start'])
                   ->setBopStartingbalance($data['bop_startingbalance'])
                   ->setBopCurrentbalance($data['bop_currentbalance'])
-                  ->setGascard($data['gascard']);
+                  ->setGascard($data['gascard'])
+                  ->setGascard2($data['gascard2']);
         } elseif ($data instanceof Zend_Db_Table_Row_Abstract || $data instanceof stdClass) {
             $entry->setId($data->id)
                   ->setType($data->type)
@@ -247,7 +249,8 @@ class Messerve_Model_Mapper_Employee extends Messerve_Model_Mapper_MapperAbstrac
                   ->setBopCurrentRiderStart($data->bop_current_rider_start)
                   ->setBopStartingbalance($data->bop_startingbalance)
                   ->setBopCurrentbalance($data->bop_currentbalance)
-                  ->setGascard($data->gascard);
+                  ->setGascard($data->gascard)
+                  ->setGascard2($data->gascard2);
         }
 
         $entry->setMapper($this);

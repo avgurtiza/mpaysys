@@ -171,11 +171,18 @@ class Messerve_Model_Employee extends Messerve_Model_ModelAbstract
     protected $_BopCurrentbalance;
 
     /**
-     * Database var type bigint(20)
+     * Database var type bigint(32)
      *
      * @var int
      */
     protected $_Gascard;
+
+    /**
+     * Database var type bigint(32)
+     *
+     * @var int
+     */
+    protected $_Gascard2;
 
 
 
@@ -208,6 +215,7 @@ class Messerve_Model_Employee extends Messerve_Model_ModelAbstract
             'bop_startingbalance'=>'BopStartingbalance',
             'bop_currentbalance'=>'BopCurrentbalance',
             'gascard'=>'Gascard',
+            'gascard2'=>'Gascard2',
         ));
 
         $this->setParentList(array(
@@ -721,6 +729,28 @@ class Messerve_Model_Employee extends Messerve_Model_ModelAbstract
     public function getGascard()
     {
         return $this->_Gascard;
+    }
+
+    /**
+     * Sets column gascard2
+     *
+     * @param int $data
+     * @return Messerve_Model_Employee
+     */
+    public function setGascard2($data)
+    {
+        $this->_Gascard2 = $data;
+        return $this;
+    }
+
+    /**
+     * Gets column gascard2
+     *
+     * @return int
+     */
+    public function getGascard2()
+    {
+        return $this->_Gascard2;
     }
 
     /**

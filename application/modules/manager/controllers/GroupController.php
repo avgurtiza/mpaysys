@@ -104,24 +104,27 @@ class Manager_GroupController extends Zend_Controller_Action
     	if($this->_request->isPost()) { // Save submit
     		$postvars = $this->_request->getPost();
 
-            // preprint($postvars,1);
-    		 
+
     		if ($form->isValid($postvars)) {
-    			
+
     			if(!$form->getValue('id') > 0) {
     				$form->removeElement('id');
     			}
 
-    			// die(serialize($postvars['calendars']));
+                if(isset($postvars['calendars'])) {
+                    $Group->setCalendars(json_encode($postvars['calendars']));
+                }
 
     			$Group->setOptions($form->getValues())
-    				->setCalendars(json_encode($postvars['calendars']))
+    				// ->setCalendars(json_encode($postvars['calendars']))
                     ->setSearch($postvars['name'] . ' ' . $client_options[$postvars['client_id']])
-                    ->save(false);
+                    ->save();
 
     			$this->_redirect('/manager/client/edit/id/'. $Group->getClientId());
     			 
-    		}
+    		} else {
+    		    die('INVALID');
+            }
     	} elseif($id > 0) { // Get requested group
     		$Group->find($id);
     		

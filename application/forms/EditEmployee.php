@@ -148,7 +148,12 @@ class Messerve_Form_EditEmployee extends Zend_Form
         
         $this->addElement(
         		$this->createElement('text', 'gascard')
-        		->setLabel('Gas card number')
+        		->setLabel('Gas card - Petron')
+        );
+
+        $this->addElement(
+        		$this->createElement('text', 'gascard2')
+        		->setLabel('Gas card - Caltex')
         );
         
         $this->addElement(
