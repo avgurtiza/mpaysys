@@ -1102,7 +1102,7 @@ class Messervelib_Payroll
                         ->setFuelOverage(0)
                         ->save();  // Reset fuel consumption
 
-                    if ($Employee->getGascard() > 0) {
+                    if ($Employee->getGascard() > 0 || $Employee->getGascard2() > 0) {
 
                         // Get previous cutoff duration!
                         $prev_date_start = date('Y-m-28', strtotime('last month', strtotime($first_day->getDatetimeStart())));
