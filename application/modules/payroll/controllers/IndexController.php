@@ -356,6 +356,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         return $page;
     }
 
+
     public function payslipsAction()
     {
         $start = time();
@@ -376,6 +377,8 @@ class Payroll_IndexController extends Zend_Controller_Action
         } else {
             $cutoff = 2;
         }
+
+        $rate_schedule = Messerve_Model_Eloquent_RateSchedule::byGroupAndDate($group_id, $date_start);
 
         $Group = new Messerve_Model_Group();
         $Group->find($group_id);
@@ -420,7 +423,9 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $bop_acknowledgement = [];
 
+
         foreach ($this->_employee_payroll as $value) {
+
 
             $page = new Zend_Pdf_Page(612, 396);
 
@@ -506,18 +511,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $BOP = new Messerve_Model_Bop();
                     $BOP->find($Employee->getBopId());
 
-                    /*
-                    $scheduled_deductions[] = array(
-                        'type' => 'BOP - ' . $BOP->getName()
-                        , 'amount' => $BOPAttendance->getMotorcycleDeduction()
-                    );
-
-                    $scheduled_deductions[] = array(
-                        'type' => 'BOP insurance/registration'
-                        , 'amount' => $BOPAttendance->getInsuranceDeduction()
-                    );
-                    */
-
                     $bop_motorcycle = $BOPAttendance->getMotorcycleDeduction();
                     $bop_insurance = $BOPAttendance->getInsuranceDeduction();
 
@@ -575,10 +568,10 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $rec_copy_data['riders'][$Employee->getId()] = array(
                 'employee_number' => $Employee->getEmployeeNumber()
-                , 'name' => $value['attendance']->lastname . ', '
+            , 'name' => $value['attendance']->lastname . ', '
                     . $value['attendance']->firstname . ' '
                     . $value['attendance']->middleinitial
-                , 'pay_period' => $date_start . ' to ' . $date_end
+            , 'pay_period' => $date_start . ' to ' . $date_end
             );
 
             $dim_y -= 16;
@@ -639,6 +632,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                         $ecola = $rvalue->employee->rate->ecola;
                         $sss = $rvalue->employee->rate->sss_employee;
+                        $dim_y -= 8;
 
                         $page->setFont($font, 8)->drawText('Daily rate', $dim_x, $dim_y, 'UTF8');
                         $page->setFont($mono, 8)->drawText(number_format($pay_rate, 2), $dim_x + 40, $dim_y, 'UTF8');
@@ -649,6 +643,28 @@ class Payroll_IndexController extends Zend_Controller_Action
                         $page->setFont($font, 8)->drawText('Min. wage', $dim_x + 140, $dim_y, 'UTF8');
                         $page->setFont($mono, 8)->drawText(number_format($pay_rate + $ecola, 2), $dim_x + 180, $dim_y, 'UTF8');
                         $dim_y -= 8;
+
+                        /*if(is_object($rate_schedule) && count($rate_schedule) > 0) {
+                            foreach ($rate_schedule as $schedule_item) {
+                                $dim_y -= 8;
+                                $rate_details = $schedule_item->rate;
+
+                                $page->setFont($italic, 8)->drawText('Wage increase ' . $schedule_item->date_active  , $dim_x, $dim_y, 'UTF8');
+
+                                $dim_y -= 8;
+                                $alt_rate = 8 * $rate_details->reg;
+
+                                $page->setFont($font, 8)->drawText('Daily rate', $dim_x, $dim_y, 'UTF8');
+                                $page->setFont($mono, 8)->drawText(number_format($alt_rate, 2), $dim_x + 40, $dim_y, 'UTF8');
+
+                                $page->setFont($font, 8)->drawText('Ecola', $dim_x + 80, $dim_y, 'UTF8');
+                                $page->setFont($mono, 8)->drawText(number_format($rate_details->ecola, 2), $dim_x + 110, $dim_y, 'UTF8');
+
+                                $page->setFont($font, 8)->drawText('Min. wage', $dim_x + 140, $dim_y, 'UTF8');
+                                $page->setFont($mono, 8)->drawText(number_format($alt_rate + $ecola, 2), $dim_x + 180, $dim_y, 'UTF8');
+                                $dim_y -= 8;
+                            }
+                        }*/
                     } else {
                         $page->setFont($font, 8)->drawText("{$rkey}", $dim_x, $dim_y);
 
@@ -843,7 +859,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             }
 
             if (isset($value['more_income']) && $value['more_income']['gasoline'] > 0) {
-                $fuel_excess = number_format($value['more_income']['gasoline'], 2,'.','');
+                $fuel_excess = number_format($value['more_income']['gasoline'], 2, '.', '');
 
                 $other_additions += $fuel_excess;
 
@@ -950,7 +966,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                             }
                         }
 
-                        if(stripos($sdvalue['type'], 'loan')) {
+                        if (stripos($sdvalue['type'], 'loan')) {
                             $page->setFont($font, 8)->drawText(ucwords(str_replace('_', ' ', $sdvalue['type'])), $dim_x + 380, $dim_y);
                             $page->setFont($mono, 8)->drawText(str_pad(number_format($sdvalue['amount'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
 
@@ -1028,7 +1044,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $pdf->pages[] = $page;
             // $dole_pdf->pages[] = $dole_page;
 
-            if(($other_additions + $other_deductions > 0)) {
+            if (($other_additions + $other_deductions > 0)) {
                 $pdf->pages[] = $this->bopSlipPage($bop_slip_data);
             }
 
@@ -1064,7 +1080,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setHdmf($value['deductions']['hdmf'])
                 ->setCashBond($value['deductions']['cash_bond'])
                 ->setInsurance($value['deductions']['insurance'])
-                ->setMiscDeduction($total_misc_deduct) // Sum of all misc deductions; Miscellaneous-type deduction in setMiscellaneous()
+                ->setMiscDeduction($total_misc_deduct)// Sum of all misc deductions; Miscellaneous-type deduction in setMiscellaneous()
                 ->setDeductionData(json_encode($scheduled_deductions))
                 ->setSssLoan($scheduled_deductions_array['sss_loan'])
                 ->setHdmfLoan($scheduled_deductions_array['hdmf_loan'])
