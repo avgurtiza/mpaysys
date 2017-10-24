@@ -1719,14 +1719,37 @@ class Payroll_IndexController extends Zend_Controller_Action
         $this->_messerve_bill = $messerve_bill;
     }
 
+    protected function writePdfLogo(Zend_Pdf_Page $page, $x1, $y1, $x2, $y2)
+    {
+        $logo = Zend_Pdf_Image::imageWithPath(APPLICATION_PATH . '/../public/images/messerve.png');
+        $page->drawImage($logo, $x1, $y1, $x2, $y2);
+    }
+
+    protected function writePdfLine(Zend_Pdf_Page $page, $text, $position_x = 0, $position_y = 0, $font = 'normal', $size = 10)
+    {
+        $normal = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $bold = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_BOLD);
+        $italic = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_ITALIC);
+        $mono = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_COURIER);
+
+        if (!in_array($font, array('normal', 'bold', 'italic', 'mono'))) {
+            $font = 'normal';
+        }
+
+        $pdf_font = $$font;
+
+        $page->setFont($pdf_font, $size)->drawText($text, $position_x, $position_y, 'UTF8');
+    }
+
+
     public function summaryreportAction()
     {
 
-        function round_this($in)
+
+        function round_this($in, $digits = 2)
         {
             if (is_numeric($in)) {
-                // return round($in, 2);
-                return (float)number_format($in, 2, '.', '');
+                return (float)number_format($in, $digits, '.', '');
             } else {
                 return $in;
             }
@@ -1737,6 +1760,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $date_end = $this->_request->getParam('date_end');
         $standalone = $this->getParam('standalone');
 
+
         if ($standalone != '' && $standalone == 'true') {
             $this->_last_date = date('Y-m-d-Hi');
             $this->_compute();
@@ -1745,7 +1769,6 @@ class Payroll_IndexController extends Zend_Controller_Action
         $this->view->payroll = $this->_employee_payroll;
 
         $pdf = new Zend_Pdf();
-
 
         $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
         $bold = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_BOLD);
@@ -1781,13 +1804,16 @@ class Payroll_IndexController extends Zend_Controller_Action
         $bottomPos = $dim_y - $imageHeight;
         $rightPos = $dim_x + $imageWidth;
 
-        $page->drawImage($logo, $dim_x, $bottomPos, $rightPos, $dim_y);
+        // $page->drawImage($logo, $dim_x, $bottomPos, $rightPos, $dim_y);
+        $this->writePdfLogo($page, $dim_x, $bottomPos, $rightPos, $dim_y);
         $dim_y -= 12;
 
-        $page->setFont($bold, 10)->drawText($Client->getName() . '-' . $Group->getName(), $dim_x + 300, $dim_y, 'UTF8');
+        $this->writePdfLine($page, $Client->getName() . '-' . $Group->getName(), $dim_x + 300, $dim_y, 'bold');
+        // $page->setFont($bold, 10)->drawText($Client->getName() . '-' . $Group->getName(), $dim_x + 300, $dim_y, 'UTF8');
         $dim_y -= 10;
 
-        $page->setFont($bold, 10)->drawText('Pay period: ' . $date_start . ' to ' . $date_end, $dim_x + 300, $dim_y);
+        $this->writePdfLine($page, 'Pay period: ' . $date_start . ' to ' . $date_end, $dim_x + 300, $dim_y, 'bold');
+        // $page->setFont($bold, 10)->drawText('Pay period: ' . $date_start . ' to ' . $date_end, $dim_x + 300, $dim_y);
         $dim_y -= 32;
 
         $date1 = new DateTime($date_start); //inclusive
@@ -1798,7 +1824,9 @@ class Payroll_IndexController extends Zend_Controller_Action
         $date = (int)substr($date_start, -2, 2);
 
         for ($i = 1; $i <= $period_size; $i++) {
-            $page->setFont($bold, 8)->drawText($date, $dim_x + ($i * 25) + 150, $dim_y, 'UTF8');
+            // $page->setFont($bold, 8)->drawText($date, $dim_x + ($i * 25) + 150, $dim_y, 'UTF8');
+            $this->writePdfLine($page, $date, $dim_x + ($i * 25) + 150, $dim_y, 'bold', 8);
+
             $date++;
         }
 
@@ -1806,7 +1834,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $now_inc = 35;
         $dim_y -= 10;
-
 
         $all_total_reg = 0;
         $all_total_reg_ot = 0;
@@ -1817,13 +1844,6 @@ class Payroll_IndexController extends Zend_Controller_Action
         $all_total_sun_ot = 0;
         $all_total_sun_nd = 0;
         $all_total_sun_nd_ot = 0;
-
-        /*
-        $all_total_spec = 0;
-        $all_total_spec_ot = 0;
-        $all_total_spec_nd = 0;
-        $all_total_spec_nd_ot = 0;
-        */
 
         $all_total_legal = 0;
         $all_total_legal_ot = 0;
@@ -1862,6 +1882,9 @@ class Payroll_IndexController extends Zend_Controller_Action
         $employee_count = 0;
 
         $all_messerve_ot = 0;
+
+        $split_bill_hours = [];
+
 
         foreach ($this->_employee_payroll as $value) {
             if ($employee_count >= 8) {
@@ -1933,6 +1956,31 @@ class Payroll_IndexController extends Zend_Controller_Action
             $messerve_ot = 0;
 
             for ($i = 1; $i <= $period_size; $i++) {
+
+                // For split bill
+                $today_reg = 0;
+                $today_reg_ot = 0;
+                $today_reg_nd = 0;
+                $today_reg_nd_ot = 0;
+
+                $today_sun = 0;
+                $today_sun_ot = 0;
+                $today_sun_nd = 0;
+                $today_sun_nd_ot = 0;
+
+                $today_legal = 0;
+                $today_legal_ot = 0;
+                $today_legal_nd = 0;
+                $today_legal_nd_ot = 0;
+
+                $today_legal_unattend = 0;
+
+                $today_rest = 0;
+                $today_rest_ot = 0;
+                $today_rest_nd = 0;
+                $today_rest_nd_ot = 0;
+
+                // End for split bill
                 $Attendance = $AttendanceMap->findOneByField(
                     array('employee_id', 'datetime_start', 'group_id')
                     , array($employee_id, $current_date, $group_id)
@@ -1958,7 +2006,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $attendance_array = $Attendance->toArray();
 
-                $all_hours = [
+
+                $all_hours = [ // Used for hours sum
                     $attendance_array['reg']
                     , $attendance_array['reg_nd']
                     , $attendance_array['spec'] // TODO:  is spec still used?  Or all special holidays are sun?
@@ -1972,13 +2021,20 @@ class Payroll_IndexController extends Zend_Controller_Action
                     // , $attendance_array['rest_nd']
                 ];
 
-                $total_reg += $attendance_array['reg'];
-                $total_reg_nd += $attendance_array['reg_nd'];
+
+                $today_reg = $attendance_array['reg'];
+                $today_reg_nd = $attendance_array['reg_nd'];
+
+                $total_reg += $today_reg;
+                $total_reg_nd += $today_reg_nd;
 
 
                 if ($Attendance->getOtApproved() == 'yes') {
-                    $total_rest += $attendance_array['rest'];
-                    $total_rest_nd += $attendance_array['rest_nd'];
+                    $today_rest += $attendance_array['rest'];
+                    $today_rest_nd += $attendance_array['rest_nd'];
+
+                    $total_rest += $today_rest;
+                    $total_rest_nd += $today_rest_nd;
 
                     $all_hours = array_merge($all_hours, array(
                         $attendance_array['reg_ot']
@@ -2054,15 +2110,28 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $all_hours['reg'] += array_sum($temp_ot);
 
                     // Bill client OT as non-OT
-                    $total_reg += $attendance_array['reg_ot'];
-                    $total_sun += $attendance_array['sun_ot'] + $attendance_array['spec_ot'];
-                    $total_legal += $attendance_array['legal_ot'];
-                    $total_reg += $attendance_array['rest_ot'] + $attendance_array['rest'];
 
-                    $total_reg_nd += $attendance_array['reg_nd_ot'];
-                    $total_sun_nd += $attendance_array['sun_nd_ot'] + $attendance_array['spec_nd_ot'];
-                    $total_legal_nd += $attendance_array['legal_nd_ot'];
-                    $total_reg_nd += $attendance_array['rest_nd_ot'] + $attendance_array['rest_nd'];
+                    $today_reg += $attendance_array['reg_ot'];
+                    $today_reg += $attendance_array['rest_ot'] + $attendance_array['rest'];
+
+                    $today_sun += $attendance_array['sun_ot'] + $attendance_array['spec_ot'];
+                    $today_legal += $attendance_array['legal_ot'];
+
+                    $today_reg_nd += $attendance_array['reg_nd_ot'];
+                    $today_sun_nd += $attendance_array['sun_nd_ot'] + $attendance_array['spec_nd_ot'];
+                    $today_legal_nd += $attendance_array['legal_nd_ot'];
+                    $today_reg_nd += $attendance_array['rest_nd_ot'] + $attendance_array['rest_nd'];
+
+
+                    $total_reg += $today_reg;
+                    $total_sun += $today_sun;
+                    $total_legal += $today_legal;
+                    // $total_reg += $attendance_array['rest_ot'] + $attendance_array['rest'];
+
+                    $total_reg_nd += $today_reg_nd;
+                    $total_sun_nd += $today_sun_nd;
+                    $total_legal_nd += $today_legal_nd;
+                    $total_reg_nd += $today_reg_nd;
                     // $total_reg_nd += array_sum($temp_nd_ot); // Bill NDOT as RegND to client
 
 
@@ -2088,8 +2157,11 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $messerve_legal_nd_ot += $attendance_array['legal_nd_ot'];
 
                 } elseif ($Attendance->getExtendedShift() != 'yes') { // Not bill to Messerve, not OT.  Rest day pay
-                    $total_rest += $attendance_array['rest'];
-                    $total_rest_nd += $attendance_array['rest_nd'];
+                    $today_rest = $attendance_array['rest'];
+                    $today_rest_nd = $attendance_array['rest_nd'];
+
+                    $total_rest += $today_rest;
+                    $total_rest_nd += $today_rest_nd;
 
                     $all_hours = array_merge($all_hours, array(
                         'rest' => $attendance_array['rest']
@@ -2097,34 +2169,80 @@ class Payroll_IndexController extends Zend_Controller_Action
                     ));
                 }
 
+                $today_sun = $attendance_array['sun'] + $attendance_array['spec'];
+                $today_sun_nd = $attendance_array['sun_nd'] + $attendance_array['spec_nd'];
 
-                $total_sun += $attendance_array['sun'] + $attendance_array['spec'];
-                $total_sun_nd += $attendance_array['sun_nd'] + $attendance_array['spec_nd'];
+                $today_legal = $attendance_array['legal'];
+                $today_legal_nd = $attendance_array['legal_nd'];
 
-                $total_legal += $attendance_array['legal'];
-                $total_legal_nd += $attendance_array['legal_nd'];
+                $today_legal_unattend = $attendance_array['legal_unattend'];
 
-                $total_legal_unattend += $attendance_array['legal_unattend'];
+
+                $total_sun += $today_sun;
+                $total_sun_nd += $today_sun_nd;
+
+                $total_legal += $today_legal;
+                $total_legal_nd += $today_legal_nd;
+
+                $total_legal_unattend += $today_legal_unattend;
 
 
                 if ($Attendance->getOtApproved() == 'yes') {
-                    $total_reg_ot += $attendance_array['reg_ot'];
-                    $total_reg_nd_ot += $attendance_array['reg_nd_ot'];
+                    $today_reg_ot = $attendance_array['reg_ot'];
+                    $today_reg_nd_ot = $attendance_array['reg_nd_ot'];
 
-                    $total_rest_ot += $attendance_array['rest_ot'];
-                    $total_rest_nd_ot += $attendance_array['rest_nd_ot'];
+                    $today_rest_ot = $attendance_array['rest_ot'];
+                    $today_rest_nd_ot = $attendance_array['rest_nd_ot'];
 
-                    $total_sun_ot += $attendance_array['sun_ot'] + $attendance_array['spec_ot'];
-                    $total_sun_nd_ot += $attendance_array['sun_nd_ot'] + $attendance_array['spec_nd_ot'];
+                    $today_sun_ot = $attendance_array['sun_ot'] + $attendance_array['spec_ot'];
+                    $today_sun_nd_ot = $attendance_array['sun_nd_ot'] + $attendance_array['spec_nd_ot'];
 
-                    $total_legal_ot += $attendance_array['legal_ot'];
-                    $total_legal_nd_ot += $attendance_array['legal_nd_ot'];
+                    $today_legal_ot = $attendance_array['legal_ot'];
+                    $today_legal_nd_ot = $attendance_array['legal_nd_ot'];
+
+                    $total_reg_ot += $today_reg_ot;
+                    $total_reg_nd_ot += $today_reg_nd_ot;
+
+                    $total_rest_ot += $today_rest_ot;
+                    $total_rest_nd_ot += $today_rest_nd_ot;
+
+                    $total_sun_ot += $today_sun_ot;
+                    $total_sun_nd_ot += $today_sun_nd_ot;
+
+                    $total_legal_ot += $today_legal_ot;
+                    $total_legal_nd_ot += $today_legal_nd_ot;
+
+
                 }
 
                 $total_hours = array_sum($all_hours);
                 $total_total_hours += round($total_hours, 2);
 
                 $employee_attendance_text[] = round($total_hours, 2);
+
+                $EloqAttendance = Messerve_Model_Eloquent_Attendance::find($Attendance->getId());
+                // $EloqAttendancePay = $EloqAttendance->attendancePayroll->first(); // TODO: move to model, maybe?
+
+                $split_bill_hours[$EloqAttendance->datetime_start->toDateString()][] = [
+                    'reg' => $today_reg
+                    , 'reg_ot' => $today_reg_ot
+                    , 'reg_nd' => $today_reg_nd
+                    , 'reg_nd_ot' => $today_reg_nd_ot
+                    , 'spec' => $today_sun
+                    , 'spec_ot' => $today_sun_ot
+                    , 'spec_nd' => $today_sun_nd
+                    , 'spec_nd_ot' => $today_sun_nd_ot
+                    , 'rest' => $today_rest
+                    , 'rest_ot' => $today_rest_ot
+                    , 'rest_nd' => $today_rest_nd
+                    , 'rest_nd_ot' => $today_rest_nd_ot
+                    , 'legal' => $today_legal
+                    , 'legal_ot' => $today_legal_ot
+                    , 'legal_nd' => $today_legal_nd
+                    , 'legal_nd_ot' => $today_legal_nd_ot
+                    , 'legal_unattend' => $today_legal_unattend
+                ];
+
             }
 
             if ($total_total_hours > 0) {
@@ -2174,12 +2292,38 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $now_x = $dim_x + ($i * 22) + 110 + 66;
                 $now_inc = 70;
 
+                // TODO:  Set totals here!
 
-                $page->setFont($font, 8)->drawText('Total ' . round_this($total_total_hours, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                /*
+                $all_hours_array = [
+                    'reg' => $all_total_reg
+                    , 'reg_ot' => $all_total_reg_ot
+                    , 'reg_nd' => $all_total_reg_nd
+                    , 'reg_nd_ot' => $all_total_reg_nd_ot
+                    , 'spec' => $all_total_sun
+                    , 'spec_ot' => $all_total_sun_ot
+                    , 'spec_nd' => $all_total_sun_nd
+                    , 'spec_nd_ot' => $all_total_sun_nd_ot
+                    , 'rest' => $all_total_rest
+                    , 'rest_ot' => $all_total_rest_ot
+                    , 'rest_nd' => $all_total_rest_nd
+                    , 'rest_nd_ot' => $all_total_rest_nd_ot
+                    , 'legal' => $all_total_legal
+                    , 'legal_ot' => $all_total_legal_ot
+                    , 'legal_nd' => $all_total_legal_nd
+                    , 'legal_nd_ot' => $all_total_legal_nd_ot
+                    , 'legal_unattend' => $all_total_legal_unattend
+                ];
+                */
+
+
+                // $page->setFont($font, 8)->drawText('Total ' . round_this($total_total_hours, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $this->writePdfLine($page, 'Total ' . round_this($total_total_hours, 2), $dim_x + $now_x, $dim_y, 'bold', 8);
 
                 if ($messerve_ot > 0) {
                     $all_messerve_ot += $messerve_ot;
-                    $page->setFont($italic, 8)->drawText($messerve_ot, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                    // $page->setFont($italic, 8)->drawText($messerve_ot, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                    $this->writePdfLine($page, $messerve_ot, $dim_x + $now_x + 47, $dim_y, 'italic', 8);
                 }
 
 
@@ -2187,70 +2331,100 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $ot_font = $font;
 
-                $page->setFont($font, 8)->drawText('Reg ' . round_this($total_reg, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+
+                // $page->setFont($font, 8)->drawText('Reg ' . round_this($total_reg, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $this->writePdfLine($page, 'Reg ' . round_this($total_reg, 2), $dim_x + $now_x, $dim_y, 'normal', 8);
                 $now_x += $now_inc;
 
-                $page->setFont($ot_font, 8)->drawText('RegOT ' . round_this($total_reg_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                // $page->setFont($ot_font, 8)->drawText('RegOT ' . round_this($total_reg_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $this->writePdfLine($page, 'RegOT ' . round_this($total_reg_ot, 2), $dim_x + $now_x, $dim_y, 'normal', 8);
+
                 if ($messerve_reg_ot > 0) {
-                    $page->setFont($italic, 8)->drawText($messerve_reg_ot, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                    // $page->setFont($italic, 8)->drawText($messerve_reg_ot, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                    $this->writePdfLine($page, $messerve_reg_ot, $dim_x + $now_x + 47, $dim_y, 'normal', 8);
                 }
                 $now_x += $now_inc;
 
-                $page->setFont($font, 8)->drawText('RegND ' . round_this($total_reg_nd, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                // $page->setFont($font, 8)->drawText('RegND ' . round_this($total_reg_nd, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $this->writePdfLine($page, 'RegND ' . round_this($total_reg_nd, 2), $dim_x + $now_x, $dim_y, 'normal', 8);
                 $now_x += $now_inc;
 
-                $page->setFont($ot_font, 8)->drawText('RegNDOT ' . round_this($total_reg_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                // $page->setFont($ot_font, 8)->drawText('RegNDOT ' . round_this($total_reg_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $this->writePdfLine($page, 'RegNDOT ' . round_this($total_reg_nd_ot, 2), $dim_x + $now_x, $dim_y, 'normal', 8);
 
                 if ($messerve_reg_nd_ot > 0) {
-                    $page->setFont($italic, 8)->drawText($messerve_reg_nd_ot, $dim_x + $now_x + 56, $dim_y, 'UTF8');
+                    // $page->setFont($italic, 8)->drawText($messerve_reg_nd_ot, $dim_x + $now_x + 56, $dim_y, 'UTF8');
+                    $this->writePdfLine($page, $messerve_reg_nd_ot, $dim_x + $now_x + 56, $dim_y, 'italic', 8);
                 }
 
                 /* New line */
                 $now_x = $dim_x + ($i * 22) + 110 + 66;
                 $dim_y -= 10;
 
-                $page->setFont($font, 8)->drawText('SunSp ' . round_this($total_sun, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                // $page->setFont($font, 8)->drawText('SunSp ' . round_this($total_sun, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $this->writePdfLine($page, 'SunSp ' . round_this($total_sun, 2), $dim_x + $now_x, $dim_y, 'normal', 8);
                 $now_x += $now_inc;
 
-                $page->setFont($ot_font, 8)->drawText('SunSpOT ' . round_this($total_sun_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                // $page->setFont($ot_font, 8)->drawText('SunSpOT ' . round_this($total_sun_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $this->writePdfLine($page, 'SunSpOT ' . round_this($total_sun_ot, 2), $dim_x + $now_x, $dim_y, 'normal', 8);
+
                 if ($messerve_sun_ot > 0) {
-                    $page->setFont($italic, 8)->drawText($messerve_sun_ot, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                    // $page->setFont($italic, 8)->drawText($messerve_sun_ot, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                    $this->writePdfLine($page, $messerve_sun_ot, $dim_x + $now_x + 47, $dim_y, 'italic', 8);
                 }
+
                 $now_x += $now_inc;
 
                 $page->setFont($font, 8)->drawText('SunSpND ' . round_this($total_sun_nd, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $this->writePdfLine($page, 'SunSpND ' . round_this($total_sun_nd, 2), $dim_x + $now_x, $dim_y, 'normal', 8);
                 $now_x += $now_inc;
 
-                $page->setFont($ot_font, 8)->drawText('SunSpNDOT ' . round_this($total_sun_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                // $page->setFont($ot_font, 8)->drawText('SunSpNDOT ' . round_this($total_sun_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $this->writePdfLine($page, 'SunSpNDOT ' . round_this($total_sun_nd_ot, 2), $dim_x + $now_x, $dim_y, 'normal', 8);
+
                 if ($messerve_sun_nd_ot > 0) {
-                    $page->setFont($italic, 8)->drawText($messerve_sun_nd_ot, $dim_x + $now_x + 56, $dim_y, 'UTF8');
+                    // $page->setFont($italic, 8)->drawText($messerve_sun_nd_ot, $dim_x + $now_x + 56, $dim_y, 'UTF8');
+                    $this->writePdfLine($page, $messerve_sun_nd_ot, $dim_x + $now_x + 56, $dim_y, 'italic', 8);
                 }
 
                 /* New line */
                 $now_x = $dim_x + ($i * 22) + 110 + 66;
                 $dim_y -= 10;
 
-                $page->setFont($font, 8)->drawText('RestSp ' . round_this($total_rest, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                // $page->setFont($font, 8)->drawText('RestSp ' . round_this($total_rest, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $this->writePdfLine($page, 'RestSp ' . round_this($total_rest, 2), $dim_x + $now_x, $dim_y, 'normal', 8);
+
                 if ($messerve_rest > 0) {
-                    $page->setFont($italic, 8)->drawText($messerve_rest, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                    // $page->setFont($italic, 8)->drawText($messerve_rest, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                    $this->writePdfLine($page, $messerve_rest, $dim_x + $now_x + 47, $dim_y, 'italic', 8);
                 }
                 $now_x += $now_inc;
 
-                $page->setFont($ot_font, 8)->drawText('RestSpOT ' . round_this($total_rest_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                // $page->setFont($ot_font, 8)->drawText('RestSpOT ' . round_this($total_rest_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $this->writePdfLine($page, 'RestSpOT ' . round_this($total_rest_ot, 2), $dim_x + $now_x, $dim_y, 'normal', 8);
+
                 if ($messerve_rest_ot > 0) {
-                    $page->setFont($italic, 8)->drawText($messerve_rest_ot, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                    // $page->setFont($italic, 8)->drawText($messerve_rest_ot, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                    $this->writePdfLine($page, $messerve_rest_ot, $dim_x + $now_x + 47, $dim_y, 'italic', 8);
                 }
                 $now_x += $now_inc;
 
-                $page->setFont($font, 8)->drawText('RestSpND ' . round_this($total_rest_nd, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                // $page->setFont($font, 8)->drawText('RestSpND ' . round_this($total_rest_nd, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $this->writePdfLine($page, 'RestSpND ' . round_this($total_rest_nd, 2), $dim_x + $now_x, $dim_y, 'normal', 8);
+
                 if ($messerve_rest_nd > 0) {
-                    $page->setFont($italic, 8)->drawText($messerve_rest_nd, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                    // $page->setFont($italic, 8)->drawText($messerve_rest_nd, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                    $this->writePdfLine($page, $messerve_rest_nd, $dim_x + $now_x + 47, $dim_y, 'italic', 8);
                 }
+
                 $now_x += $now_inc;
 
-                $page->setFont($ot_font, 8)->drawText('RestSpNDOT ' . round_this($total_rest_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                // $page->setFont($ot_font, 8)->drawText('RestSpNDOT ' . round_this($total_rest_nd_ot, 2), $dim_x + $now_x, $dim_y, 'UTF8');
+                $this->writePdfLine($page, 'RestSpNDOT ' . round_this($total_rest_nd_ot, 2), $dim_x + $now_x, $dim_y, 'normal', 8);
+
                 if ($messerve_rest_nd_ot > 0) {
-                    $page->setFont($italic, 8)->drawText($messerve_rest_nd_ot, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                    // $page->setFont($italic, 8)->drawText($messerve_rest_nd_ot, $dim_x + $now_x + 47, $dim_y, 'UTF8');
+                    $this->writePdfLine($page, $messerve_rest_nd_ot, $dim_x + $now_x + 47, $dim_y, 'italic', 8);
                 }
 
 
@@ -2445,17 +2619,109 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $pdf->save($filename);
 
-        $this->_createBillPdf($all_hours_array);
+
+        // TODO:  split client bill here
+        // Wage increase happened mid-cutoff?
+        // $cutoff_rates = Messerve_Model_Eloquent_AttendancePayroll::cutOffRates($group_id, $date_start); // Look way down to see where this is used (split billing)
+        // $client_rates = $cutoff_rates['client'];
+
+        $client_rate_schedule = Messerve_Model_Eloquent_ClientRateSchedule::cutoffRates($group_id, $date_start);
+
+
+        if ($client_rate_schedule->count() > 0) { // Client has a rate change scheduled?
+            $split_bill = $this->splitClientBill($client_rate_schedule, $split_bill_hours, $date_start);
+
+            $i = 'A';
+            foreach ($split_bill as $bill) {
+                $this->_createBillPdf($bill['sums'],$bill['client_rate_id'], "$i");
+                $i++;
+            }
+        } else {
+            $this->_createBillPdf($all_hours_array);
+        }
+
 
         if ($standalone != '' && $standalone == 'true') {
-
-
             $this->_redirect($_SERVER['HTTP_REFERER']);
         }
 
     }
 
-    protected function _createBillPdf($all_hours_array)
+    protected function splitClientBill($client_rate_schedule, $split_bill_hours, $cutoff_date)
+    { // For mid-cutoff wage increases
+
+        $rate_change_dates = [];
+
+        foreach ($client_rate_schedule as $schedule) {
+            $rate_change_dates[$schedule->rate->id] = $schedule->date_active->toDateString();
+        }
+
+        $hours_array = [];
+        $hours_array[$cutoff_date] = [];
+        $hours_array[$cutoff_date]['hours'] = [];
+        $hours_array[$cutoff_date]['client_rate_id'] = 0;
+
+        ksort($split_bill_hours);
+
+        $current_date = $cutoff_date;
+
+        foreach ($split_bill_hours as $key => $hours) {
+
+            $value_key = array_search($key, $rate_change_dates);
+
+            if ($value_key !== false) {
+                $current_date = $key;
+                $hours_array[$current_date] = [];
+                $hours_array[$current_date]['hours'] = [];
+                $hours_array[$current_date]['client_rate_id'] = $value_key;
+                unset($rate_change_dates[$value_key]);
+            }
+
+            foreach ($hours as $hour) {
+                $hours_array[$current_date]['hours'][] = $hour;
+            }
+
+        }
+
+        $column_map = ['reg'
+            , 'reg_ot'
+            , 'reg_nd'
+            , 'reg_nd_ot'
+            , 'spec'
+            , 'spec_ot'
+            , 'spec_nd'
+            , 'spec_nd_ot'
+            , 'rest'
+            , 'rest_ot'
+            , 'rest_nd'
+            , 'rest_nd_ot'
+            , 'legal'
+            , 'legal_ot'
+            , 'legal_nd'
+            , 'legal_nd_ot'
+            , 'legal_unattend'];
+
+
+        $return = [];
+
+        foreach ($hours_array as $hkey => &$date) {
+
+            foreach ($column_map as $column) {
+                $column_sum = array_sum(array_column($date['hours'], $column));
+                $date['sums'][$column] = $column_sum;
+            }
+
+            $return[$hkey] = [
+                'sums' => $date['sums'],
+                'client_rate_id' => $date['client_rate_id']
+            ];
+        }
+
+        return $return;
+    }
+
+
+    protected function _createBillPdf($all_hours_array, $rate = 0, $extension = '')
     {
         $client = $this->_client;
 
@@ -2465,15 +2731,16 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $Group->find($group_id);
 
-        $ClientRate = new Messerve_Model_RateClient();
 
         // TODO:  find by date!
 
-        $RateSchedule = new Messerve_Model_EmployeeRateSchedule();
-        $rates = $RateSchedule->getMapper()->fetchList("group_id = $group_id", "date_active DESC");
+        // $RateSchedule = new Messerve_Model_EmployeeRateSchedule();
+        // $rates = $RateSchedule->getMapper()->fetchList("group_id = $group_id", "date_active DESC");
 
-        if (count($rates) > 0) {
-            $ClientRate->find($rates[0]->getClientRateId());
+        $ClientRate = new Messerve_Model_RateClient();
+
+        if ($rate > 0) {
+            $ClientRate->find($rate);
         } else {
             $ClientRate->find($Group->getRateClientId());
         }
@@ -2489,7 +2756,11 @@ class Payroll_IndexController extends Zend_Controller_Action
         $cmd = "mkdir -p $folder";
 
         $date_now = date("Y-m-d-hi");
-        $filename = $folder . "Client_Report_{$this->_client->getName()}_{$Group->getName()}_{$group_id}_{$date_start}_{$date_now}.pdf";
+
+        if ($extension != '') {
+            $extension = "-$extension";
+        }
+        $filename = $folder . "Client_Report_{$this->_client->getName()}_{$Group->getName()}_{$group_id}_{$date_start}_{$date_now}{$extension}.pdf";
 
         shell_exec($cmd);
 
@@ -2667,7 +2938,9 @@ class Payroll_IndexController extends Zend_Controller_Action
         $dim_y = $carr_return_dim_y;
 
         $page->setFont($font, 10)->drawText("Billing No:", $dim_x + 300, $dim_y, 'UTF8');
-        $page->setFont($font, 10)->drawText($billing_number . "-A", $dim_x + 380, $dim_y);
+
+
+        $page->setFont($font, 10)->drawText($billing_number . $extension, $dim_x + 380, $dim_y);
 
         $dim_y -= 12;
         $dim_y -= 12;
@@ -2697,21 +2970,23 @@ class Payroll_IndexController extends Zend_Controller_Action
         $dim_y -= 12;
         $dim_y -= 8;
 
-        function romanic_number($integer, $upcase = true)
-        {
-            $table = array('M' => 1000, 'CM' => 900, 'D' => 500, 'CD' => 400, 'C' => 100, 'XC' => 90, 'L' => 50, 'XL' => 40, 'X' => 10, 'IX' => 9, 'V' => 5, 'IV' => 4, 'I' => 1);
-            $return = '';
-            while ($integer > 0) {
-                foreach ($table as $rom => $arb) {
-                    if ($integer >= $arb) {
-                        $integer -= $arb;
-                        $return .= $rom;
-                        break;
+        if(!function_exists('romanic_number')) {
+            function romanic_number($integer, $upcase = true)
+            {
+                $table = array('M' => 1000, 'CM' => 900, 'D' => 500, 'CD' => 400, 'C' => 100, 'XC' => 90, 'L' => 50, 'XL' => 40, 'X' => 10, 'IX' => 9, 'V' => 5, 'IV' => 4, 'I' => 1);
+                $return = '';
+                while ($integer > 0) {
+                    foreach ($table as $rom => $arb) {
+                        if ($integer >= $arb) {
+                            $integer -= $arb;
+                            $return .= $rom;
+                            break;
+                        }
                     }
                 }
-            }
 
-            return $return;
+                return $return;
+            }
         }
 
         $i = 0;
