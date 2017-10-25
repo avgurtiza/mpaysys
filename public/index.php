@@ -90,12 +90,16 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 $capsule = new Capsule;
 
+$config = new Zend_Config_Ini(APPLICATION_PATH . '/configs/application.ini', APPLICATION_ENV);
+
+$db_params = $config->resources->db->params;
+
 $capsule->addConnection([
     'driver' => 'mysql',
-    'host' => '127.0.0.1',
-    'database' => 'messerve',
-    'username' => 'homestead',
-    'password' => 'secret',
+    'host' => $db_params->host,
+    'database' => $db_params->dbname,
+    'username' => $db_params->username,
+    'password' => $db_params->password,
     'charset' => 'utf8',
     'collation' => 'utf8_general_ci',
 ]);
