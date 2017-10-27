@@ -2047,19 +2047,19 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ];
 
 
-                $today_reg = $attendance_array['reg'];
-                $today_reg_nd = $attendance_array['reg_nd'];
+                $today_reg += $attendance_array['reg'];
+                $today_reg_nd += $attendance_array['reg_nd'];
 
-                $total_reg += $today_reg;
-                $total_reg_nd += $today_reg_nd;
+                $total_reg += $attendance_array['reg'];
+                $total_reg_nd += $attendance_array['reg_nd'];
 
 
                 if ($Attendance->getOtApproved() == 'yes') {
                     $today_rest += $attendance_array['rest'];
                     $today_rest_nd += $attendance_array['rest_nd'];
 
-                    $total_rest += $today_rest;
-                    $total_rest_nd += $today_rest_nd;
+                    $total_rest += $attendance_array['rest'];
+                    $total_rest_nd += $attendance_array['rest_nd'];
 
                     $all_hours = array_merge($all_hours, array(
                         $attendance_array['reg_ot']
@@ -2085,22 +2085,22 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $today_rest_nd_ot += $attendance_array['rest_nd_ot'];
 
                     $today_sun_ot += $attendance_array['sun_ot'] + $attendance_array['spec_ot'];
-                    $today_sun_nd_ot = +$attendance_array['sun_nd_ot'] + $attendance_array['spec_nd_ot'];
+                    $today_sun_nd_ot += $attendance_array['sun_nd_ot'] + $attendance_array['spec_nd_ot'];
 
                     $today_legal_ot += $attendance_array['legal_ot'];
                     $today_legal_nd_ot += $attendance_array['legal_nd_ot'];
 
-                    $total_reg_ot += $today_reg_ot;
-                    $total_reg_nd_ot += $today_reg_nd_ot;
+                    $total_reg_ot += $attendance_array['reg_ot'];
+                    $total_reg_nd_ot += $attendance_array['reg_nd_ot'];
 
-                    $total_rest_ot += $today_rest_ot;
-                    $total_rest_nd_ot += $today_rest_nd_ot;
+                    $total_rest_ot += $attendance_array['rest_ot'];
+                    $total_rest_nd_ot += $attendance_array['rest_nd_ot'];
 
-                    $total_sun_ot += $today_sun_ot;
-                    $total_sun_nd_ot += $today_sun_nd_ot;
+                    $total_sun_ot += $attendance_array['sun_ot'] + $attendance_array['spec_ot'];
+                    $total_sun_nd_ot += $attendance_array['sun_nd_ot'] + $attendance_array['spec_nd_ot'];
 
-                    $total_legal_ot += $today_legal_ot;
-                    $total_legal_nd_ot += $today_legal_nd_ot;
+                    $total_legal_ot += $attendance_array['legal_ot'];
+                    $total_legal_nd_ot += $attendance_array['legal_nd_ot'];
 
                 } elseif ($Attendance->getExtendedShift() == 'yes') { // Bill to Messerve
 
@@ -2174,15 +2174,15 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $today_reg_nd += $attendance_array['rest_nd_ot'] + $attendance_array['rest_nd'];
 
 
-                    // $total_reg += $today_reg;
-                    $total_sun += $today_sun;
-                    $total_legal += $today_legal;
                     $total_reg += $attendance_array['reg_ot'] + $attendance_array['rest_ot'] + $attendance_array['rest'];
 
-                    $total_reg_nd += $today_reg_nd;
-                    $total_sun_nd += $today_sun_nd;
-                    $total_legal_nd += $today_legal_nd;
-                    $total_reg_nd += $today_reg_nd;
+                    $total_sun += $attendance_array['sun_ot'] + $attendance_array['spec_ot'];
+                    $total_legal += $attendance_array['legal_ot'];
+
+                    $total_reg_nd += $attendance_array['reg_nd_ot'];
+                    $total_sun_nd += $attendance_array['sun_nd_ot'] + $attendance_array['spec_nd_ot'];
+                    $total_legal_nd += $attendance_array['legal_nd_ot'];
+                    $total_reg_nd += $attendance_array['rest_nd_ot'] + $attendance_array['rest_nd'];
                     // $total_reg_nd += array_sum($temp_nd_ot); // Bill NDOT as RegND to client
 
                     $all_hours['reg_nd'] += array_sum($temp_nd_ot); // TODO:  is this still used?
@@ -2209,8 +2209,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $today_rest += $attendance_array['rest'];
                     $today_rest_nd += $attendance_array['rest_nd'];
 
-                    $total_rest += $today_rest;
-                    $total_rest_nd += $today_rest_nd;
+                    $total_rest += $attendance_array['rest'];
+                    $total_rest_nd += $attendance_array['rest_nd'];
 
                     $all_hours = array_merge($all_hours, array(
                         'rest' => $attendance_array['rest']
@@ -2226,13 +2226,13 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $today_legal_unattend += $attendance_array['legal_unattend'];
 
-                $total_sun += $today_sun;
-                $total_sun_nd += $today_sun_nd;
+                $total_sun += $attendance_array['sun'] + $attendance_array['spec'];
+                $total_sun_nd += $attendance_array['sun_nd'] + $attendance_array['spec_nd'];
 
-                $total_legal += $today_legal;
-                $total_legal_nd += $today_legal_nd;
+                $total_legal += $attendance_array['legal'];
+                $total_legal_nd += $attendance_array['legal_nd'];
 
-                $total_legal_unattend += $today_legal_unattend;
+                $total_legal_unattend += $attendance_array['legal_unattend'];
 
 
                 /*if ($Attendance->getOtApproved() == 'yes') {
@@ -2540,7 +2540,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'legal_nd_ot' => $all_total_legal_nd_ot
             , 'legal_unattend' => $all_total_legal_unattend
         ];
-        
+
 
         if ($all_messerve_ot > 0) {
             $page->setFont($font, 8)->drawText('Total ' . round($all_total_total_hours, 2), $dim_x + $now_x, $dim_y, 'UTF8');
