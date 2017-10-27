@@ -359,6 +359,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
     public function payslipsAction()
     {
+        set_time_limit(600);
         $start = time();
         $this->_helper->layout()->disableLayout();
         $this->_helper->viewRenderer->setNoRender(true);
@@ -1887,6 +1888,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
         foreach ($this->_employee_payroll as $value) {
+
             if ($employee_count >= 8) {
                 $employee_count = 0;
 
@@ -1925,12 +1927,9 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $total_total_hours = 0;
 
-
             $dates = array();
 
             $AttendanceMap = new Messerve_Model_Mapper_Attendance();
-
-            // $first_id = 0;
 
             $current_date = $date_start;
 
@@ -1955,9 +1954,10 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $messerve_ot = 0;
 
+
             for ($i = 1; $i <= $period_size; $i++) {
 
-                // For split bill
+                // Init today's attendance; for split bill
                 $today_reg = 0;
                 $today_reg_ot = 0;
                 $today_reg_nd = 0;
@@ -1981,12 +1981,16 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $today_rest_nd_ot = 0;
 
                 // End for split bill
+
                 $Attendance = $AttendanceMap->findOneByField(
                     array('employee_id', 'datetime_start', 'group_id')
-                    , array($employee_id, $current_date, $group_id)
+                    , array($employee_id, "$current_date 00:00:00", $group_id)
                 );
 
+
                 if (!$Attendance) {
+                    throw new Exception("Failed to find attendance record for: $employee_id, $current_date, $group_id");
+                    /*
                     $Attendance = new Messerve_Model_Attendance();
 
                     $Attendance->setEmployeeId($employee_id)
@@ -1995,17 +1999,17 @@ class Payroll_IndexController extends Zend_Controller_Action
                         ->save();
 
                     $Attendance->find($Attendance->getId()); // Get the whole model
+                    */
                 }
-
 
                 $dates[$current_date] = $Attendance;
 
-                $current_date = date('Y-m-d', strtotime('+1 day', strtotime($current_date)));
+                $current_date = \Carbon\Carbon::parse($current_date)->addDay()->toDateString();
+                // $current_date = date('Y-m-d', strtotime('+1 day', strtotime($current_date))); // Advance date
 
-                if ($i == 1) $first_id = $Attendance->getId();
+                // if ($i == 1) $first_id = $Attendance->getId();
 
                 $attendance_array = $Attendance->toArray();
-
 
                 $all_hours = [ // Used for hours sum
                     $attendance_array['reg']
@@ -2019,6 +2023,27 @@ class Payroll_IndexController extends Zend_Controller_Action
                     , $attendance_array['legal_unattend']
                     // , $attendance_array['rest']
                     // , $attendance_array['rest_nd']
+                ];
+
+
+                $all_hours += [
+                    'reg' => 0
+                    , 'reg_ot' => 0
+                    , 'reg_nd' => 0
+                    , 'reg_nd_ot' => 0
+                    , 'spec' => 0
+                    , 'spec_ot' => 0
+                    , 'spec_nd' => 0
+                    , 'spec_nd_ot' => 0
+                    , 'rest' => 0
+                    , 'rest_ot' => 0
+                    , 'rest_nd' => 0
+                    , 'rest_nd_ot' => 0
+                    , 'legal' => 0
+                    , 'legal_ot' => 0
+                    , 'legal_nd' => 0
+                    , 'legal_nd_ot' => 0
+                    , 'legal_unattend' => 0
                 ];
 
 
@@ -2050,6 +2075,32 @@ class Payroll_IndexController extends Zend_Controller_Action
                     , $attendance_array['rest']
                     , $attendance_array['rest_nd']
                     ));
+
+
+                    // Moved here from below
+                    $today_reg_ot += $attendance_array['reg_ot'];
+                    $today_reg_nd_ot += $attendance_array['reg_nd_ot'];
+
+                    $today_rest_ot += $attendance_array['rest_ot'];
+                    $today_rest_nd_ot += $attendance_array['rest_nd_ot'];
+
+                    $today_sun_ot += $attendance_array['sun_ot'] + $attendance_array['spec_ot'];
+                    $today_sun_nd_ot = +$attendance_array['sun_nd_ot'] + $attendance_array['spec_nd_ot'];
+
+                    $today_legal_ot += $attendance_array['legal_ot'];
+                    $today_legal_nd_ot += $attendance_array['legal_nd_ot'];
+
+                    $total_reg_ot += $today_reg_ot;
+                    $total_reg_nd_ot += $today_reg_nd_ot;
+
+                    $total_rest_ot += $today_rest_ot;
+                    $total_rest_nd_ot += $today_rest_nd_ot;
+
+                    $total_sun_ot += $today_sun_ot;
+                    $total_sun_nd_ot += $today_sun_nd_ot;
+
+                    $total_legal_ot += $today_legal_ot;
+                    $total_legal_nd_ot += $today_legal_nd_ot;
 
                 } elseif ($Attendance->getExtendedShift() == 'yes') { // Bill to Messerve
 
@@ -2123,10 +2174,10 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $today_reg_nd += $attendance_array['rest_nd_ot'] + $attendance_array['rest_nd'];
 
 
-                    $total_reg += $today_reg;
+                    // $total_reg += $today_reg;
                     $total_sun += $today_sun;
                     $total_legal += $today_legal;
-                    // $total_reg += $attendance_array['rest_ot'] + $attendance_array['rest'];
+                    $total_reg += $attendance_array['reg_ot'] + $attendance_array['rest_ot'] + $attendance_array['rest'];
 
                     $total_reg_nd += $today_reg_nd;
                     $total_sun_nd += $today_sun_nd;
@@ -2134,9 +2185,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $total_reg_nd += $today_reg_nd;
                     // $total_reg_nd += array_sum($temp_nd_ot); // Bill NDOT as RegND to client
 
-
                     $all_hours['reg_nd'] += array_sum($temp_nd_ot); // TODO:  is this still used?
-
 
                     $all_messerve_rest += $attendance_array['rest'];
                     $all_messerve_rest_nd += $attendance_array['rest_nd'];
@@ -2157,8 +2206,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $messerve_legal_nd_ot += $attendance_array['legal_nd_ot'];
 
                 } elseif ($Attendance->getExtendedShift() != 'yes') { // Not bill to Messerve, not OT.  Rest day pay
-                    $today_rest = $attendance_array['rest'];
-                    $today_rest_nd = $attendance_array['rest_nd'];
+                    $today_rest += $attendance_array['rest'];
+                    $today_rest_nd += $attendance_array['rest_nd'];
 
                     $total_rest += $today_rest;
                     $total_rest_nd += $today_rest_nd;
@@ -2169,14 +2218,13 @@ class Payroll_IndexController extends Zend_Controller_Action
                     ));
                 }
 
-                $today_sun = $attendance_array['sun'] + $attendance_array['spec'];
-                $today_sun_nd = $attendance_array['sun_nd'] + $attendance_array['spec_nd'];
+                $today_sun += $attendance_array['sun'] + $attendance_array['spec'];
+                $today_sun_nd += $attendance_array['sun_nd'] + $attendance_array['spec_nd'];
 
-                $today_legal = $attendance_array['legal'];
-                $today_legal_nd = $attendance_array['legal_nd'];
+                $today_legal += $attendance_array['legal'];
+                $today_legal_nd += $attendance_array['legal_nd'];
 
-                $today_legal_unattend = $attendance_array['legal_unattend'];
-
+                $today_legal_unattend += $attendance_array['legal_unattend'];
 
                 $total_sun += $today_sun;
                 $total_sun_nd += $today_sun_nd;
@@ -2187,18 +2235,18 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $total_legal_unattend += $today_legal_unattend;
 
 
-                if ($Attendance->getOtApproved() == 'yes') {
-                    $today_reg_ot = $attendance_array['reg_ot'];
-                    $today_reg_nd_ot = $attendance_array['reg_nd_ot'];
+                /*if ($Attendance->getOtApproved() == 'yes') {
+                    $today_reg_ot += $attendance_array['reg_ot'];
+                    $today_reg_nd_ot += $attendance_array['reg_nd_ot'];
 
-                    $today_rest_ot = $attendance_array['rest_ot'];
-                    $today_rest_nd_ot = $attendance_array['rest_nd_ot'];
+                    $today_rest_ot += $attendance_array['rest_ot'];
+                    $today_rest_nd_ot += $attendance_array['rest_nd_ot'];
 
-                    $today_sun_ot = $attendance_array['sun_ot'] + $attendance_array['spec_ot'];
-                    $today_sun_nd_ot = $attendance_array['sun_nd_ot'] + $attendance_array['spec_nd_ot'];
+                    $today_sun_ot += $attendance_array['sun_ot'] + $attendance_array['spec_ot'];
+                    $today_sun_nd_ot = +$attendance_array['sun_nd_ot'] + $attendance_array['spec_nd_ot'];
 
-                    $today_legal_ot = $attendance_array['legal_ot'];
-                    $today_legal_nd_ot = $attendance_array['legal_nd_ot'];
+                    $today_legal_ot += $attendance_array['legal_ot'];
+                    $today_legal_nd_ot += $attendance_array['legal_nd_ot'];
 
                     $total_reg_ot += $today_reg_ot;
                     $total_reg_nd_ot += $today_reg_nd_ot;
@@ -2211,19 +2259,19 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $total_legal_ot += $today_legal_ot;
                     $total_legal_nd_ot += $today_legal_nd_ot;
-
-
-                }
+                }*/
 
                 $total_hours = array_sum($all_hours);
                 $total_total_hours += round($total_hours, 2);
 
                 $employee_attendance_text[] = round($total_hours, 2);
 
-                $EloqAttendance = Messerve_Model_Eloquent_Attendance::find($Attendance->getId());
+                // $EloqAttendance = Messerve_Model_Eloquent_Attendance::find($Attendance->getId());
                 // $EloqAttendancePay = $EloqAttendance->attendancePayroll->first(); // TODO: move to model, maybe?
 
-                $split_bill_hours[$EloqAttendance->datetime_start->toDateString()][] = [
+
+                $split_bill_hours[\Carbon\Carbon::parse($Attendance->getDatetimeStart())->toDateString()][$Attendance->getEmployeeNumber()] = [
+                    // $split_bill_hours[$EloqAttendance->datetime_start->toDateString()][] = [
                     'reg' => $today_reg
                     , 'reg_ot' => $today_reg_ot
                     , 'reg_nd' => $today_reg_nd
@@ -2244,6 +2292,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ];
 
             }
+
 
             if ($total_total_hours > 0) {
                 $i = 1;
@@ -2471,6 +2520,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             + round($all_total_legal, 2) + round($all_total_legal_ot, 2) + round($all_total_legal_nd, 2) + round($all_total_legal_nd_ot, 2)
             + round($all_total_legal_unattend, 2);
 
+
         $all_hours_array = [
             'reg' => $all_total_reg
             , 'reg_ot' => $all_total_reg_ot
@@ -2490,8 +2540,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             , 'legal_nd_ot' => $all_total_legal_nd_ot
             , 'legal_unattend' => $all_total_legal_unattend
         ];
-
-        // preprint($all_hours_array,1);
+        
 
         if ($all_messerve_ot > 0) {
             $page->setFont($font, 8)->drawText('Total ' . round($all_total_total_hours, 2), $dim_x + $now_x, $dim_y, 'UTF8');
@@ -2619,31 +2668,61 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $pdf->save($filename);
 
-
         // TODO:  split client bill here
         // Wage increase happened mid-cutoff?
-        // $cutoff_rates = Messerve_Model_Eloquent_AttendancePayroll::cutOffRates($group_id, $date_start); // Look way down to see where this is used (split billing)
-        // $client_rates = $cutoff_rates['client'];
 
         $client_rate_schedule = Messerve_Model_Eloquent_ClientRateSchedule::cutoffRates($group_id, $date_start);
-
 
         if ($client_rate_schedule->count() > 0) { // Client has a rate change scheduled?
             $split_bill = $this->splitClientBill($client_rate_schedule, $split_bill_hours, $date_start);
 
             $i = 'A';
             foreach ($split_bill as $bill) {
-                $this->_createBillPdf($bill['sums'],$bill['client_rate_id'], "$i");
+                $this->_createBillPdf($bill['sums'], $bill['client_rate_id'], "$i");
                 $i++;
             }
         } else {
             $this->_createBillPdf($all_hours_array);
         }
 
-
         if ($standalone != '' && $standalone == 'true') {
             $this->_redirect($_SERVER['HTTP_REFERER']);
         }
+
+    }
+
+    protected function arrayToCSV($data)
+    {
+        // preprint($data, 1);
+
+        $rows = [];
+
+        $i = 0;
+        foreach ($data as $key => $row) {
+
+            // preprint($row,1);
+            if ($i === 0) {
+                $rows += [array_keys(array_shift($row))];
+            }
+            $rows = array_merge($rows, array_values($row));
+            $i = 1;
+        }
+
+        $Excel = new PHPExcel();
+        $sheet = $Excel->getActiveSheet();
+
+        $sheet->fromArray($rows);
+
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="kimi_no_nawa.xls"');
+        header('Cache-Control: max-age=0');
+
+        $writer = PHPExcel_IOFactory::createWriter($Excel, 'Excel5');
+
+        // This line will force the file to download
+        $writer->save('php://output');
+
 
     }
 
@@ -2665,6 +2744,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $current_date = $cutoff_date;
 
+
         foreach ($split_bill_hours as $key => $hours) {
 
             $value_key = array_search($key, $rate_change_dates);
@@ -2679,6 +2759,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             foreach ($hours as $hour) {
                 $hours_array[$current_date]['hours'][] = $hour;
+                $total_reg[$key] = array_sum(array_column($hour, 'reg'));
             }
 
         }
@@ -2711,11 +2792,14 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $date['sums'][$column] = $column_sum;
             }
 
+            if (!isset($total_reg[$key])) $total_reg[$key] = 0;
+
             $return[$hkey] = [
                 'sums' => $date['sums'],
                 'client_rate_id' => $date['client_rate_id']
             ];
         }
+
 
         return $return;
     }
@@ -2970,7 +3054,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $dim_y -= 12;
         $dim_y -= 8;
 
-        if(!function_exists('romanic_number')) {
+        if (!function_exists('romanic_number')) {
             function romanic_number($integer, $upcase = true)
             {
                 $table = array('M' => 1000, 'CM' => 900, 'D' => 500, 'CD' => 400, 'C' => 100, 'XC' => 90, 'L' => 50, 'XL' => 40, 'X' => 10, 'IX' => 9, 'V' => 5, 'IV' => 4, 'I' => 1);
