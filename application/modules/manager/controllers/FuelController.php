@@ -248,6 +248,7 @@ class Manager_FuelController extends Zend_Controller_Action
 
                         // if(!$temp_invoice_date) $temp_invoice_date = DateTime::createFromFormat('d-m-Y', $raw_invoice_date);
                         if (!$temp_invoice_date) $temp_invoice_date = DateTime::createFromFormat('m-d-Y H:i', $raw_invoice_date);
+                        if (!$temp_invoice_date) $temp_invoice_date = DateTime::createFromFormat('m-d-Y H:i A', $raw_invoice_date);
 
                         if (!$temp_invoice_date) {
                             die('INVALID INVOICE DATE ' . $raw_invoice_date);
