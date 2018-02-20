@@ -1060,6 +1060,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $net_pay = $net_pay + $other_additions - $other_deductions; // Hack!
 
+            $phihealth_deductions = $this->getPhilhealthDeduction($basic_pay);
+
             $PayrollTemp->setEmployeeId($Employee->getId())
                 ->setGroupId($group_id)
                 ->setEmployeeNumber($Employee->getEmployeeNumber())
@@ -1077,7 +1079,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setNetPay($net_pay)
                 ->setEcola($ecola_addition + $legal_ecola_addition)
                 ->setSss($value['deductions']['sss'])
-                ->setPhilhealth($value['deductions']['philhealth'])
+                ->setPhilhealth($phihealth_deductions['employee'])
                 ->setHdmf($value['deductions']['hdmf'])
                 ->setCashBond($value['deductions']['cash_bond'])
                 ->setInsurance($value['deductions']['insurance'])
@@ -1144,6 +1146,29 @@ class Payroll_IndexController extends Zend_Controller_Action
         } else {
             echo "AJAX Complete";
         }
+
+    }
+
+
+    protected function getPhilhealthDeduction($base_pay)
+    {
+        $minimum_deduction = 137.50;
+
+        if (!$base_pay > 0) {
+            return ['employee' => $minimum_deduction, 'employer' => $minimum_deduction];
+        }
+
+        $total_share = ($base_pay * 275) / 10000;
+
+        $employee_share = $total_share / 2;
+        $employer_share = $total_share / 2;
+
+        if (!($employee_share > $minimum_deduction && $employer_share > $minimum_deduction)) {
+            $employee_share = $minimum_deduction;
+            $employer_share = $minimum_deduction;
+        }
+
+        return ['employee' => $employee_share, 'employer' => $employer_share];
 
     }
 
@@ -1631,7 +1656,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $employee_payroll[$evalue->getId()]['deductions'] = array(
                 'sss' => ($sss_deduct)
-            , 'philhealth' => ($this_rate->PhilhealthEmployee / 2)
+            , 'philhealth' => ($this_rate->PhilhealthEmployee / 2) // Will be overidden at the paysplip, TODO: Clean up
             , 'hdmf' => ($this_rate->HDMFEmployee / 2)
             , 'cash_bond' => ($this_rate->CashBond / 2)
                 // , 'insurance' => 25

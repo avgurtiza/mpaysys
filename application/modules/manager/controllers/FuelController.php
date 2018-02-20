@@ -236,7 +236,7 @@ class Manager_FuelController extends Zend_Controller_Action
                         $i++; continue; // skip header row
                     }*/
 
-                    if (!is_numeric($row[P_GASCARD_NO])) {
+                    if (!isset($row[P_GASCARD_NO]) || !is_numeric($row[P_GASCARD_NO])) {
                         continue;
                     }
 
