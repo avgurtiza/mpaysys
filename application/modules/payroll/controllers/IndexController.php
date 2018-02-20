@@ -615,6 +615,8 @@ class Payroll_IndexController extends Zend_Controller_Action
             $payroll_meta = [];
             $basic_pay = 0;
 
+            $philhealth_basic = 0;
+
             $pay_rate_id = 0;
 
             foreach ($employee_pay as $pkey => $pvalue) {
@@ -645,27 +647,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                         $page->setFont($mono, 8)->drawText(number_format($pay_rate + $ecola, 2), $dim_x + 180, $dim_y, 'UTF8');
                         $dim_y -= 8;
 
-                        /*if(is_object($rate_schedule) && count($rate_schedule) > 0) {
-                            foreach ($rate_schedule as $schedule_item) {
-                                $dim_y -= 8;
-                                $rate_details = $schedule_item->rate;
-
-                                $page->setFont($italic, 8)->drawText('Wage increase ' . $schedule_item->date_active  , $dim_x, $dim_y, 'UTF8');
-
-                                $dim_y -= 8;
-                                $alt_rate = 8 * $rate_details->reg;
-
-                                $page->setFont($font, 8)->drawText('Daily rate', $dim_x, $dim_y, 'UTF8');
-                                $page->setFont($mono, 8)->drawText(number_format($alt_rate, 2), $dim_x + 40, $dim_y, 'UTF8');
-
-                                $page->setFont($font, 8)->drawText('Ecola', $dim_x + 80, $dim_y, 'UTF8');
-                                $page->setFont($mono, 8)->drawText(number_format($rate_details->ecola, 2), $dim_x + 110, $dim_y, 'UTF8');
-
-                                $page->setFont($font, 8)->drawText('Min. wage', $dim_x + 140, $dim_y, 'UTF8');
-                                $page->setFont($mono, 8)->drawText(number_format($alt_rate + $ecola, 2), $dim_x + 180, $dim_y, 'UTF8');
-                                $dim_y -= 8;
-                            }
-                        }*/
                     } else {
                         $page->setFont($font, 8)->drawText("{$rkey}", $dim_x, $dim_y);
 
@@ -682,6 +663,10 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                             $total_no_hours += $dvalue['hours'];
                             $total_pay += $dvalue['pay'];
+
+                            if(in_array($dkey,['REG','ND',])) {
+                                $philhealth_basic += $dvalue['pay'];
+                            }
 
                             $page->setFont($font, 8)->drawText("{$dkey}", $dim_x + 10, $dim_y);
                             $page->setFont($mono, 8)->drawText(str_pad(number_format($dvalue['hours'], 2), 8, ' ', STR_PAD_LEFT), $dim_x + 110, $dim_y);
@@ -806,6 +791,12 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $value['deductions']['sss'] = $sss_bal;
                 }
             }
+
+            // Apply philhealth
+
+            $phihealth_deductions = $this->getPhilhealthDeduction($philhealth_basic);
+            $value['deductions']['philhealth'] = $phihealth_deductions['employee'];
+
 
             // Get rider rate sss
             echo "Checking SSS... ";
@@ -1060,7 +1051,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $net_pay = $net_pay + $other_additions - $other_deductions; // Hack!
 
-            $phihealth_deductions = $this->getPhilhealthDeduction($basic_pay);
 
             $PayrollTemp->setEmployeeId($Employee->getId())
                 ->setGroupId($group_id)
@@ -1656,7 +1646,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $employee_payroll[$evalue->getId()]['deductions'] = array(
                 'sss' => ($sss_deduct)
-            , 'philhealth' => ($this_rate->PhilhealthEmployee / 2) // Will be overidden at the paysplip, TODO: Clean up
+            , 'philhealth' => 0 // Will be overidden at the paysplip, TODO: Clean up
             , 'hdmf' => ($this_rate->HDMFEmployee / 2)
             , 'cash_bond' => ($this_rate->CashBond / 2)
                 // , 'insurance' => 25
