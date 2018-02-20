@@ -664,7 +664,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                             $total_no_hours += $dvalue['hours'];
                             $total_pay += $dvalue['pay'];
 
-                            if (in_array($dkey, ['REG', 'ND',])) {
+                            if (stripos($dkey, 'OT') === false) {
                                 $philhealth_basic += $dvalue['pay'];
                             }
 
