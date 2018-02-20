@@ -796,7 +796,10 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $phihealth_deductions = $this->getPhilhealthDeduction($philhealth_basic);
             $value['deductions']['philhealth'] = $phihealth_deductions['employee'];
-            error_log(print_r($value['deductions'], true), 3, realpath(APPLICATION_PATH . '../logs/deductions.log'));
+
+            print_r($value['deductions'], true);
+            die();
+            // error_log(print_r($value['deductions'], true), 3, realpath(APPLICATION_PATH . '../logs/deductions.log'));
 
 
             // Get rider rate sss
