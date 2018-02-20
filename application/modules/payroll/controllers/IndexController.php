@@ -793,8 +793,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             }
 
             // Apply philhealth
-
-            $phihealth_deductions = $this->getPhilhealthDeduction($philhealth_basic);
+            $phihealth_deductions = $this->getPhilhealthDeduction($philhealth_basic, $date_start, $Employee->getId(), $group_id);
             $value['deductions']['philhealth'] = $phihealth_deductions['employee'];
 
             // Get rider rate sss
@@ -1098,7 +1097,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setThirteenthMonth($value['more_income']['thirteenth_month_pay'])
                 ->setIncentives($value['more_income']['incentives'])
                 ->setIsReliever($is_reliever)
-                ->setRateId($pay_rate_id);
+                ->setRateId($pay_rate_id)
+                ->setPhilhealthbasic($philhealth_basic)
+            ;
 
             $PayrollTemp->save();
 
@@ -1139,29 +1140,81 @@ class Payroll_IndexController extends Zend_Controller_Action
     }
 
 
-    protected function getPhilhealthDeduction($base_pay)
+    protected function getPhilhealthDeduction($basic_pay, $date_start, $employee_id, $group_id)
     {
-        $minimum_deduction = 137.50;
+
+        $date_start = \Carbon\Carbon::parse($date_start);
+
+        $minimum_monthly_deduction = 137.50;
+        $minimum_deduction = $minimum_monthly_deduction / 2;
 
         $notes = 'OK';
 
-        if (!$base_pay > 0) {
-            return ['employee' => $minimum_deduction, 'employer' => $minimum_deduction, 'basepay' => $base_pay, 'notes' => 'base pay is 0,'];
+        if ($date_start->day <= 15) { // First cutoff
+
+            if (!$basic_pay > 0) {
+                $notes = "Base pay is less than or equal to 0";
+
+                $employee_share = $minimum_deduction;
+            } else {
+                $total_share = ($basic_pay * 275) / 10000;
+
+                $share = $total_share / 2;
+
+                if (!($share > $minimum_deduction)) {
+                    $notes = "EE/ER below threshold $share";
+
+                    $employee_share = $minimum_deduction;
+
+                } else {
+                    $employee_share = $share;
+
+                }
+            }
+
+            $employer_share = $employee_share;
+
+        } else { // Second cutoff
+            // Get previous cutoff philhealth deduction
+
+            $philhealth = Messerve_Model_Eloquent_PayrollTemp::where('period_covered', '>=', $date_start->firstOfMonth()->toDateString())
+                ->where('period_covered', '<', $date_start->toDateString())
+                ->where('group_id', $group_id)
+                ->where('employee_id', $employee_id)
+                ->get();
+
+            $previous_philhealth = 0;
+            $previous_basic = 0;
+
+            if ($philhealth->count() > 0) {
+                foreach ($philhealth as $value) {
+                    $previous_philhealth += $value["philhealth"];
+                    $previous_basic = $value["philhealth_basic"];
+                }
+
+                $monthly_pay = $basic_pay + $previous_basic;
+
+                $total_monthly_share = ($monthly_pay * 275) / 10000;
+
+                $share = $total_monthly_share / 2;
+
+                if (!($share > $minimum_monthly_deduction)) {
+                    $notes = "2nd cutoff, EE/ER below threshold $share";
+                    $employee_share = $minimum_deduction - $previous_philhealth;
+                } else {
+                    $employee_share = $employer_share = $share - $previous_philhealth;
+                }
+
+            } else {
+                $employee_share = $minimum_deduction;
+            }
+
+            $employer_share = $employee_share;
+
         }
 
-        $total_share = ($base_pay * 275) / 10000;
 
-        $employee_share = $total_share / 2;
-        $employer_share = $total_share / 2;
-
-        if (!($employee_share > $minimum_deduction && $employer_share > $minimum_deduction)) {
-            $notes = "EE/ER below threshold $employee_share/$employer_share";
-
-            $employee_share = $minimum_deduction;
-            $employer_share = $minimum_deduction;
-        }
-
-        return ['employee' => $employee_share, 'employer' => $employer_share, 'basepay' => $base_pay, 'notes' => $notes];
+        return ['employee' => $employee_share, 'employer' => $employer_share, 'basepay' => $basic_pay, 'notes' => $notes];
 
     }
 

@@ -79,6 +79,7 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
             'lost_card' => $model->getLostCard(),
             'food' => $model->getFood(),
             'basic_pay' => $model->getBasicPay(),
+            'philhealth_basic' => $model->getPhilhealthBasic(),
             'payroll_meta' => $model->getPayrollMeta(),
             'rate_id' => $model->getRateId(),
         );
@@ -275,6 +276,7 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
                 ->setLostCard($data['lost_card'])
                 ->setFood($data['food'])
                 ->setBasicPay($data['basic_pay'])
+                ->setPhilhealthbasic($data['philhealth_basic'])
                 ->setPayrollMeta($data['payroll_meta'])
                 ->setRateId($data['rate_id'])
             ;
@@ -326,6 +328,7 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
                 ->setLostCard($data->lost_card)
                 ->setFood($data->food)
                 ->setBasicPay($data->basic_pay)
+                ->setPhilhealthbasic($data->philhealth_basic)
                 ->setPayrollMeta($data->payroll_meta)
                 ->setRateId($data->rate_id)
             ;
