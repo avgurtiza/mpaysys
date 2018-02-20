@@ -664,7 +664,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                             $total_no_hours += $dvalue['hours'];
                             $total_pay += $dvalue['pay'];
 
-                            if(in_array($dkey,['REG','ND',])) {
+                            if (in_array($dkey, ['REG', 'ND',])) {
                                 $philhealth_basic += $dvalue['pay'];
                             }
 
@@ -796,6 +796,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $phihealth_deductions = $this->getPhilhealthDeduction($philhealth_basic);
             $value['deductions']['philhealth'] = $phihealth_deductions['employee'];
+            error_log(print_r($value['deductions'], true), 3, realpath(APPLICATION_PATH . '../logs/deductions.log'));
 
 
             // Get rider rate sss
@@ -1144,8 +1145,10 @@ class Payroll_IndexController extends Zend_Controller_Action
     {
         $minimum_deduction = 137.50;
 
+        $notes = 'OK';
+
         if (!$base_pay > 0) {
-            return ['employee' => $minimum_deduction, 'employer' => $minimum_deduction];
+            return ['employee' => $minimum_deduction, 'employer' => $minimum_deduction, 'basepay' => $base_pay, 'notes' => 'base pay is 0,'];
         }
 
         $total_share = ($base_pay * 275) / 10000;
@@ -1154,11 +1157,13 @@ class Payroll_IndexController extends Zend_Controller_Action
         $employer_share = $total_share / 2;
 
         if (!($employee_share > $minimum_deduction && $employer_share > $minimum_deduction)) {
+            $notes = "EE/ER below threshold $employee_share/$employer_share";
+
             $employee_share = $minimum_deduction;
             $employer_share = $minimum_deduction;
         }
 
-        return ['employee' => $employee_share, 'employer' => $employer_share];
+        return ['employee' => $employee_share, 'employer' => $employer_share, 'basepay' => $base_pay, 'notes' => $notes];
 
     }
 
