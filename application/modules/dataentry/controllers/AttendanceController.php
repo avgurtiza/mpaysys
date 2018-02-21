@@ -934,6 +934,8 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         $this->view->summaries = $summaries;
 
+        $this->view->late_dtr = $this->getLateDtr();
+
     }
 
     protected function _getRates()
@@ -1220,5 +1222,9 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             $AttPay->delete();
 
         }
+    }
+
+    protected function getLateDtr() {
+        return "--";
     }
 }

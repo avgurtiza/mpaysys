@@ -55,6 +55,7 @@ if (!function_exists('decimal_to_time')) {
     }
 }
 
+
 // Define path to application directory
 defined('APPLICATION_PATH')
 || define('APPLICATION_PATH', realpath(dirname(__FILE__) . '/../application'));
@@ -68,6 +69,32 @@ set_include_path(implode(PATH_SEPARATOR, array(
     realpath(APPLICATION_PATH . '/../library'),
     get_include_path(),
 )));
+
+
+if (!function_exists('logger')) {
+    function logger($message)
+    {
+        $logger = new Zend_Log();
+        $logpath = APPLICATION_PATH . '/../logs';
+
+        if (!file_exists($logpath)) {
+            mkdir($logpath);
+        }
+
+        $logfile = $logpath . '/zf.log';
+
+        if (!file_exists($logfile)) {
+            touch($logfile);
+        }
+
+        $writer = new Zend_Log_Writer_Stream($logfile);
+
+        $logger->addWriter($writer);
+
+        $logger->log($message, Zend_Log::INFO);
+    }
+}
+
 
 /** Zend_Application */
 require_once '../vendor/autoload.php';

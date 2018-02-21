@@ -792,9 +792,11 @@ class Payroll_IndexController extends Zend_Controller_Action
                 }
             }
 
-            // Apply philhealth
-            $phihealth_deductions = $this->getPhilhealthDeduction($philhealth_basic, $date_start, $Employee->getId(), $group_id);
-            $value['deductions']['philhealth'] = $phihealth_deductions['employee'];
+            if ($group_id == $Employee->getGroupId()) { // Apply adjustments only on mother group payslip
+                // Apply philhealth
+                $phihealth_deductions = $this->getPhilhealthDeduction($philhealth_basic, $date_start, $Employee->getId(), $group_id);
+                $value['deductions']['philhealth'] = $phihealth_deductions['employee'];
+            }
 
             // Get rider rate sss
             echo "Checking SSS... ";

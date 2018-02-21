@@ -1,179 +1,195 @@
 <ul class="breadcrumb">
-	<li class="parent"><a href="/dataentry/attendance">Attendance</a></li>
-	<li class="title"><!-- <?php echo $this->client->getName();?> -->	</li>
-	<li class="group">
-		<!-- Group: <?php echo $this->group->getName();?> -->
-		<select name="group-switch" id="group-switch">
-			<?php foreach($this->groups_array as $gvalue): ?>
-			<option value="<?php echo $gvalue['group_id'];?>"><?php echo $gvalue['client_name'];?>  <?php echo $gvalue['group_name'];?></option>
-			<?php endforeach; ?>
-		</select>
-	</li>
-	<li class="period"><!-- Pay period <?php echo $this->pay_period; ?> --></li> 
-	<li class="cut-off">Cut-off <?php echo date('F d, Y', strtotime($this->date_end));?></li>
+    <li class="parent"><a href="/dataentry/attendance">Attendance</a></li>
+    <li class="title"><!-- <?php echo $this->client->getName(); ?> -->    </li>
+    <li class="group">
+        <!-- Group: <?php echo $this->group->getName(); ?> -->
+        <select name="group-switch" id="group-switch">
+            <?php foreach ($this->groups_array as $gvalue): ?>
+                <option value="<?php echo $gvalue['group_id']; ?>"><?php echo $gvalue['client_name']; ?><?php echo $gvalue['group_name']; ?></option>
+            <?php endforeach; ?>
+        </select>
+    </li>
+    <li class="period"><!-- Pay period <?php echo $this->pay_period; ?> --></li>
+    <li class="cut-off">Cut-off <?php echo date('F d, Y', strtotime($this->date_end)); ?></li>
 </ul>
 
-<br clear="all" />
+<br clear="all"/>
 
 <table>
-	<thead>
-		<tr>
-			<th>Employee</th>
-			<th>#</th>
-			<th>Rate</th>
-			<th>Employment date</th>
-			<th>Hours rendered</th>
-		</tr>
-	</thead>
-	<tbody>
-		<?php foreach($this->employees as $evalue): ?>	
-		<tr>
-			<td>
-				<?php if($evalue->getGroupId() != $this->group->getId()):?>
-					<em class="puny">Reliever</em>
-				<?php endif;?>				
-			
-				<a href="/dataentry/attendance/employee/id/<?php 
-					echo $evalue->getId(); ?>/date_start/<?php 
-					echo $this->date_start; ?>/date_end/<?php 
-					echo $this->date_end; ?>/group_id/<?php 
-					echo $this->group->getId(); ?>/pay_period/<?php 
-					echo $this->pay_period; ?>">
-				<?php echo $evalue->getLastname(); ?>,
-				<?php echo $evalue->getFirstname(); ?>
-				</a>
-			</td>
-			<td align="right">
-			<?php echo $evalue->getEmployeeNumber(); ?>
-			</td>
-			<td>
-			<?php if(isset($this->rates[$evalue->getRateId()])): ?> 
-				<?php echo $this->rates[$evalue->getRateId()]; ?>
-				<?php else: ?>
-				<em class="puny">Group default rate</em>
-				<?php endif;?>
-			</td>
-			<td align="center"><?php echo $evalue->getDateEmployed(); ?></td>
-			<td align="right"><?php echo decimal_to_time($this->employee_hours[$evalue->getId()]->mysum); ?></td>
-		</tr>
-		<?php endforeach;?>
-	</tbody>
-	
+    <thead>
+    <tr>
+        <th>Employee</th>
+        <th>#</th>
+        <th>Rate</th>
+        <th>Employment date</th>
+        <th>Hours rendered</th>
+    </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($this->employees as $evalue): ?>
+        <tr>
+            <td>
+                <?php if ($evalue->getGroupId() != $this->group->getId()): ?>
+                    <em class="puny">Reliever</em>
+                <?php endif; ?>
+
+                <a href="/dataentry/attendance/employee/id/<?php
+                echo $evalue->getId(); ?>/date_start/<?php
+                echo $this->date_start; ?>/date_end/<?php
+                echo $this->date_end; ?>/group_id/<?php
+                echo $this->group->getId(); ?>/pay_period/<?php
+                echo $this->pay_period; ?>">
+                    <?php echo $evalue->getLastname(); ?>,
+                    <?php echo $evalue->getFirstname(); ?>
+                </a>
+            </td>
+            <td align="right">
+                <?php echo $evalue->getEmployeeNumber(); ?>
+            </td>
+            <td>
+                <?php if (isset($this->rates[$evalue->getRateId()])): ?>
+                    <?php echo $this->rates[$evalue->getRateId()]; ?>
+                <?php else: ?>
+                    <em class="puny">Group default rate</em>
+                <?php endif; ?>
+            </td>
+            <td align="center"><?php echo $evalue->getDateEmployed(); ?></td>
+            <td align="right"><?php echo decimal_to_time($this->employee_hours[$evalue->getId()]->mysum); ?></td>
+        </tr>
+    <?php endforeach; ?>
+    </tbody>
+
 </table>
 
 <fieldset>
-	<legend>Add reliever</legend>
-	<form method="post" action="" id="add-reliever">
-		<input type="text" name="reliever" id="reliever" />
-		<input type="hidden" name="reliever_id" id="reliever_id"/>
-		<input type="hidden" name="datetime_start" value="<?php echo $this->date_start; ?>" />
-		<input type="hidden" name="group_id" value="<?php echo $this->group->getId(); ?>" />
-		<input type="submit" value="Add" />
-	</form>
+    <legend>Add reliever</legend>
+    <form method="post" action="" id="add-reliever">
+        <input type="text" name="reliever" id="reliever"/>
+        <input type="hidden" name="reliever_id" id="reliever_id"/>
+        <input type="hidden" name="datetime_start" value="<?php echo $this->date_start; ?>"/>
+        <input type="hidden" name="group_id" value="<?php echo $this->group->getId(); ?>"/>
+        <input type="submit" value="Add"/>
+    </form>
 </fieldset>
 
 <script>
-<!--
-$(function() {
-	$('#group-switch option[value=<?php echo $this->group->getId();?>]').attr('selected','selected');
+    <!--
+    $(function () {
+        $('#group-switch option[value=<?php echo $this->group->getId();?>]').attr('selected', 'selected');
 
-	$('#group-switch').change(function() {
-		var group_id = $(this).val();
-		window.location.href = '/dataentry/attendance/employees?pay_period=<?php echo $this->pay_period; ?>&group_id=' + group_id; 
-	} );
-
-	
-	$('#add-reliever').submit(function(evt) {
-		evt.preventDefault();
-		
-		if(!parseInt($('#reliever_id').val()) > 0) {
-			
-		} else {
-			var post = $(this).serialize();
-			$.post('/dataentry/attendance/addreliever', post, function() {
-				window.location.href = '<?php echo $_SERVER['REQUEST_URI'];?>'; 
-			} );
-		}
-	} );
-	
-    $( "#reliever" ).autocomplete({
-        source: "/dataentry/attendance/searchreliever",
-        minLength: 3,
-        select: function( event, ui ) {
-            $('#reliever').val(ui.item.value);
-            $('#reliever_id').val(ui.item.id);
-        }
-      });	
-} );
-//--></script>
-<?php if($this->user_auth->type == 'admin'):?>
-
-<fieldset>
-	<legend>Upload DTR File (.mes)</legend>
-	<form method="post" action="" enctype="multipart/form-data">
-		<input type="file" name="file" />
-		<input type="submit" value="Upload" />
-	</form>
-</fieldset>
+        $('#group-switch').change(function () {
+            var group_id = $(this).val();
+            window.location.href = '/dataentry/attendance/employees?pay_period=<?php echo $this->pay_period; ?>&group_id=' + group_id;
+        });
 
 
-<fieldset>
-	<legend>Payroll</legend>
-	<form method="post" action="/payroll/index/payslips/date_start/<?php 
-		echo $this->date_start; ?>/date_end/<?php 
-		echo $this->date_end; ?>/group_id/<?php 
-		echo $this->group->getId(); ?>/pay_period/<?php 
-		echo $this->pay_period; ?>">
-		Current fuel cost /L <input type="text" name="fuelcost" size="2" value="<?php echo $this->fuelcost; ?>" />
-		<input type="submit" value="Commit payroll" />
-	</form>
-	
-		<ul class="report-list">
-			<?php $i = 0; foreach($this->payslips as $crvalue): if($i >= 5) break; $i++; ?>
-			<li>
-				<a href="<?php echo "/{$this->report_path}/payslips/$crvalue"; ?>" target="_blank"><?php echo $crvalue; ?></a>
-				<a href="<?php echo "/{$this->report_path}/payslips/dole/$crvalue"; ?>" target="_blank" class="small">Payslip</a>
-			</li>
-			<?php endforeach; ?>
-		</ul>
-	
-</fieldset>
+        $('#add-reliever').submit(function (evt) {
+            evt.preventDefault();
 
-<fieldset>
-    <legend>Summary report</legend>
-    <a href="/payroll/index/summaryreport/date_start/<?php
-    echo $this->date_start; ?>/date_end/<?php
-    echo $this->date_end; ?>/group_id/<?php
-    echo $this->group->getId(); ?>/pay_period/<?php
-    echo $this->pay_period; ?>?standalone=true" class="btn">Create report</a>
+            if (!parseInt($('#reliever_id').val()) > 0) {
 
-    <ul class="report-list">
-        <?php $i = 0; foreach($this->summaries as $svalue): if($i >= 5) break;  $i++; ?>
-            <li><a href="<?php echo "/{$this->report_path}/summary/$svalue"; ?>" target="_blank"><?php echo $svalue; ?></a></li>
-        <?php endforeach; ?>
-    </ul>
+            } else {
+                var post = $(this).serialize();
+                $.post('/dataentry/attendance/addreliever', post, function () {
+                    window.location.href = '<?php echo $_SERVER['REQUEST_URI'];?>';
+                });
+            }
+        });
 
-</fieldset>
-	<a name="billing"></a>
+        $("#reliever").autocomplete({
+            source: "/dataentry/attendance/searchreliever",
+            minLength: 3,
+            select: function (event, ui) {
+                $('#reliever').val(ui.item.value);
+                $('#reliever_id').val(ui.item.id);
+            }
+        });
+    });
+    //--></script>
+<?php if ($this->user_auth->type == 'admin'): ?>
 
     <fieldset>
-	<legend>Billing report</legend>
-	<!--<form method="post" action="/payroll/index/clientreport/date_start/<?php
-		echo $this->date_start; ?>/date_end/<?php
-		echo $this->date_end; ?>/group_id/<?php
-		echo $this->group->getId(); ?>/pay_period/<?php
-		echo $this->pay_period; ?>">
+        <legend>Upload DTR File (.mes)</legend>
+        <form method="post" action="" enctype="multipart/form-data">
+            <input type="file" name="file"/>
+            <input type="submit" value="Upload"/>
+        </form>
+    </fieldset>
+
+    <fieldset>
+        <legend>Late DTR</legend>
+        <?php echo $this->late_dtr; ?>
+    </fieldset>
+
+
+    <fieldset>
+        <legend>Payroll</legend>
+        <form method="post" action="/payroll/index/payslips/date_start/<?php
+        echo $this->date_start; ?>/date_end/<?php
+        echo $this->date_end; ?>/group_id/<?php
+        echo $this->group->getId(); ?>/pay_period/<?php
+        echo $this->pay_period; ?>">
+            Current fuel cost /L <input type="text" name="fuelcost" size="2" value="<?php echo $this->fuelcost; ?>"/>
+            <input type="submit" value="Commit payroll"/>
+        </form>
+
+        <ul class="report-list">
+            <?php $i = 0;
+            foreach ($this->payslips as $crvalue): if ($i >= 5) break;
+                $i++; ?>
+                <li>
+                    <a href="<?php echo "/{$this->report_path}/payslips/$crvalue"; ?>"
+                       target="_blank"><?php echo $crvalue; ?></a>
+                    <a href="<?php echo "/{$this->report_path}/payslips/dole/$crvalue"; ?>" target="_blank"
+                       class="small">Payslip</a>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+
+    </fieldset>
+
+    <fieldset>
+        <legend>Summary report</legend>
+        <a href="/payroll/index/summaryreport/date_start/<?php
+        echo $this->date_start; ?>/date_end/<?php
+        echo $this->date_end; ?>/group_id/<?php
+        echo $this->group->getId(); ?>/pay_period/<?php
+        echo $this->pay_period; ?>?standalone=true" class="btn">Create report</a>
+
+        <ul class="report-list">
+            <?php $i = 0;
+            foreach ($this->summaries as $svalue): if ($i >= 5) break;
+                $i++; ?>
+                <li><a href="<?php echo "/{$this->report_path}/summary/$svalue"; ?>"
+                       target="_blank"><?php echo $svalue; ?></a></li>
+            <?php endforeach; ?>
+        </ul>
+
+    </fieldset>
+    <a name="billing"></a>
+
+    <fieldset>
+        <legend>Billing report</legend>
+        <!--<form method="post" action="/payroll/index/clientreport/date_start/<?php
+        echo $this->date_start; ?>/date_end/<?php
+        echo $this->date_end; ?>/group_id/<?php
+        echo $this->group->getId(); ?>/pay_period/<?php
+        echo $this->pay_period; ?>">
 		
 		<input type="submit" value="Create report" />
 	</form>-->
-	
-		<ul class="report-list">
-			<?php $i = 0; foreach($this->client_reports as $crvalue): if($i >= 5) break;  $i++; ?>
-			<li><a href="<?php echo "/{$this->report_path}/client/$crvalue"; ?>" target="_blank"><?php echo $crvalue; ?></a></li>
-			<?php endforeach; ?>
-		</ul>
-	
-</fieldset>
+
+        <ul class="report-list">
+            <?php $i = 0;
+            foreach ($this->client_reports as $crvalue): if ($i >= 5) break;
+                $i++; ?>
+                <li><a href="<?php echo "/{$this->report_path}/client/$crvalue"; ?>"
+                       target="_blank"><?php echo $crvalue; ?></a></li>
+            <?php endforeach; ?>
+        </ul>
+
+    </fieldset>
+
 
     <br>
     <br>
