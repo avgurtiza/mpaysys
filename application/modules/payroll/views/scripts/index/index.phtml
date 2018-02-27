@@ -21,13 +21,13 @@
             </tbody>
         </table>
     </dd>
-    <?php if (date('d', strtotime($this->period_covered)) == '16') : ?>
+    <?php // if (date('d', strtotime($this->period_covered)) == '16') : ?>
         <dd>
             <a href="/payroll/index/philhealth/period_covered/<?php echo $this->period_covered; ?>" class="button">Philhealth</a>
             <a href="/payroll/index/hdmf/period_covered/<?php echo $this->period_covered; ?>" class="button">HDMF</a>
             <a href="/payroll/index/sss/period_covered/<?php echo $this->period_covered; ?>" class="button">SSS</a>
         </dd>
-    <?php endif; ?>
+    <?php // endif; ?>
     <dd><a href="/payroll/index/export/period_covered/<?php echo $this->period_covered; ?>" class="button">Payroll
             report</a></dd>
 

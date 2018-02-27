@@ -1052,6 +1052,13 @@ class Payroll_IndexController extends Zend_Controller_Action
             $net_pay = $net_pay + $other_additions - $other_deductions; // Hack!
 
 
+            $phihealth_deduction = 0;
+
+            if(isset($phihealth_deductions) && isset($phihealth_deductions['employee'])) {
+                $phihealth_deduction = $phihealth_deductions['employee'];
+            }
+
+            // Move to eloquent!
             $PayrollTemp->setEmployeeId($Employee->getId())
                 ->setGroupId($group_id)
                 ->setEmployeeNumber($Employee->getEmployeeNumber())
@@ -1069,11 +1076,11 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setNetPay($net_pay)
                 ->setEcola($ecola_addition + $legal_ecola_addition)
                 ->setSss($value['deductions']['sss'])
-                ->setPhilhealth($phihealth_deductions['employee'])
+                ->setPhilhealth($phihealth_deduction)
                 ->setHdmf($value['deductions']['hdmf'])
                 ->setCashBond($value['deductions']['cash_bond'])
                 ->setInsurance($value['deductions']['insurance'])
-                ->setMiscDeduction($total_misc_deduct)// Sum of all misc deductions; Miscellaneous-type deduction in setMiscellaneous()
+                ->setMiscDeduction($total_misc_deduct) // Sum of all misc deductions; Miscellaneous-type deduction in setMiscellaneous()
                 ->setDeductionData(json_encode($scheduled_deductions))
                 ->setSssLoan($scheduled_deductions_array['sss_loan'])
                 ->setHdmfLoan($scheduled_deductions_array['hdmf_loan'])
@@ -1188,7 +1195,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $previous_philhealth = 0;
             $previous_basic = 0;
 
-            if ($philhealth->count() > 0) {
+            if ($philhealth->count() > 0) { // TODO: Fix this, maybe.
                 foreach ($philhealth as $value) {
                     $previous_philhealth += $value["philhealth"];
                     $previous_basic = $value["philhealth_basic"];

@@ -1073,8 +1073,13 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                     ->setOptions($postvars)
                     ->save();
 
-                $this->_save_the_day($employee_id, $group_id, $this->_request->getPost()); // TODO:  figure out why this needs to run twice
-                $this->_save_the_day($employee_id, $group_id, $this->_request->getPost());
+
+                $MPayroll = new Messervelib_Payroll();
+                $MPayroll->save_the_day($employee_id, $group_id, $postvars);
+                $MPayroll->save_the_day($employee_id, $group_id, $postvars);
+
+                // $this->_save_the_day($employee_id, $group_id, $postvars); // TODO:  figure out why this needs to run twice
+                // $this->_save_the_day($employee_id, $group_id, $postvars);
 
                 $this->_redirect("/dataentry/attendance/employee/id/{$employee_id}/pay_period/{$pay_period}/date_start/{$date_start}/date_end/{$date_end}/group_id/{$group_id}");
             }
