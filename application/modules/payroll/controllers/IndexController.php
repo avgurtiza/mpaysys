@@ -359,7 +359,9 @@ class Payroll_IndexController extends Zend_Controller_Action
 
     public function payslipsAction()
     {
-        set_time_limit(600);
+        error_reporting(E_ERROR);
+        set_time_limit(1000);
+
         $start = time();
         $this->_helper->layout()->disableLayout();
         $this->_helper->viewRenderer->setNoRender(true);
@@ -843,7 +845,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $bop_slip_data['addition']['maintenance'] = $BOPAttendance->getMaintenanceAddition();
 
-                    echo "<br> maintenance" . $BOPAttendance->getMaintenanceAddition();
+                    // echo "<br> maintenance" . $BOPAttendance->getMaintenanceAddition();
                     $other_additions += $BOPAttendance->getMaintenanceAddition();
                     // $bop_maintenance = $BOPAttendance->getMaintenanceAddition();
 
@@ -855,13 +857,14 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $other_additions += $fuel_excess;
 
-                echo "<br> Gasoline " . $fuel_excess;
+                // echo "<br> Gasoline " . $fuel_excess;
 
                 $bop_slip_data['addition']['fuel'] = $fuel_excess;
                 $bop_slip_data['addition']['fuel_data'] = ['allocation' => $Attendance->getFuelAlloted(), 'consumed' => $Attendance->getFuelConsumed()];
 
 
             }
+
 
             $dim_y = 82;
 
@@ -1058,6 +1061,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $phihealth_deduction = $phihealth_deductions['employee'];
             }
 
+
             // Move to eloquent!
             $PayrollTemp->setEmployeeId($Employee->getId())
                 ->setGroupId($group_id)
@@ -1141,7 +1145,8 @@ class Payroll_IndexController extends Zend_Controller_Action
         // $this->clientreportAction();
 
         if ($this->_request->getParam("is_ajax") != "true") {
-            $this->_redirect($_SERVER['HTTP_REFERER']);
+            $this->_helper->getHelper('Redirector')->goToUrl($_SERVER['HTTP_REFERER']);
+            // $this->_redirect($_SERVER['HTTP_REFERER']);
         } else {
             echo "AJAX Complete";
         }
@@ -1154,40 +1159,28 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $date_start = \Carbon\Carbon::parse($date_start);
 
+        $period_covered = $date_start->day(16)->toDateTimeString();
+
+        logger("Processing employee $employee_id for $period_covered");
+
         $minimum_monthly_deduction = 137.50;
         $minimum_deduction = $minimum_monthly_deduction / 2;
 
         $notes = 'OK';
 
         if ($date_start->day <= 15) { // First cutoff
+            logger("--First cutoff");
 
-            if (!$basic_pay > 0) {
-                $notes = "Base pay is less than or equal to 0";
-
-                $employee_share = $minimum_deduction;
-            } else {
-                $total_share = ($basic_pay * 275) / 10000;
-
-                $share = $total_share / 2;
-
-                if (!($share > $minimum_deduction)) {
-                    $notes = "EE/ER below threshold $share";
-
-                    $employee_share = $minimum_deduction;
-
-                } else {
-                    $employee_share = $share;
-
-                }
-            }
-
+            $employee_share = $minimum_deduction;
             $employer_share = $employee_share;
 
         } else { // Second cutoff
             // Get previous cutoff philhealth deduction
+            logger("--Second cutoff, getting previous deduction");
 
-            $philhealth = Messerve_Model_Eloquent_PayrollTemp::where('period_covered', '>=', $date_start->firstOfMonth()->toDateString())
-                ->where('period_covered', '<', $date_start->toDateString())
+            $previous_period = $date_start->day(1)->toDateTimeString();
+
+            $philhealth = Messerve_Model_Eloquent_PayrollTemp::where('period_covered', $previous_period)
                 ->where('group_id', $group_id)
                 ->where('employee_id', $employee_id)
                 ->get();
@@ -1196,7 +1189,11 @@ class Payroll_IndexController extends Zend_Controller_Action
             $previous_basic = 0;
 
             if ($philhealth->count() > 0) { // TODO: Fix this, maybe.
+                logger("-- found previous deduction/s");
+
                 foreach ($philhealth as $value) {
+                    logger("-- found previous deduction (deduction/basic) {$value["philhealth"]} / {$value["philhealth_basic"]}");
+
                     $previous_philhealth += $value["philhealth"];
                     $previous_basic = $value["philhealth_basic"];
                 }
@@ -1205,17 +1202,20 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $total_monthly_share = ($monthly_pay * 275) / 10000;
 
-                $share = $total_monthly_share / 2;
+                logger("-- Basic $basic_pay, prev basic $previous_basic, total monthly share $total_monthly_share");
 
-                if (!($share > $minimum_monthly_deduction)) {
-                    $notes = "2nd cutoff, EE/ER below threshold $share";
-                    $employee_share = $minimum_deduction - $previous_philhealth;
+                if ($total_monthly_share > $minimum_monthly_deduction) {
+                    $employee_share = $total_monthly_share - $previous_philhealth;
+                    logger("-- Share - $total_monthly_share - $previous_philhealth; Share is $employee_share");
                 } else {
-                    $employee_share = $employer_share = $share - $previous_philhealth;
+                    $employee_share = $minimum_monthly_deduction - $previous_philhealth;
+                    logger("-- EE/ER below threshold $total_monthly_share; doing  minimum $minimum_monthly_deduction - previous $previous_philhealth.  Share is $employee_share");
                 }
 
             } else {
-                $employee_share = $minimum_deduction;
+                logger("--did not find previous deduction/s, setting to minimum deduction.");
+
+                $employee_share = $minimum_monthly_deduction;
             }
 
             $employer_share = $employee_share;
@@ -3329,6 +3329,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 'ot' => ['hours' => 0, 'pay' => 0],
                 'nd' => ['hours' => 0, 'pay' => 0],
                 'nd_ot' => ['hours' => 0, 'pay' => 0],
+                'unattend' => ['hours' => 0, 'pay' => 0],
             ],
 
         ];
@@ -3388,6 +3389,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
             $hours_meta = json_decode($pvalue->getPayrollMeta(), true);
+
 
             foreach ($hours_struct as $type => $pay) {
                 foreach ($pay as $title => $breakdown) {
@@ -3465,10 +3467,11 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 , 'BOP motorcycle' => $pvalue->getBopMotorcycle() * -1
                 , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1
-                , 'PayrollMeta' => $pvalue->getPayrollMeta()
+                // , 'PayrollMeta' => $pvalue->getPayrollMeta()
 
 
             ];
+
 
 
             $misc_deduction = json_decode($pvalue->getDeductionData());
@@ -3485,6 +3488,10 @@ class Payroll_IndexController extends Zend_Controller_Action
             }
 
             $this_row['Misc deduction data'] = $misc_deduction_string;
+
+            $this_row['Philhealth Basic'] = $pvalue->getPhilhealthBasic();
+
+            // preprint($this_row,1);
 
 
             $payroll_array[] = $this_row;

@@ -408,12 +408,12 @@ class Messervelib_Payroll
 
                 $ot_duration = $work_duration - $this->_max_regular_hours;
                 $has_extended_shift = true;
-                echo "Extended sheep $ot_duration <br>";
+                //// echo "Extended sheep $ot_duration <br>";
             }
 
             if (!$ot_approved && !$has_extended_shift && $work_duration > $this->_max_regular_hours) {
                 $work_duration = $this->_max_regular_hours;
-                echo __LINE__ . " OVER: " . $work_duration . '<br>';
+                //// echo __LINE__ . " OVER: " . $work_duration . '<br>';
                 $ot_duration = 0;
             }
 
@@ -491,16 +491,16 @@ class Messervelib_Payroll
 
                         if (isset($time_array[$i]['tomorrow']) && $time_array[$i]['tomorrow'] > 0) {
                             if ($ot_start_period <= $i) {
-                                echo "<br>{$Attendance->id} $ot_start_period : $i  Doing T OTBAL $ot_balance<br>";
+                                //// echo "<br>{$Attendance->id} $ot_start_period : $i  Doing T OTBAL $ot_balance<br>";
 
                                 if (($time_array[$i]['tomorrow'] - $ot_balance) >= 0) {
-                                    echo "Can split reg and ot {$time_array[$i]['tomorrow']}<br>";
+                                    //// echo "Can split reg and ot {$time_array[$i]['tomorrow']}<br>";
 
                                     $tomorrow += bcsub($time_array[$i]['tomorrow'], $ot_balance, 2);
                                     $tomorrow_ot += $ot_balance;
                                     $ot_balance = 0;
                                 } elseif ($ot_balance > 0) {
-                                    echo "Can't split reg and ot {$time_array[$i]['tomorrow']}<br>";
+                                    //// echo "Can't split reg and ot {$time_array[$i]['tomorrow']}<br>";
 
                                     $ot_balance -= $time_array[$i]['tomorrow'];
                                     $tomorrow_ot += $time_array[$i]['tomorrow'];
@@ -514,20 +514,20 @@ class Messervelib_Payroll
 
                         if (isset($time_array[$i]['tomorrow_nd']) && $time_array[$i]['tomorrow_nd'] > 0) {
                             if ($ot_start_period <= $i) {
-                                echo "<br>{$Attendance->id} $ot_start_period : $i  Doing TND OTBAL $ot_balance<br>";
+                               // echo "<br>{$Attendance->id} $ot_start_period : $i  Doing TND OTBAL $ot_balance<br>";
                                 if (($time_array[$i]['tomorrow_nd'] - $ot_balance) > 0) {
 
                                     $tomorrow_nd += bcsub($time_array[$i]['tomorrow_nd'], $ot_balance, 2);
                                     $tomorrow_nd_ot += $ot_balance;
 
-                                    echo "Can split reg and ot {$time_array[$i]['tomorrow_nd']} BAL $ot_balance ND: $tomorrow_nd  NDOT: $tomorrow_nd_ot<br>";
+                                   // echo "Can split reg and ot {$time_array[$i]['tomorrow_nd']} BAL $ot_balance ND: $tomorrow_nd  NDOT: $tomorrow_nd_ot<br>";
                                     $ot_balance = 0;
 
                                 } elseif ($ot_balance > 0) {
                                     $ot_balance -= $time_array[$i]['tomorrow_nd'];
                                     $tomorrow_nd_ot += $time_array[$i]['tomorrow_nd'];
 
-                                    echo "Can't split reg and ot TND {$time_array[$i]['tomorrow_nd']}  BAL {$ot_balance} NDOT {$tomorrow_nd_ot}<br>";
+                                   // echo "Can't split reg and ot TND {$time_array[$i]['tomorrow_nd']}  BAL {$ot_balance} NDOT {$tomorrow_nd_ot}<br>";
                                 }
                             } else {
                                 $tomorrow_nd += $time_array[$i]['tomorrow_nd'];
@@ -539,10 +539,10 @@ class Messervelib_Payroll
                         if (isset($time_array[$i]['today_nd']) && $time_array[$i]['today_nd'] > 0) {
 
                             if ($ot_start_period <= $i) {
-                                echo "<br>{$Attendance->id}  $ot_start_period : $i  Doing ND OTBAL $ot_balance<br>";
+                               // echo "<br>{$Attendance->id}  $ot_start_period : $i  Doing ND OTBAL $ot_balance<br>";
 
                                 if (($time_array[$i]['today_nd'] - $ot_balance) >= 0) {
-                                    echo "Can split reg and ot {$time_array[$i]['today_nd']}<br>";
+                                   // echo "Can split reg and ot {$time_array[$i]['today_nd']}<br>";
 
                                     $nd += bcsub($time_array[$i]['today_nd'], $ot_balance, 2);
 
@@ -561,17 +561,17 @@ class Messervelib_Payroll
                         if (isset($time_array[$i]['today']) && $time_array[$i]['today'] > 0) {
 
                             if ($ot_start_period <= $i) {
-                                echo "<br>{$Attendance->id}  $ot_start_period : $i Doing REG OTBAL $ot_balance<br>";
+                               // echo "<br>{$Attendance->id}  $ot_start_period : $i Doing REG OTBAL $ot_balance<br>";
 
                                 if (($time_array[$i]['today'] - $ot_balance) >= 0) {
 
                                     $reg += bcsub($time_array[$i]['today'], $ot_balance, 2);
-                                    echo "Can split reg and ot {$time_array[$i]['today']} <br>";
+                                   // echo "Can split reg and ot {$time_array[$i]['today']} <br>";
 
-                                    echo ($time_array[$i]['today'] - $ot_balance) . "<br>";
+                                   // echo ($time_array[$i]['today'] - $ot_balance) . "<br>";
 
                                     $ot += $ot_balance;
-                                    echo "REG $reg OT $ot $ot_balance<br>";
+                                   // echo "REG $reg OT $ot $ot_balance<br>";
 
                                     $ot_balance = 0;
 
@@ -589,17 +589,17 @@ class Messervelib_Payroll
                     }
                 }
             } else {
-                echo "<br>L " . __LINE__ . " NO OT <br>";
+               // echo "<br>L " . __LINE__ . " NO OT <br>";
 
                 $reg_balance = $this->_max_regular_hours;
 
-                echo "<br> Start1 : {$attendance['start_1']} $reg";
+               // echo "<br> Start1 : {$attendance['start_1']} $reg";
 
                 for ($i = 2; $i >= 0; $i--) {
 
 
                     if ((int)$attendance['start_1'] < 600) { // If shift starts before 6AM (ND cutoff), do today's ND first
-                        echo "<br> Shift $i Pre-6AM";
+                       // echo "<br> Shift $i Pre-6AM";
                         if (isset($time_array[$i]['today_nd']) && $reg_balance > 0) {
                             if (($reg_balance - $time_array[$i]['today_nd']) >= 0) {
                                 $nd += $time_array[$i]['today_nd'];
@@ -622,22 +622,22 @@ class Messervelib_Payroll
                             }
                         }
                     } else {
-                        echo "<br> Shift $i Post-6am";
-                        echo "<br>REG bal $reg_balance : ";
+                       // echo "<br> Shift $i Post-6am";
+                       // echo "<br>REG bal $reg_balance : ";
 
                         if (isset($time_array[$i]['today'])) {
                             if (($reg_balance - $time_array[$i]['today']) >= 0) {
-                                echo "( adding value to today)";
+                               // echo "( adding value to today)";
                                 $reg += $time_array[$i]['today'];
                                 $reg_balance -= $time_array[$i]['today'];
                             } else {
-                                echo "( adding balance $reg_balance to reg $reg)";
+                               // echo "( adding balance $reg_balance to reg $reg)";
                                 $reg += $reg_balance;
                                 $reg_balance = 0;
                             }
 
 
-                            echo " [ Today : ";
+                           // echo " [ Today : ";
                         }
 
 
@@ -680,7 +680,7 @@ class Messervelib_Payroll
 
                     }
 
-                    if (isset($time_array[$i]['today'])) echo "Total reg $reg : Duration reg {$time_array[$i]['today']} <br>";
+                    //if (isset($time_array[$i]['today'])) echo "Total reg $reg : Duration reg {$time_array[$i]['today']} <br>";
 
                 }
             }
@@ -796,7 +796,7 @@ class Messervelib_Payroll
                 $time_array['rest_nd'] = $nd + $tomorrow_nd;
                 $time_array['rest_nd_ot'] = $nd_ot + $tomorrow_nd_ot;
             } else { // Regular
-                echo "<br>Regular today<br>";
+               // echo "<br>Regular today<br>";
                 $time_array['reg'] = $reg + $tomorrow;
                 $time_array['reg_ot'] = $ot + $tomorrow_ot;
                 $time_array['reg_nd'] = $nd + $tomorrow_nd;
@@ -805,7 +805,7 @@ class Messervelib_Payroll
             }
 
             if ($holiday_today) {
-                echo "<br>Holiday today<br>";
+               // echo "<br>Holiday today<br>";
                 // Reset values set by above
                 $time_array['reg'] = 0;
                 $time_array['reg_ot'] = 0;
@@ -820,10 +820,10 @@ class Messervelib_Payroll
                 switch ($holiday_today->getType()) {
                     case 'legal':
                         if (!$work_duration > 0) { // Do unattended OT calcs
-                            echo "Doing unattended <br>";
+                           // echo "Doing unattended <br>";
                             $time_array['legal_unattend'] = $this->_max_regular_hours;
                         } else {
-                            echo "Doing attended $ot <br>";
+                           // echo "Doing attended $ot <br>";
                             $time_array['legal'] = $reg;
                             $time_array['legal_nd'] = $nd;
                             $time_array['legal_ot'] = $ot;
@@ -836,7 +836,7 @@ class Messervelib_Payroll
 
                             // preprint($time_array);
 
-                            echo "<br> Not the end  $ot ";
+                           // echo "<br> Not the end  $ot ";
                         }
 
                         break;
@@ -860,7 +860,7 @@ class Messervelib_Payroll
 
             if ($Attendance->getOtApproved() != 'yes' && !$has_extended_shift) {
 
-                echo __LINE__ . " Resetting OT <br>";
+               // echo __LINE__ . " Resetting OT <br>";
 
                 $time_array['reg_ot'] = 0;
                 $time_array['reg_nd_ot'] = 0;
@@ -880,7 +880,7 @@ class Messervelib_Payroll
                 $time_array['tomorrow_ot'] = 0;
                 $time_array['tomorrow_nd_ot'] = 0;
             } else {
-                echo __LINE__ . " Not resetting OT <br>";
+               // echo __LINE__ . " Not resetting OT <br>";
             }
 
             $options = $time_array;
@@ -1015,7 +1015,7 @@ class Messervelib_Payroll
                 if ($holiday_today) {
                     $holiday_type_tomorrow = $holiday_type_today;
                     $pay_rate_prefix = strtolower($holiday_today->getType());
-                    echo "Holiday today <br>";
+                   // echo "Holiday today <br>";
                 }
 
 
@@ -1034,7 +1034,7 @@ class Messervelib_Payroll
                 $rates_tomorrow['_prefix'] = $pay_rate_prefix;
 
                 if ($employee_id > 0 && $Attendance->getId() > 0) {
-                    echo "Setting payroll tomorrow <br>";
+                   // echo "Setting payroll tomorrow <br>";
 
                     $PayrollTomorrow
                         ->setAttendanceId($Attendance->getId())
@@ -1303,7 +1303,7 @@ class Messervelib_Payroll
         $DeductAttendMap->getDbTable()->delete('attendance_id = ' . $attendance_id);
 
         if ($deductions) {
-            // echo "<br /> $attendance_id HAS DEDUCTIONS";
+            //// echo "<br /> $attendance_id HAS DEDUCTIONS";
             foreach ($deductions as $dvalue) {
                 // Total all deductions,  balance matches max deduction value + this deduction?
 
@@ -1314,7 +1314,7 @@ class Messervelib_Payroll
                     ->where('deduction_schedule_id = ?', $dvalue->getId());
 
                 $this_sum = $DeductAttendMap->getDbTable()->fetchRow($select)->mysum;
-                // echo "BALANCE:  $this_sum";
+                //// echo "BALANCE:  $this_sum";
 
                 if ($this_sum < $dvalue->getAmount()) { // Has balance
 
@@ -1485,7 +1485,7 @@ class Messervelib_Payroll
 
         if ($end <= $this->_midnight && $end >= $this->_night_diff_start) {
 
-            // echo "<br />Duration: $duration_id ";
+            //// echo "<br />Duration: $duration_id ";
 
             if ($start <= $this->_night_diff_start) {
                 $today = $this->_night_diff_start - $start;
@@ -1496,7 +1496,7 @@ class Messervelib_Payroll
                 if ($today_nd > 0) $broken_array['today_nd'] += $today_nd;
 
             } else {
-                // echo "<br /> ND :B ";
+                //// echo "<br /> ND :B ";
                 $today = $start - $this->_night_diff_start;
                 // if($today > 0) $broken_array['today'] +=  $today;
 
@@ -1513,7 +1513,7 @@ class Messervelib_Payroll
             && $end < $this->_midnight
             // && !$start > $this->_midnight
         ) {
-            // echo "<br> Early ND";
+            //// echo "<br> Early ND";
             if ($end > $early_night_diff_end) {
                 $broken_array['today_nd'] = $early_night_diff_end - $start;
                 $broken_array['today'] = $end - $early_night_diff_end;
@@ -1526,17 +1526,17 @@ class Messervelib_Payroll
 
         /* Tomorrow */
         if ($end > $this->_midnight) {
-            // echo "<br />End beyond MN";
+            //// echo "<br />End beyond MN";
             if ($end > $this->_night_diff_end) { // Breached next day's 6AM
-                // echo "<br /> Duration $duration_id ND end breach";
+                //// echo "<br /> Duration $duration_id ND end breach";
 
                 if ($start > $this->_midnight) {
-                    // echo "<br />Start after MN";
+                    //// echo "<br />Start after MN";
 
                     $tomorrow_nd = $this->_night_diff_end - $start;
                     $broken_array['tomorrow_nd'] += $tomorrow_nd;
                 } else {
-                    // echo "<br />Start before MN";
+                    //// echo "<br />Start before MN";
                     $today_nd = $this->_midnight - $start;
                     if ($today_nd > 0) $broken_array['today_nd'] += $today_nd;
 
@@ -1548,25 +1548,25 @@ class Messervelib_Payroll
                 if ($tomorrow > 0) $broken_array['tomorrow'] += $tomorrow;
 
             } else {
-                // echo "<br /> Duration $duration_id ND end safe";
+                //// echo "<br /> Duration $duration_id ND end safe";
                 if ($start >= $this->_midnight) {
-                    // echo "<br />Start after MN";
+                    //// echo "<br />Start after MN";
                     $tomorrow_nd = $end - $start;
                     if ($tomorrow_nd > 0) $broken_array['tomorrow_nd'] += $tomorrow_nd;
                 } else {
-                    // echo "<br />Start before MN - ";
+                    //// echo "<br />Start before MN - ";
 
                     $tomorrow_nd = $end - $this->_midnight;
                     if ($tomorrow_nd > 0) $broken_array['tomorrow_nd'] += $tomorrow_nd;
 
                     if ($start >= $this->_night_diff_start) {
-                        // echo " after ND";
+                        //// echo " after ND";
                         $today_nd = $this->_midnight - $start;
                         if ($today_nd > 0) $broken_array['today_nd'] += $today_nd;
 
 
                     } else { // $start less than nd
-                        // echo " before ND";
+                        //// echo " before ND";
                         $today = $this->_night_diff_start - $start;
                         if ($today > 0) $broken_array['today'] += $today;
 

@@ -3,3 +3,4 @@ Zend/
 .idea/
 tmp/*
 !tmp/.gitkeep
+logs/*
