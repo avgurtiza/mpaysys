@@ -796,6 +796,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             if ($group_id == $Employee->getGroupId()) { // Apply adjustments only on mother group payslip
                 // Apply philhealth
+                logger("$philhealth_basic, $date_start " . $Employee->getFirstname());
                 $phihealth_deductions = $this->getPhilhealthDeduction($philhealth_basic, $date_start, $Employee->getId(), $group_id);
                 $value['deductions']['philhealth'] = $phihealth_deductions['employee'];
             }
@@ -1156,12 +1157,12 @@ class Payroll_IndexController extends Zend_Controller_Action
 
     protected function getPhilhealthDeduction($basic_pay, $date_start, $employee_id, $group_id)
     {
+        logger("Pre-carbon $date_start");
 
         $date_start = \Carbon\Carbon::parse($date_start);
 
-        $period_covered = $date_start->day(16)->toDateTimeString();
 
-        logger("Processing employee $employee_id for $period_covered");
+
 
         $minimum_monthly_deduction = 137.50;
         $minimum_deduction = $minimum_monthly_deduction / 2;
@@ -1169,14 +1170,22 @@ class Payroll_IndexController extends Zend_Controller_Action
         $notes = 'OK';
 
         if ($date_start->day <= 15) { // First cutoff
-            logger("--First cutoff");
+            $period_covered = $date_start->day(1)->toDateTimeString();
+
+            logger("Processing employee $employee_id for $period_covered ($date_start)");
+
+            logger("-- First cutoff");
 
             $employee_share = $minimum_deduction;
             $employer_share = $employee_share;
 
         } else { // Second cutoff
+            $period_covered = $date_start->day(16)->toDateTimeString();
+
+            logger("Processing employee $employee_id for $period_covered ($date_start)");
+
             // Get previous cutoff philhealth deduction
-            logger("--Second cutoff, getting previous deduction");
+            logger("-- Second cutoff, getting previous deduction");
 
             $previous_period = $date_start->day(1)->toDateTimeString();
 
