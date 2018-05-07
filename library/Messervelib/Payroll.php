@@ -719,7 +719,7 @@ class Messervelib_Payroll
                     $ot_check = bcsub($nd_ot, $excess_ot, 2);
 
                     if ($ot_check > 0) {
-                        $excess_ot = bcsub($$excess_ot, $nd_ot, 2);
+                        $excess_ot = bcsub($excess_ot, $nd_ot, 2);
                         $nd_ot = $ot_check;
                     } else {
                         $nd_ot = 0;
