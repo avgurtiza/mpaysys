@@ -1190,7 +1190,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $previous_period = $date_start->day(1)->toDateTimeString();
 
             $philhealth = Messerve_Model_Eloquent_PayrollTemp::where('period_covered', $previous_period)
-                ->where('group_id', $group_id)
+                //->where('group_id', $group_id) // Because riders are shuffling groups/branches
                 ->where('employee_id', $employee_id)
                 ->get();
 
@@ -1209,7 +1209,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $monthly_pay = $basic_pay + $previous_basic;
 
-                $total_monthly_share = (($monthly_pay * 275) / 10000) / 2;
+                $total_monthly_share = (($monthly_pay * 275) / 10000);
 
                 logger("-- Basic $basic_pay, prev basic $previous_basic, total monthly share $total_monthly_share");
 
