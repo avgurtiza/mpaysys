@@ -1060,7 +1060,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $phihealth_deduction = 0;
 
-            if(isset($phihealth_deductions) && isset($phihealth_deductions['employee'])) {
+            if (isset($phihealth_deductions) && isset($phihealth_deductions['employee'])) {
                 $phihealth_deduction = $phihealth_deductions['employee'];
             }
 
@@ -1087,7 +1087,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setHdmf($value['deductions']['hdmf'])
                 ->setCashBond($value['deductions']['cash_bond'])
                 ->setInsurance($value['deductions']['insurance'])
-                ->setMiscDeduction($total_misc_deduct) // Sum of all misc deductions; Miscellaneous-type deduction in setMiscellaneous()
+                ->setMiscDeduction($total_misc_deduct)// Sum of all misc deductions; Miscellaneous-type deduction in setMiscellaneous()
                 ->setDeductionData(json_encode($scheduled_deductions))
                 ->setSssLoan($scheduled_deductions_array['sss_loan'])
                 ->setHdmfLoan($scheduled_deductions_array['hdmf_loan'])
@@ -1114,8 +1114,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setIncentives($value['more_income']['incentives'])
                 ->setIsReliever($is_reliever)
                 ->setRateId($pay_rate_id)
-                ->setPhilhealthbasic($philhealth_basic)
-            ;
+                ->setPhilhealthbasic($philhealth_basic);
 
             $PayrollTemp->save();
 
@@ -1209,7 +1208,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $monthly_pay = $basic_pay + $previous_basic;
 
-                $total_monthly_share = (($monthly_pay * 275) / 10000);
+                $total_monthly_share = (($monthly_pay * 275) / 10000) / 2;
 
                 logger("-- Basic $basic_pay, prev basic $previous_basic, total monthly share $total_monthly_share");
 
@@ -3480,7 +3479,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
             ];
-
 
 
             $misc_deduction = json_decode($pvalue->getDeductionData());
