@@ -1040,6 +1040,8 @@ class Payroll_IndexController extends Zend_Controller_Action
             $pdf->pages[] = $page;
             // $dole_pdf->pages[] = $dole_page;
 
+            // Disable BOP slip
+
             if (($other_additions + $other_deductions > 0)) {
                 $pdf->pages[] = $this->bopSlipPage($bop_slip_data);
             }
@@ -1162,8 +1164,6 @@ class Payroll_IndexController extends Zend_Controller_Action
         $date_start = \Carbon\Carbon::parse($date_start);
 
 
-
-
         $minimum_monthly_deduction = 137.50;
         $minimum_deduction = $minimum_monthly_deduction / 2;
 
@@ -1209,7 +1209,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $monthly_pay = $basic_pay + $previous_basic;
 
-                $total_monthly_share = ($monthly_pay * 275) / 10000;
+                $total_monthly_share = (($monthly_pay * 275) / 10000) / 2;
 
                 logger("-- Basic $basic_pay, prev basic $previous_basic, total monthly share $total_monthly_share");
 
