@@ -5,6 +5,6 @@ class Messerve_Model_Eloquent_PayrollTemp extends Eloquent
 {
     protected $table = 'payroll_temp';
 
-    protected $fillable = [];
+    protected $fillable = ['philhealth'];
 
 }

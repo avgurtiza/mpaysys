@@ -2,6 +2,7 @@
 
 use Messerve_Model_Eloquent_FloatingAttendance as Floating;
 use Messerve_Model_Eloquent_Employee as EmployeeEloq;
+use Messervelib_Philhealth as Philhealth;
 
 class Payroll_IndexController extends Zend_Controller_Action
 {
@@ -1061,9 +1062,11 @@ class Payroll_IndexController extends Zend_Controller_Action
             $phihealth_deduction = 0;
 
             if (isset($phihealth_deductions) && isset($phihealth_deductions['employee'])) {
+                $this->resetPhilhealth($date_start, $Employee->getId()); // Set philhealth deductions to 0 for all groups,
+                // just in case the rider got transferred after payroll of their previous mother group was processed.
+
                 $phihealth_deduction = $phihealth_deductions['employee'];
             }
-
 
             // Move to eloquent!
             $PayrollTemp->setEmployeeId($Employee->getId())
@@ -1118,6 +1121,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $PayrollTemp->save();
 
+
         }
 
         $date_start = $this->_request->getParam('date_start');
@@ -1134,9 +1138,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $this->_receiving_copy($pdf, $rec_copy_data);
         // $this->_bop_acknowledgement($pdf, $bop_acknowledgement);
-
         // mkdir($folder . 'dole', 0777);
-
         // $dole_filename = $folder . "dole/Payslips_{$this->_client->getName()}_{$Group->getName()}_{$group_id}_{$date_start}_{$this->_last_date}.pdf";
 
         $pdf->save($filename);
@@ -1155,9 +1157,33 @@ class Payroll_IndexController extends Zend_Controller_Action
 
     }
 
+    protected function resetPhilhealth($employee_id, $date_start)
+    {
+        return Philhealth::resetDeductionsForCutoff($employee_id, $date_start);
+
+        /*
+        $date_start = \Carbon\Carbon::parse($date_start);
+
+        if ($date_start->day <= 15) { // First cutoff
+            $period_covered = $date_start->day(1)->toDateString();
+            logger("Resetting philhealth for employee $employee_id for $period_covered ($date_start) -- First cutoff");
+
+
+        } else { // Second cutoff
+            $period_covered = $date_start->day(16)->toDateString();
+            logger("Resetting philhealth for employee $employee_id for $period_covered ($date_start) -- Second cutoff");
+        }
+
+        Messerve_Model_Eloquent_PayrollTemp::where('period_covered', $period_covered)
+            ->where('employee_id', $employee_id)->update(['philhealth' => 0]);
+        */
+    }
 
     protected function getPhilhealthDeduction($basic_pay, $date_start, $employee_id, $group_id)
     {
+
+        return Philhealth::getPhilhealthDeduction($basic_pay, $date_start, $employee_id, $group_id);
+        /*
         logger("Pre-carbon $date_start");
 
         $date_start = \Carbon\Carbon::parse($date_start);
@@ -1169,7 +1195,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $notes = 'OK';
 
         if ($date_start->day <= 15) { // First cutoff
-            $period_covered = $date_start->day(1)->toDateTimeString();
+            $period_covered = $date_start->day(1)->toDateString();
 
             logger("Processing employee $employee_id for $period_covered ($date_start)");
 
@@ -1179,14 +1205,14 @@ class Payroll_IndexController extends Zend_Controller_Action
             $employer_share = $employee_share;
 
         } else { // Second cutoff
-            $period_covered = $date_start->day(16)->toDateTimeString();
+            $period_covered = $date_start->day(16)->toDateString();
 
             logger("Processing employee $employee_id for $period_covered ($date_start)");
 
             // Get previous cutoff philhealth deduction
             logger("-- Second cutoff, getting previous deduction");
 
-            $previous_period = $date_start->day(1)->toDateTimeString();
+            $previous_period = $date_start->day(1)->toDateString();
 
             $philhealth = Messerve_Model_Eloquent_PayrollTemp::where('period_covered', $previous_period)
                 //->where('group_id', $group_id) // Because riders are shuffling groups/branches
@@ -1226,13 +1252,16 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $employee_share = $minimum_monthly_deduction;
             }
 
+            if ($employee_share < 0) {
+                $employee_share = 0;
+            }
+
             $employer_share = $employee_share;
 
         }
 
-
         return ['employee' => $employee_share, 'employer' => $employer_share, 'basepay' => $basic_pay, 'notes' => $notes];
-
+        */
     }
 
     protected function _bop_acknowledgement($pdf, $bop_data)
@@ -3553,11 +3582,11 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $this_row = array(
                     'empno' => $employee_number
-                , 'emplname' => $pvalue->getLastName()
-                , 'salary' => round($pvalue->getNetPay(), 2)
-                , 'actno' => strtoupper($pvalue->getAccountNumber())
-                , 'empfname' => $pvalue->getFirstName()
-                , 'depbrcode' => '73'
+                    , 'emplname' => $pvalue->getLastName()
+                    , 'salary' => round($pvalue->getNetPay(), 2)
+                    , 'actno' => strtoupper($pvalue->getAccountNumber())
+                    , 'empfname' => $pvalue->getFirstName()
+                    , 'depbrcode' => '73'
                 );
 
                 $payroll_array[$employee_number] = $this_row;
