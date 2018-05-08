@@ -63,7 +63,8 @@ class Messervelib_Philhealth {
 
                 if($monthly_pay >= 10000) { // TODO: config this threshold
                     logger("-- Monthly pay >= 10k $monthly_pay");
-                    $total_monthly_share = (($monthly_pay * 275) / 10000) / 2;
+                    // $total_monthly_share = (($monthly_pay * 275) / 10000) / 2;
+                    $total_monthly_share = 180.04;
                 } else {
                     logger("-- Monthly pay < 10k $monthly_pay");
                     $total_monthly_share = $minimum_monthly_deduction;
