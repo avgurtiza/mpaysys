@@ -109,7 +109,7 @@ class Manager_FuelController extends Zend_Controller_Action
                         }
                         */
                         try {
-                            $invoice_date = \Carbon\Carbon::createFromFormat('m/d/Y H:i', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME])->toDateTimeString();
+                            $invoice_date = \Carbon\Carbon::createFromFormat('m/d/Y H:i', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME])->format('Y-m-d H:i:s');
                         } catch (Exception $exception) {
                             echo "Invalid date m/d/Y H:i -- " . $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME] . "...";
                             // continue;
