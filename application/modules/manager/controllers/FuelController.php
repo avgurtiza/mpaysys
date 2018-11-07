@@ -31,6 +31,18 @@ class Manager_FuelController extends Zend_Controller_Action
 
     protected function caltexAction()
     {
+        define('C_GASCARD_NO', 7);
+        define('C_STATEMENT_DATE', 6);
+        define('C_INVOICE_DATE', 4);
+        define('C_INVOICE_TIME', 5);
+        define('C_PRODUCT_QUANTITY', 18);
+        define('C_INVOICE_NUMBER', 3);
+        define('C_STATION_NAME', 1);
+        define('C_PRODUCT', 17);
+        define('C_FUEL_NET', 21);
+        define('C_VAT', 22);
+
+        /*
         define('C_GASCARD_NO', 9);
         define('C_STATEMENT_DATE', 8);
         define('C_INVOICE_DATE', 6);
@@ -41,6 +53,7 @@ class Manager_FuelController extends Zend_Controller_Action
         define('C_PRODUCT', 20);
         define('C_FUEL_NET', 24);
         define('C_VAT', 25);
+        */
 
         if ($this->_request->isPost()) {
             set_time_limit(0);
@@ -74,6 +87,7 @@ class Manager_FuelController extends Zend_Controller_Action
                     }*/
 
                     if (!isset($row[C_GASCARD_NO]) || $row[C_GASCARD_NO] == '') {
+                        echo "No gas card number<br/>";
                         continue;
                     }
 
@@ -83,36 +97,65 @@ class Manager_FuelController extends Zend_Controller_Action
                         && isset($row[C_INVOICE_DATE]) && $row[C_INVOICE_DATE] != ''
                     ) {
 
+                        echo "Gas card number {$row[C_GASCARD_NO]}<br/>";
 
+                        $invoice_date = false;
+                        /*
                         try {
-                            $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y His', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME])->toDateTimeString();
+                            $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y H:i', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME])->toDateTimeString();
                         } catch (Exception $exception) {
+                            echo "Invalid date d/m/Y H:i -- " . $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME] . "...";
+                            // continue;
+                        }
+                        */
+                        try {
+                            $invoice_date = \Carbon\Carbon::createFromFormat('m/d/Y H:i', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME])->toDateTimeString();
+                        } catch (Exception $exception) {
+                            echo "Invalid date m/d/Y H:i -- " . $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME] . "...";
+                            // continue;
+                        }
+
+                        if (!$invoice_date) {
+                            echo "No valid invoice date found; skipping. <br>";
                             continue;
                         }
 
+                        $statement_date = false;
 
+                        /*
                         try {
                             $statement_date = \Carbon\Carbon::createFromFormat('d/m/Y', $row[C_STATEMENT_DATE])->toDateString();
                         } catch (Exception $exception) {
-                            continue;
+                            echo "Invalid statement date d/m/Y -- " . $row[C_STATEMENT_DATE] . "...";
                         }
 
+                         */
+                        try {
+                            $statement_date = \Carbon\Carbon::createFromFormat('m/d/Y', $row[C_STATEMENT_DATE])->toDateString();
+                        } catch (Exception $exception) {
+                            echo "Invalid statement date m/d/Y -- " . $row[C_STATEMENT_DATE] . "...";
+                        }
+
+                        if (!$statement_date) {
+                            echo "No valid statement date found; skipping. <br>";
+                            continue;
+                        }
                         // echo "$invoice_date : $statement_date<br>"; continue;
 
 
                         $data = array(
                             'gascard' => $row[C_GASCARD_NO]
-                            , 'raw_invoice_date' => $invoice_date
-                            , 'statement_date' => $statement_date
-                            , 'invoice_date' => $invoice_date
-                            , 'product_quantity' => $row[C_PRODUCT_QUANTITY]
-                            , 'invoice_number' => $row[C_INVOICE_NUMBER]
-                            , 'station_name' => $row[C_STATION_NAME]
-                            , 'product' => $row[C_PRODUCT]
-                            , 'fuel_cost' => $row[C_FUEL_NET] + $row[C_VAT]
+                        , 'raw_invoice_date' => $invoice_date
+                        , 'statement_date' => $statement_date
+                        , 'invoice_date' => $invoice_date
+                        , 'product_quantity' => $row[C_PRODUCT_QUANTITY]
+                        , 'invoice_number' => $row[C_INVOICE_NUMBER]
+                        , 'station_name' => $row[C_STATION_NAME]
+                        , 'product' => $row[C_PRODUCT]
+                        , 'fuel_cost' => $row[C_FUEL_NET] + $row[C_VAT]
                         );
 
-                        if (in_array($row[7], $gascard_no_user)) {
+                        if (in_array($row[C_GASCARD_NO], $gascard_no_user)) {
                             $orphans[] = $data;
                             continue;
                         }
@@ -133,13 +176,13 @@ class Manager_FuelController extends Zend_Controller_Action
                             $Fuel->getMapper()->findOneByField(
                                 array(
                                     'invoice_date'
-                                    , 'invoice_number'
-                                    , 'employee_id'
+                                , 'invoice_number'
+                                , 'employee_id'
                                 )
                                 , array(
                                     $invoice_date
-                                    , "{$row[C_INVOICE_NUMBER]}"
-                                    , $Employee->id
+                                , $row[C_INVOICE_NUMBER]
+                                , $Employee->id
                                 )
                                 , $Fuel);
 
@@ -281,7 +324,7 @@ class Manager_FuelController extends Zend_Controller_Action
                         , 'fuel_cost' => $row[P_FUEL_COST]
                         );
 
-                        if (in_array($row[7], $gascard_no_user)) {
+                        if (in_array($row[P_GASCARD_NO], $gascard_no_user)) {
                             $orphans[] = $data;
                             continue;
                         }
@@ -305,7 +348,7 @@ class Manager_FuelController extends Zend_Controller_Action
                                 )
                                 , array(
                                     $invoice_date
-                                , "{$row[P_INVOICE_NUMBER]}"
+                                , $row[P_INVOICE_NUMBER]
                                 , $Employee->getId()
                                 )
                                 , $Fuel);
