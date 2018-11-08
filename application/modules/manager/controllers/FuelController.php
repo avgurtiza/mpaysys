@@ -79,12 +79,18 @@ class Manager_FuelController extends Zend_Controller_Action
                 $gascard_no_user = [];
                 $gascard_employee = [];
 
+
                 foreach ($file as $row) {
+
+
                     array_map('trim', $row);
 
                     /*if($i < 3) {
                         $i++; continue; // skip header row
+
                     }*/
+
+                    // preprint($row, true);
 
                     if (!isset($row[C_GASCARD_NO]) || $row[C_GASCARD_NO] == '') {
                         echo "No gas card number<br/>";
@@ -100,19 +106,25 @@ class Manager_FuelController extends Zend_Controller_Action
                         echo "Gas card number {$row[C_GASCARD_NO]}<br/>";
 
                         $invoice_date = false;
-                        /*
+
                         try {
                             $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y H:i', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME])->toDateTimeString();
                         } catch (Exception $exception) {
                             echo "Invalid date d/m/Y H:i -- " . $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME] . "...";
                             // continue;
                         }
-                        */
+
+                        /*
                         try {
-                            $invoice_date = \Carbon\Carbon::createFromFormat('m/d/Y H:i', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME])->format('Y-m-d H:i:s');
+                            $invoice_date = \Carbon\Carbon::createFromFormat('m/d/Y H:i', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME]);
                         } catch (Exception $exception) {
                             echo "Invalid date m/d/Y H:i -- " . $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME] . "...";
                             // continue;
+                        }
+                        */
+
+                        if($invoice_date->year >= \Carbon\Carbon::now()->year) {
+                            die('HALT');
                         }
 
                         if (!$invoice_date) {
