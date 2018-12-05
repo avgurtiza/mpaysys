@@ -31,6 +31,20 @@ class Manager_FuelController extends Zend_Controller_Action
 
     protected function caltexAction()
     {
+        define('C_GASCARD_NO', 12);
+        define('C_STATEMENT_DATE', 11);
+        define('C_INVOICE_DATE', 9);
+        define('C_INVOICE_TIME', 10);
+        define('C_PRODUCT_QUANTITY', 23);
+        define('C_INVOICE_NUMBER', 8);
+        define('C_STATION_NAME', 1);
+        define('C_PRODUCT', 22);
+        define('C_FUEL_NET', 25);
+        define('C_VAT', 27);
+
+
+        // 2018-12-05
+        /*
         define('C_GASCARD_NO', 7);
         define('C_STATEMENT_DATE', 6);
         define('C_INVOICE_DATE', 4);
@@ -41,6 +55,7 @@ class Manager_FuelController extends Zend_Controller_Action
         define('C_PRODUCT', 17);
         define('C_FUEL_NET', 21);
         define('C_VAT', 22);
+        */
 
         /*
         define('C_GASCARD_NO', 9);
@@ -108,7 +123,7 @@ class Manager_FuelController extends Zend_Controller_Action
                         $invoice_date = false;
 
                         try {
-                            $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y H:i', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME])->toDateTimeString();
+                            $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y His', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME])->toDateTimeString();
                         } catch (Exception $exception) {
                             echo "Invalid date d/m/Y H:i -- " . $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME] . "...";
                             // continue;
