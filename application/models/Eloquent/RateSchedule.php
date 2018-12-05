@@ -20,6 +20,15 @@ class Messerve_Model_Eloquent_RateSchedule extends Eloquent
             ;
     }
 
+    public static function splits($group_id, $date_start, $date_end)
+    {
+        return Messerve_Model_Eloquent_RateSchedule::where('group_id', $group_id)
+            ->where('date_active', '>=', $date_start)
+            ->where('date_active', '<=', $date_end)
+            ->get()
+            ;
+    }
+
     public function rate()
     {
         return $this->belongsTo(Messerve_Model_Eloquent_Rate::class, 'rate_id', 'id');

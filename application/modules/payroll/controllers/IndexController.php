@@ -357,6 +357,71 @@ class Payroll_IndexController extends Zend_Controller_Action
         return $page;
     }
 
+    protected function calculateEcola($employee_id, $group_id, $date_start, $date_end)
+    {
+        $group = Messerve_Model_Eloquent_Group::find($group_id);
+        $group_rate = $group->rate;
+
+        // Get paysplits
+        $splits = Messerve_Model_Eloquent_RateSchedule::splits($group_id, $date_start, $date_end);
+
+        $date_splits = [];
+        $split_start = $date_start;
+
+
+        foreach ($splits as $split) {
+            $date_splits[] = [
+                'start' => $split_start,
+                'end' => \Carbon\Carbon::parse($split->date_active)->subDays(1)->toDateString(),
+                'rate' => $group_rate
+            ];
+
+            $split_start = \Carbon\Carbon::parse($split->date_active)->toDateString();
+
+            $group_rate = $split->rate;
+        }
+
+        $date_splits[] = [
+            'start' => $split_start,
+            'end' => $date_end,
+            'rate' => $group_rate
+        ];
+
+        // preprint($date_splits);
+
+        $ecola = [];
+
+        foreach ($date_splits as $date_split) {
+            $attended_days = $this->get_cutoff_attended_days($employee_id, $date_split['start'], $date_split['end']);
+
+            $ecola_regular = [
+                'start' => $date_split['start'],
+                'end' => $date_split['end'],
+                'days' => $attended_days,
+                'pay' => $attended_days * $date_split['rate']->ecola,
+                'rate' => $date_split['rate']->ecola
+            ];
+
+            $legal_attended_days = $this->get_legal_attended_days($employee_id, $date_split['start'], $date_split['end']);
+
+            $ecola_legal = [
+                'start' => $date_split['start'],
+                'end' => $date_split['end'],
+                'days' => $legal_attended_days,
+                'pay' => $legal_attended_days * $date_split['rate']->ecola,
+                'rate' => $date_split['rate']->ecola
+            ];
+
+            $ecola[] = [
+                'regular' => $ecola_regular,
+                'legal' => $ecola_legal,
+            ];
+        }
+
+        // preprint($ecola, true);
+
+        return $ecola;
+    }
 
     public function payslipsAction()
     {
@@ -728,6 +793,37 @@ class Payroll_IndexController extends Zend_Controller_Action
             $page->setFont($mono, 8)->drawText(str_pad(substr(number_format($total_pay, 3), 0, -1), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
 
             if ($Employee->getGroupId() == $group_id) {
+                $pay_splits = $this->calculateEcola($Employee->getId(), $group_id, $date_start, $date_end);
+
+                foreach ($pay_splits as $pay_split) {
+                    if (isset($pay_split['regular']) && $pay_split['regular']['pay'] > 0) {
+                        // $pay_split['regular']
+                        $attended_days = $pay_split['regular']['days'];
+                        $ecola_addition = $pay_split['regular']['pay'];
+
+                        $total_pay += $ecola_addition;
+
+                        $dim_y -= 8;
+                        $page->setFont($font, 8)->drawText('ECOLA (' . $attended_days . ' day/s)', $dim_x + 220, $dim_y);
+                        $page->setFont($mono, 8)->drawText(str_pad(number_format($ecola_addition, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
+
+                    }
+
+                    if (isset($pay_split['legal']) && $pay_split['legal']['pay'] > 0) {
+                        // $pay_split['regular']
+                        $attended_days = $pay_split['legal']['days'];
+                        $ecola_addition = $pay_split['legal']['pay'];
+
+                        $total_pay += $ecola_addition;
+
+                        $dim_y -= 8;
+                        $page->setFont($font, 8)->drawText('ECOLA - Legal (' . $attended_days . ' day/s)', $dim_x + 220, $dim_y);
+                        $page->setFont($mono, 8)->drawText(str_pad(number_format($ecola_addition, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
+
+                    }
+
+                }
+                /*
                 $attended_days = $this->get_cutoff_attended_days($Employee->getId(), $date_start, $date_end);
                 $ecola_addition = $attended_days * $ecola;
                 $total_pay += $ecola_addition;
@@ -743,6 +839,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $page->setFont($mono, 8)->drawText(str_pad(number_format($legal_ecola_addition, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
                     $total_pay += $legal_ecola_addition;
                 }
+                */
 
             }
 
@@ -3307,6 +3404,23 @@ class Payroll_IndexController extends Zend_Controller_Action
         $pdf->save($filename);
     }
 
+    protected function get_legal_attended_days($employee_id, $date_start, $date_end)
+    {
+        $AttendanceDb = new Messerve_Model_DbTable_Attendance();
+
+        $select = $AttendanceDb->select();
+
+        $select->from($AttendanceDb, array("COUNT(*) AS amount"))
+            ->where("employee_id = $employee_id
+                AND datetime_start >= '$date_start 00:00'
+                AND datetime_start <= '$date_end 23:59'
+                AND (legal > 0 OR legal_ot > 0)");
+
+        $rows = $AttendanceDb->fetchAll($select);
+
+        return ($rows[0]->amount);
+    }
+
     protected function get_cutoff_attended_days($employee_id, $date_start, $date_end)
     {
         $AttendanceDb = new Messerve_Model_DbTable_Attendance();
@@ -3582,11 +3696,11 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $this_row = array(
                     'empno' => $employee_number
-                    , 'emplname' => $pvalue->getLastName()
-                    , 'salary' => round($pvalue->getNetPay(), 2)
-                    , 'actno' => strtoupper($pvalue->getAccountNumber())
-                    , 'empfname' => $pvalue->getFirstName()
-                    , 'depbrcode' => '73'
+                , 'emplname' => $pvalue->getLastName()
+                , 'salary' => round($pvalue->getNetPay(), 2)
+                , 'actno' => strtoupper($pvalue->getAccountNumber())
+                , 'empfname' => $pvalue->getFirstName()
+                , 'depbrcode' => '73'
                 );
 
                 $payroll_array[$employee_number] = $this_row;
