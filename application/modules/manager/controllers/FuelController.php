@@ -31,6 +31,8 @@ class Manager_FuelController extends Zend_Controller_Action
 
     protected function caltexAction()
     {
+        ini_set('memory_limit', '1G');
+
         define('C_GASCARD_NO', 12);
         define('C_STATEMENT_DATE', 11);
         define('C_INVOICE_DATE', 9);
@@ -245,8 +247,10 @@ class Manager_FuelController extends Zend_Controller_Action
         }
     }
 
-    public function importAction()
+    public function importAction() // Petron import
     {
+        ini_set('memory_limit', '1G');
+
 
         define('P_GASCARD_NO', 5);
         define('P_STATEMENT_DATE', 2);
