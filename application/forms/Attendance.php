@@ -15,12 +15,14 @@ class Messerve_Form_Attendance extends Zend_Form
         $this->setMethod('get');
 
         $start_date = strtotime(date('Y-m-d'));
-        
+
         $period_options = array();
-        
+
+        $period_options[date('Y-m', $start_date) . '-1_15'] = date('Y F 01-15', $start_date);
+
         for($i = 0; $i <= 12; $i++) {
         	$this_date = strtotime("-$i months", $start_date);
-        	
+
         	if(date('Ymd') > date('Ym30', $this_date)) {
         		$period_options[date('Y-m', $this_date) . '-16_31'] = date('Y F 16-31', $this_date);
         	}
