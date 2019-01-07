@@ -33,6 +33,7 @@ class Manager_FuelController extends Zend_Controller_Action
     {
         ini_set('memory_limit', '1G');
 
+        /*
         define('C_GASCARD_NO', 12);
         define('C_STATEMENT_DATE', 11);
         define('C_INVOICE_DATE', 9);
@@ -43,10 +44,10 @@ class Manager_FuelController extends Zend_Controller_Action
         define('C_PRODUCT', 22);
         define('C_FUEL_NET', 25);
         define('C_VAT', 27);
-
+        */
 
         // 2018-12-05
-        /*
+
         define('C_GASCARD_NO', 7);
         define('C_STATEMENT_DATE', 6);
         define('C_INVOICE_DATE', 4);
@@ -57,7 +58,6 @@ class Manager_FuelController extends Zend_Controller_Action
         define('C_PRODUCT', 17);
         define('C_FUEL_NET', 21);
         define('C_VAT', 22);
-        */
 
         /*
         define('C_GASCARD_NO', 9);
@@ -85,8 +85,6 @@ class Manager_FuelController extends Zend_Controller_Action
             } else {
 
                 $filename = $upload->getFilename();
-
-                // echo $filename;
 
                 $file = new SplFileObject($filename);
                 $file->setFlags(SplFileObject::READ_CSV);
@@ -127,9 +125,17 @@ class Manager_FuelController extends Zend_Controller_Action
                         try {
                             $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y His', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME])->toDateTimeString();
                         } catch (Exception $exception) {
+                            echo "Invalid date d/m/Y His -- " . $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME] . "...";
+                            // continue;
+                        }
+
+                        try {
+                            $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y H:i', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME])->toDateTimeString();
+                        } catch (Exception $exception) {
                             echo "Invalid date d/m/Y H:i -- " . $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME] . "...";
                             // continue;
                         }
+
 
                         /*
                         try {
@@ -140,9 +146,14 @@ class Manager_FuelController extends Zend_Controller_Action
                         }
                         */
 
-                        if($invoice_date->year >= \Carbon\Carbon::now()->year) {
-                            die('HALT');
+                        try {
+                            if($invoice_date->year >= \Carbon\Carbon::now()->year) {
+                                die('HALT.  Invoice date is in the future!');
+                            }
+                        } catch (Exception $exception) {
+                            $invoice_date = false;
                         }
+
 
                         if (!$invoice_date) {
                             echo "No valid invoice date found; skipping. <br>";
