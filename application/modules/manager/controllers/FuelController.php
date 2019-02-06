@@ -94,10 +94,11 @@ class Manager_FuelController extends Zend_Controller_Action
                 $gascard_no_user = [];
                 $gascard_employee = [];
 
+                $row_count = 0;
 
                 foreach ($file as $row) {
 
-
+                    $row_count++;
                     array_map('trim', $row);
 
                     /*if($i < 3) {
@@ -122,18 +123,49 @@ class Manager_FuelController extends Zend_Controller_Action
 
                         $invoice_date = false;
 
+                        $split_time = explode(':', $row[C_INVOICE_TIME]);
+
+                        $invoice_time = '';
+
+                        if (!$split_time[0]) {
+                            $invoice_time .= '00:';
+                        } else {
+                            $invoice_time .= $split_time[0] . ':';
+                        }
+
+
+                        if (!$split_time[1]) {
+                            $invoice_time .= '00:';
+                        } else {
+                            $invoice_time .= $split_time[1] . ':';
+                        }
+
+
+                        if (!$split_time[2]) {
+                            $invoice_time .= '00';
+                        } else {
+                            $invoice_time .= $split_time[2];
+                        }
+
+
+                        $full_date = $row[C_INVOICE_DATE] . ' ' . $invoice_time;
+
                         try {
-                            $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y His', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME])->toDateTimeString();
+                            $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y His', $full_date)->toDateTimeString();
                         } catch (Exception $exception) {
-                            echo "Invalid date d/m/Y His -- " . $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME] . "...";
-                            // continue;
+                            echo "Invalid date d/m/Y His -- " . $full_date . "...";
                         }
 
                         try {
-                            $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y H:i', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME])->toDateTimeString();
+                            $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y H:i', $full_date)->toDateTimeString();
                         } catch (Exception $exception) {
-                            echo "Invalid date d/m/Y H:i -- " . $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME] . "...";
-                            // continue;
+                            echo "Invalid date d/m/Y H:i -- " . $full_date . "...";
+                        }
+
+                        try {
+                            $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y H:i:s', $full_date)->toDateTimeString();
+                        } catch (Exception $exception) {
+                            echo "Invalid date d/m/Y H:i -- " . $full_date . "...";
                         }
 
 
@@ -147,15 +179,16 @@ class Manager_FuelController extends Zend_Controller_Action
                         */
 
                         try {
-                            if($invoice_date->year >= \Carbon\Carbon::now()->year) {
-                                die('HALT.  Invoice date is in the future!');
+                            if ($invoice_date->year >= \Carbon\Carbon::now()->year) {
+                                throw new('HALT.  Invoice date is in the future! At line ' . $row_count);
                             }
                         } catch (Exception $exception) {
                             $invoice_date = false;
                         }
 
 
-                        if (!$invoice_date) {
+                        if (!$invoice_date && is_numeric($row[C_GASCARD_NO])) {
+                            throw new Exception('Invoice date is invalid! Expecting DD/MM/YYYY HH:MM:SS but got: ' . $full_date . ' at line ' . $row_count);
                             echo "No valid invoice date found; skipping. <br>";
                             continue;
                         }
