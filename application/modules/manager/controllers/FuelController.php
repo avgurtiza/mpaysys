@@ -180,7 +180,7 @@ class Manager_FuelController extends Zend_Controller_Action
 
                         try {
                             if ($invoice_date->year >= \Carbon\Carbon::now()->year) {
-                                throw new('HALT.  Invoice date is in the future! At line ' . $row_count);
+                                throw new Exception('HALT.  Invoice date is in the future! At line ' . $row_count);
                             }
                         } catch (Exception $exception) {
                             $invoice_date = false;
