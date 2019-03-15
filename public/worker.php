@@ -131,10 +131,13 @@ while (1) {
                 $pending_payroll->save();
             }
 
-            $message->delete();
         } else {
             echo 'RESULT NOT OK ' . $result;
+            logger("Queued payroll processing failed with result string of $result.  Command was $command.  Queue message follows:");
+            logger(json_encode($object));
         }
+
+        $message->delete();
 
         sleep(2);
 
