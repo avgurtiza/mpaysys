@@ -46,13 +46,14 @@ if (Zend_Controller_Front::getInstance()->getRequest()->getControllerName() != Z
                     <dd><a href="/user/grid">Users</a></dd>
                     <dd><a href="/payroll/index">Payroll</a></dd>
                     <dd><a href="/payroll/floating">Floating OT</a></dd>
+                    <dd><a href="/payroll/index/pending">Pending payroll</a></dd>
                 <?php endif; ?>
 
-                <?php if ($this->user_auth && $this->user_auth->type != 'encoder'): ?>
+                <?php if ($this->user_auth && $this->user_auth->type !== 'encoder'): ?>
                     <dd><a href="/dataentry/attendance">Attendance</a></dd>
                 <?php endif; ?>
 
-                <?php if ($this->user_auth && $this->user_auth->type == 'encoder'): ?>
+                <?php if ($this->user_auth && $this->user_auth->type === 'encoder'): ?>
                     <dd><a href="/dataentry/index/start">Deductions</a></dd>
                 <?php endif; ?>
 
