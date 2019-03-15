@@ -3,6 +3,19 @@
 class ErrorController extends Zend_Controller_Action
 {
 
+    function cliAction ()
+    {
+        $this->_helper->viewRenderer->setNoRender (true);
+
+        foreach ($this->_getParam ('error_handler') as $error)
+        {
+            if ($error instanceof Exception)
+            {
+                print $error->getMessage () . "\n";
+            }
+        }
+    }
+
     public function errorAction()
     {
         $errors = $this->_getParam('error_handler');

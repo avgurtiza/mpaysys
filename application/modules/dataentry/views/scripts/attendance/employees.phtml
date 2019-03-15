@@ -131,6 +131,8 @@
         echo $this->pay_period; ?>">
             Current fuel cost /L <input type="text" name="fuelcost" size="2" value="<?php echo $this->fuelcost; ?>"/>
             <input type="submit" value="Commit payroll"/>
+            <br>
+            <a href="#" class="queue-for-processing">Queue for processing</a>
         </form>
 
         <ul class="report-list">
@@ -197,3 +199,25 @@
     <br>
 
 <?php endif; ?>
+<script>
+    $(function () {
+        $('.queue-for-processing').on('click', function (event) {
+            event.preventDefault();
+
+            $.post('/payroll/index/queuepayroll', {
+                group_id: '<?=$this->group->getId()?>',
+                date_start: '<?=$this->date_start?>',
+                date_end: '<?=$this->date_end?>'
+            }).done(function (data) {
+                if (data === 'OK') {
+                    alert('Processing request has been queued.');
+                } else {
+                    alert('Processing request has failed! ' + data);
+                }
+            }).fail(function (data) {
+                alert('Failed to queue job!')
+            });
+
+        });
+    });
+</script>

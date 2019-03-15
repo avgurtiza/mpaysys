@@ -32,9 +32,10 @@
         </tr>
         </thead>
         <tbody>
+        <?php $is_dirty = false; ?>
         <?php foreach ($this->dates as $dkey => $dvalue) :
             $approved_ot_hours = 0;
-            if ($dvalue->ot_approved == 'yes') {
+            if ($dvalue->ot_approved === 'yes') {
                 $hours = floor($dvalue->getOtApprovedHours());
                 $minutes = round(($dvalue->getOtApprovedHours() - $hours) * 60, 2);
                 $approved_ot_hours = $hours . ':' . str_pad($minutes, 2, 0, STR_PAD_LEFT);
@@ -43,10 +44,11 @@
             $extended_css = 'no_extended';
             $extended_warn_css = 'hidden';
 
-            if ($dvalue->extended_shift == 'yes') {
-                if ($dvalue->approved_extended_shift == 'yes') {
+            if ($dvalue->extended_shift === 'yes') {
+                if ($dvalue->approved_extended_shift === 'yes') {
                     $extended_css = 'approved_extended';
                 } else {
+                    $is_dirty = true;
                     $extended_warn_css = '';
                     $extended_css = 'unapproved_extended';
                 }
@@ -229,6 +231,7 @@
                             <dt>Actual OT</dt>
                             <dd><?php echo decimal_to_time($dvalue->getOtActualHours(), 2); ?></dd>
                             <?php if ($dvalue->getOtActualHours() > 5 || $dvalue->getOtApprovedHours() > $dvalue->getOtActualHours()): ?>
+                            <?php $is_dirty = true; ?>
                             <dt class="warn">CHECK OT</dt>
                             <dd class="warn"></dd>
                         <?php endif; ?>
@@ -255,7 +258,7 @@
 </form>
 
 
-<?php if ($this->user_auth->type == 'admin'): ?>
+<?php if ($this->user_auth->type === 'admin'): ?>
     <?php echo $this->form; ?>
 <?php endif; ?>
 
@@ -281,12 +284,25 @@
 
 
     $(function () {
+
+        <?php if($is_dirty && $this->user_auth->type !== 'admin'): ?>
+        alert('This DTR has anomalies.  Please correct or confirm with HR.');
+        alert('Do not forget to correct or report to HR');
+        <?php endif; ?>
+
+        <?php if($is_dirty && $this->user_auth->type === 'admin'): ?>
+        alert('This DTR has anomalies.');
+        <?php endif; ?>
+
+
+        /*
         $('.check-extend').each(function () {
             var sibling_approved = $(this).siblings('.check-approve-extend');
             if(!$(this).is(':checked')) {
                 sibling_approved.prop('checked', false).prop('disabled', true);
             }
         });
+        */
 
         $('.check-extend').on('change', function () {
             var sibling_approved = $(this).siblings('.check-approve-extend');
@@ -300,7 +316,7 @@
 
         $('.reset-day').click(function (evt) {
             if (!confirm('Are you sure you want to delete this attendance entry?')) {
-                return;
+                return false;
             } else {
                 evt.preventDefault();
                 var this_button = $(this);
@@ -319,8 +335,7 @@
         });
 
         $('.attendance-grid td').click(function () {
-            var url = $('a.open-daily-attendance', this).attr('href');
-            window.location.href = url;
+            window.location.href = $('a.open-daily-attendance', this).attr('href');
         });
 
         $('.check-approve').change(function () {

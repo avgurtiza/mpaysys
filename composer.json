@@ -11,6 +11,8 @@
         "zendframework/zendframework1": "^1.12",
         "phpoffice/phpexcel": "^1.8",
         "nesbot/carbon": "^1.21",
-        "illuminate/database": "^5.4"
+        "illuminate/database": "^5.4",
+        "slm/queue": "^1.0",
+        "slm/queue-doctrine": "^2.0"
     }
 }

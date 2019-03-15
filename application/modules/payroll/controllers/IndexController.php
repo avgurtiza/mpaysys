@@ -15,16 +15,18 @@ class Payroll_IndexController extends Zend_Controller_Action
         $storage = new Zend_Auth_Storage_Session();
         $data = $storage->read();
 
-        if (!$data) {
+        if (!$data && PHP_SAPI !== 'cli') {
             $this->_redirect('auth/login');
         }
 
-        $this->_user_auth = $data;
+        if (PHP_SAPI !== 'cli') {
+            $this->_user_auth = $data;
 
-        $this->view->user_auth = $this->_user_auth;
+            $this->view->user_auth = $this->_user_auth;
 
-        if ($this->_user_auth->type != 'admin' && $this->_user_auth->type != 'accounting') {
-            throw new Exception('You are not allowed to access this module.');
+            if ($this->_user_auth->type !== 'admin' && $this->_user_auth->type !== 'accounting') {
+                throw new Exception('You are not allowed to access this module.');
+            }
         }
 
         $this->_fuelcost = $this->_request->getParam('fuelcost');
@@ -32,6 +34,77 @@ class Payroll_IndexController extends Zend_Controller_Action
         $_SESSION['fuelcost'] = $this->_fuelcost;
 
         $this->_config = Zend_Registry::get('config');
+    }
+
+    public function queuepayrollAction()
+    {
+        $this->_helper->layout()->disableLayout();
+        $this->_helper->viewRenderer->setNoRender(true);
+
+        $group_id = $this->_request->getParam('group_id');
+        $date_start = $this->_request->getParam('date_start');
+        $date_end = $this->_request->getParam('date_end');
+
+        $this->queuePayslipProcessing($group_id, $date_start, $date_end);
+
+        echo 'OK';
+    }
+
+    public function jobtestAction()
+    {
+
+    }
+
+    public function cliAction()
+    {
+        if (PHP_SAPI !== 'cli') {
+            throw  new Exception('Not CLI!');
+        }
+
+        $params = $this->_request->getParam('params');
+
+        $this->_request->setParams(
+            [
+                'group_id' => $params[0],
+                'date_start' => $params[1],
+                'date_end' => $params[2],
+                'is_ajax' => true
+            ]
+        );
+
+        echo $this->payslipsAction();
+    }
+
+    protected function queuePayslipProcessing($group_id, $date_start, $date_end)
+    {
+        $process = new Messervelib_ProcessGroupPayroll();
+
+        $process->setData(
+            [
+                'group_id' => $group_id,
+                'date_start' => $date_start,
+                'date_end' => $date_end
+            ]
+        );
+
+        $queueAdapter = Zend_Registry::getInstance()->queueAdapter;
+
+        $message = base64_encode(gzcompress(serialize($process)));
+
+        $queue = new Zend_Queue($queueAdapter, ['name' => 'process-group-payroll']);
+        $job = $queue->send($message);
+
+        Messerve_Model_Eloquent_PendingPayroll::create(
+            [
+                'message_id' => $job->message_id,
+                'group_id' => $group_id,
+                'date_start' => $date_start,
+                'date_end' => $date_end,
+                'pay_period' => 'PP',
+                'is_done' => false,
+            ]
+        );
+
     }
 
     public function indexAction()
@@ -76,7 +149,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         // ETPS logs
 
         $etps_report_1k = [];
-        $etps_dir = realpath(APPLICATION_PATH . '/../public/export/etps');
+        $etps_dir = dirname(APPLICATION_PATH) . '/../public/export/etps';
 
 
         if (file_exists($etps_dir)) {
@@ -113,13 +186,11 @@ class Payroll_IndexController extends Zend_Controller_Action
     public function clientreportAction()
     {
         throw new Exception('This feature is no longer available.');
-        die();
     }
 
     protected function _process_client_report()
     {
         throw new Exception('This feature is no longer available.');
-        die();
     }
 
     protected function _process_group_attendance($group_id, $date_start, $date_end)
@@ -143,6 +214,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $AttendanceMap = new Messerve_Model_Mapper_Attendance();
 
+            $data = [];
 
             for ($i = 1; $i <= $period_size; $i++) {
 
@@ -180,9 +252,11 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , 'model' => $Attendance
                 );
 
-
                 $current_date = date('Y-m-d', strtotime('+1 day', strtotime($current_date)));
+            }
 
+            if (!(count($data) > 0)) {
+                throw new Exception('No group attendance data found!');
             }
 
             $Payroll->save_the_day($Attendance->getEmployeeId(), $group_id, $data); // TODO:  Figure out why this needs to be called twice
@@ -423,6 +497,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         return $ecola;
     }
 
+
     public function payslipsAction()
     {
         error_reporting(E_ERROR);
@@ -482,6 +557,8 @@ class Payroll_IndexController extends Zend_Controller_Action
         $logo = Zend_Pdf_Image::imageWithPath(APPLICATION_PATH . '/../public/images/messerve.png');
 
         $folder = realpath(APPLICATION_PATH . '/../public/export') . "/$date_start/$group_id/payslips/";
+
+        // $folder = dirname(APPLICATION_PATH) . '/../public/export' . "/$date_start/$group_id/payslips/";
         $cmd = "mkdir -p $folder";
         shell_exec($cmd); // Create folder
 
@@ -694,7 +771,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 foreach ($pvalue as $rkey => $rvalue) {
 
-                    if ($rkey == "meta") {
+                    if ($rkey === "meta") {
                         $pay_rate_id = $rvalue->employee->rate->id;
 
                         $payroll_meta['rate_data'] = json_encode($rvalue);
@@ -900,7 +977,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             }
 
             // Get rider rate sss
-            echo "Checking SSS... ";
+            // echo "Checking SSS... ";
 
             if ($EmployeeRate->sss_employee <= 0) { // Rider rate is 0 sss
                 echo "NO SSS.";
@@ -944,10 +1021,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $bop_slip_data['addition']['maintenance'] = $BOPAttendance->getMaintenanceAddition();
 
-                    // echo "<br> maintenance" . $BOPAttendance->getMaintenanceAddition();
                     $other_additions += $BOPAttendance->getMaintenanceAddition();
-                    // $bop_maintenance = $BOPAttendance->getMaintenanceAddition();
-
                 }
             }
 
@@ -1103,13 +1177,13 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
             // TODO:  Fix hacky hack
+            // Delete prior record
             $PayrollTemp = new Messerve_Model_PayrollTemp();
 
             $PayrollTemp->getMapper()->getDbTable()
                 ->delete("group_id = " . $Group->getId() . " AND period_covered = '$date_start' AND employee_id = " . $Employee->getId());
-            // Delete prior record
 
-            if (!$total_pay > 0) continue;
+            if (!($total_pay > 0)) continue;
 
             $dim_y = 136;
             $dim_y -= 8;
@@ -1243,15 +1317,20 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
         $this->summaryreportAction();
-        // $this->clientreportAction();
 
-        if ($this->_request->getParam("is_ajax") != "true") {
+        // echo 'Almost done...' . $this->_request->getParam("is_ajax");
+
+        if ($this->_request->getParam("is_ajax") !== "true" && PHP_SAPI !== 'cli') {
             $this->_helper->getHelper('Redirector')->goToUrl($_SERVER['HTTP_REFERER']);
             // $this->_redirect($_SERVER['HTTP_REFERER']);
-        } else {
+        } elseif ($this->_request->getParam("is_ajax") === "true") {
             echo "AJAX Complete";
+        } else {
+            // echo "OK";
         }
 
+        return 'OK';
+        // return [];
     }
 
     protected function resetPhilhealth($employee_id, $date_start)
@@ -4237,6 +4316,11 @@ class Payroll_IndexController extends Zend_Controller_Action
             $date = date('Y-m-d', $next_month);
         }
         die('OH HAI');
+    }
+
+    public function pendingAction()
+    {
+        $this->view->pending_payroll = Messerve_Model_Eloquent_PendingPayroll::orderBy('id', 'DESC')->get();
     }
 }
 

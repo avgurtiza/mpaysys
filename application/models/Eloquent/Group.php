@@ -12,4 +12,9 @@ class Messerve_Model_Eloquent_Group extends Eloquent
     {
         return $this->belongsTo(Messerve_Model_Eloquent_Rate::class, 'rate_id', 'id');
     }
+
+    public function client()
+    {
+        return $this->belongsTo(Messerve_Model_Eloquent_Client::class, 'client_id', 'id');
+    }
 }

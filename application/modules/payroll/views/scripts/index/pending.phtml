@@ -1,0 +1,26 @@
+<table class="table">
+<tr>
+    <td>Id</td>
+    <td>Client</td>
+    <td>Group</td>
+    <td>Period</td>
+    <td>Status</td>
+    <td>Requested at</td>
+</tr>
+<?php foreach($this->pending_payroll as $payroll): ?>
+<tr>
+    <td><?=$payroll->id?></td>
+    <td><?=$payroll->group->client->name?></td>
+    <td><?=$payroll->group->name?></td>
+    <td><?=\Carbon\Carbon::parse($payroll->date_start)->toDateString(); ?></td>
+    <td>
+        <?php if ($payroll->is_done): ?>
+        Done
+        <?php else: ?>
+        Pending
+        <?php endif; ?>
+       </td>
+    <td><?=\Carbon\Carbon::parse($payroll->created_at)->toDateTimeString(); ?></td>
+</tr>
+<?php endforeach; ?>
+</table>

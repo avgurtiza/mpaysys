@@ -1,57 +1,14 @@
 <?php
+/*
+ * Payroll processing daemon
+ *
+ */
+
 if (!function_exists('preprint')) {
     function preprint($mixed, $exit_after = false)
     {
         echo '<pre style="clear: both;">' . print_r($mixed, true) . '</pre>';
         if ($exit_after) die();
-    }
-}
-
-if (!function_exists('checkaccess')) {  // TODO:  Primitive acl,  replace with Zend ACL
-    function checkaccess($usertype, $allowed_types)
-    {
-        if (!is_array($allowed_types)) die('Invalid user types list.');
-
-        if (!in_array($usertype, $allowed_types)) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-}
-
-if (!function_exists('zend_enum_from_info')) {
-    function zend_enum_from_info($info, $field)
-    {
-        $enum = $info['metadata'][$field]['DATA_TYPE'];
-
-        $start_enum = strpos($enum, "'");
-        $end_enum = strrpos($enum, "'");
-
-        $end_enum -= $start_enum;
-
-        $enum = substr($enum, $start_enum, $end_enum + 1);
-        $enum = str_replace("'", '', $enum);
-
-        $enum = explode(",", $enum);
-
-        $out = array();
-
-        foreach ($enum as $value) {
-            $out[$value] = ucfirst(strtolower($value));
-        }
-
-        return $out;
-    }
-}
-
-if (!function_exists('decimal_to_time')) {
-    function decimal_to_time($decimal_time)
-    {
-        $hour = floor($decimal_time);
-        $min = round(60 * ($decimal_time - $hour));
-        $min = str_pad($min, 2, '0', STR_PAD_LEFT);
-        return "{$hour}:{$min}";
     }
 }
 
@@ -107,9 +64,6 @@ $application = new Zend_Application(
     APPLICATION_PATH . '/configs/application.ini'
 );
 
-
-// TODO:  get db creds from config
-
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 /**
@@ -135,5 +89,56 @@ $capsule->addConnection([
 $capsule->setAsGlobal();
 $capsule->bootEloquent();
 
-$application->bootstrap()
-    ->run();
+// $application->bootstrap()->run();
+
+$application->getBootstrap()->bootstrap(['db', 'queue']);
+$sleep_time = 10;
+
+while (1) {
+    $queue = Messerve_Model_Eloquent_Queue::where('queue_name', 'process-group-payroll')->first();
+
+    if (!$queue) {
+        throw new Exception('Queue process-group-payroll not found!');
+    }
+
+    $message = $queue->messages->first();
+
+    if (!$message) {
+        // print(PHP_EOL . "No job found, sleeping for $sleep_time seconds." . PHP_EOL);
+        sleep($sleep_time);
+    } else {
+        $body = base64_decode($message->body);
+        $serial = gzuncompress($body);
+        $object = unserialize($serial);
+        print(PHP_EOL . "Running job..." . PHP_EOL);
+
+        $data = $object->getData();
+        print_r($data);
+
+        $index = realpath(dirname(APPLICATION_PATH) . '/public/index.php');
+
+        $command = sprintf('php -f %s index payroll %d %s %s', $index, $data['group_id'], $data['date_start'], $data['date_end']);
+
+        $result = exec($command);
+
+        if (stripos($result, 'ok') !== false) {
+            // if ($result === 'OK') {
+            $pending_payroll = $message->pendingPayroll;
+
+            if ($pending_payroll) {
+                echo "Found payroll!" . PHP_EOL;
+                $pending_payroll->is_done = true;
+                $pending_payroll->save();
+            }
+
+            $message->delete();
+        } else {
+            echo 'RESULT NOT OK ' . $result;
+        }
+
+        sleep(2);
+
+    }
+
+
+}

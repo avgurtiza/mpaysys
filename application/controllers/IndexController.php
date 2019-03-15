@@ -11,6 +11,11 @@ class IndexController extends Zend_Controller_Action
     public function indexAction()
     {
         // action body
+        print('IAREHERE');
+    }
+
+    public function cliAction() {
+        print('DISISDAEND');
     }
 
 }

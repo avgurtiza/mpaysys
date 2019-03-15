@@ -15,6 +15,8 @@ class Default_IndexController extends Zend_Controller_Action
         $this->_redirect('/manager/client');
     }
 
+    public function cliAction() {
+    }
 
 }
 
