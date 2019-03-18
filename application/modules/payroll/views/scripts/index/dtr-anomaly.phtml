@@ -1,0 +1,38 @@
+<table class="table">
+    <tr>
+        <th></th>
+        <th>Client-group</th>
+        <th>Rider</th>
+        <!--<th>Approved</th>
+        <th></th>-->
+    </tr>
+    <?php foreach ($this->anomalies as $anomaly): ?>
+        <tr>
+            <td><?= $anomaly->id; ?></td>
+            <td>
+                <a href="/dataentry/attendance/employee/id/<?= $anomaly->employee_id;
+                ?>/date_start/<?= $this->payroll_dates->start;
+                ?>/date_end/<?= $this->payroll_dates->end;
+                ?>/group_id/<?= $anomaly->group_id;
+                ?>/pay_period/<?= $this->payroll_dates->period;
+                ?>"
+                   target="_blank"><?= $anomaly->group->fullname; ?></a>
+
+            </td>
+            <td><?= $anomaly->employee->name; ?></td>
+            <!--
+            <?php if ($anomaly->is_approved == 1): ?>
+                <td>Yes</td>
+                <td>
+                    <button class="button tiny secondary">Disapprove</button>
+                </td>
+            <?php else: ?>
+                <td></td>
+                <td>
+                    <button class="button tiny">Approve</button>
+                </td>
+            <?php endif; ?>
+            -->
+        </tr>
+    <?php endforeach; ?>
+</table>

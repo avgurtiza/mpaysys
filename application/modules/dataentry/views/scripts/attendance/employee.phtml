@@ -189,7 +189,7 @@
                                 continue;
                             }
 
-                            if (!round($evalue, 2) > 0) continue;
+                            if (!(round($evalue, 2) > 0)) continue;
                             $warn_css = '';
                             if ($evalue > 9 || $evalue < 0) $warn_css = 'warn';
                             ?>

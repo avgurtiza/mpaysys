@@ -27,4 +27,8 @@ class Messerve_Model_Eloquent_Employee extends Eloquent
     {
         return $this->hasManyThrough(Messerve_Model_Eloquent_BopAttendance::class, Messerve_Model_Eloquent_Attendance::class, 'employee_id', 'attendance_id');
     }
+
+    public function getNameAttribute() {
+        return $this->firstname . ' ' . $this->lastname;
+    }
 }

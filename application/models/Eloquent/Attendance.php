@@ -17,6 +17,11 @@ class Messerve_Model_Eloquent_Attendance extends Eloquent
         return $this->belongsTo(Messerve_Model_Eloquent_Employee::class, 'employee_id', 'id');
     }
 
+    public function group()
+    {
+        return $this->belongsTo(Messerve_Model_Eloquent_Group::class, 'group_id', 'id');
+    }
+
     public function attendancePayroll()
     {
         return $this->hasMany(Messerve_Model_Eloquent_AttendancePayroll::class, 'attendance_id', 'id');

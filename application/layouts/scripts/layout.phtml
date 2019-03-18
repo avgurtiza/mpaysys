@@ -47,6 +47,7 @@ if (Zend_Controller_Front::getInstance()->getRequest()->getControllerName() != Z
                     <dd><a href="/payroll/index">Payroll</a></dd>
                     <dd><a href="/payroll/floating">Floating OT</a></dd>
                     <dd><a href="/payroll/index/pending">Pending payroll</a></dd>
+                    <dd><a href="/payroll/index/dtr-anomaly">DTR Anomalies</a></dd>
                 <?php endif; ?>
 
                 <?php if ($this->user_auth && $this->user_auth->type !== 'encoder'): ?>

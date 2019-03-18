@@ -36,6 +36,53 @@ class Payroll_IndexController extends Zend_Controller_Action
         $this->_config = Zend_Registry::get('config');
     }
 
+    public function dtrAnomalyAction()
+    {
+        $Attendance = (new Messerve_Model_Eloquent_Attendance())->select();
+        $cutoff_range = $this->currentCutoffRange();
+
+        $Attendance->where('datetime_start', '>=', $cutoff_range->start);
+        $Attendance->where('datetime_end', '<=', $cutoff_range->end);
+
+        $Attendance->where(function ($select) {
+            $select->where(function ($subselect) {
+                $subselect->where('extended_shift', 'yes');
+                $subselect->where('approved_extended_shift', 'no');
+            });
+
+            $select->orWhere('ot_approved_hours', '>', 5);
+        });
+
+        $anomalous_attendance = $this->parseAnomalousAttendance($Attendance->get(), $cutoff_range->start);
+
+        $this->view->anomalies = $anomalous_attendance;
+
+        $cutoff_start = \Carbon\Carbon::parse($cutoff_range->start);
+        $cutoff_end = \Carbon\Carbon::parse($cutoff_range->end);
+
+        $pay_period = sprintf('%s-%s-%s_%s',
+            $cutoff_start->year,
+            str_pad($cutoff_start->month, 2, 0, STR_PAD_LEFT),
+            str_pad($cutoff_start->day, 2, 0, STR_PAD_LEFT),
+            str_pad($cutoff_end->day, 2, 0, STR_PAD_LEFT)
+        );
+
+        $this->view->payroll_dates = (object) [
+            'period' => $pay_period,
+            'start' => $cutoff_range->start,
+            'end' => $cutoff_range->end,
+        ];
+    }
+
+    protected function parseAnomalousAttendance(\Illuminate\Database\Eloquent\Collection $attendance, $period)
+    {
+        foreach ($attendance as $item) {
+            Messerve_Model_Eloquent_DtrAnomaly::employeeGroupPeriod($item, $period);
+        }
+
+        return Messerve_Model_Eloquent_DtrAnomaly::payPeriod($period);
+    }
+
     public function queuepayrollAction()
     {
         $this->_helper->layout()->disableLayout();
@@ -104,6 +151,33 @@ class Payroll_IndexController extends Zend_Controller_Action
                 'is_done' => false,
             ]
         );
+
+    }
+
+    protected function currentCutoffRange()
+    {
+        $range = [];
+
+        $day = date('d');
+        $last_month = date('m', strtotime('last month'));
+
+        if ($day > 15) {
+            $period_covered = date("Y-m-01");
+            $period_end = date("Y-m-15");
+        } else {
+            if ($last_month == 12) {
+                $period_covered = date("Y-12-16", strtotime('last year'));
+                $period_end = date("Y-12-t", strtotime('last year'));
+            } else {
+                $period_covered = date("Y-$last_month-16");
+                $period_end = date('Y-m-d', strtotime('next month -1 day', strtotime(date("Y-$last_month"))));
+            }
+        }
+
+        $range['start'] = $period_covered;
+        $range['end'] = $period_end;
+
+        return (object)$range;
 
     }
 

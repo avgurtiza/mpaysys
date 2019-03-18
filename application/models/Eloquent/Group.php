@@ -17,4 +17,8 @@ class Messerve_Model_Eloquent_Group extends Eloquent
     {
         return $this->belongsTo(Messerve_Model_Eloquent_Client::class, 'client_id', 'id');
     }
+
+    public function getFullNameAttribute() {
+        return $this->client->name . ' - ' . $this->name;
+    }
 }
