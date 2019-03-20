@@ -1084,7 +1084,7 @@ class Messervelib_Payroll
 
         }
 
-        if (!$cutoff_total_duration > 0) {
+        if (!($cutoff_total_duration > 0)) {
 
             $reset = array('today' => 0, 'today_nd' => 0, 'today_ot' => 0, 'today_nd_ot' => 0, 'tomorrow_nd_ot' => 0
             , 'reg' => 0, 'reg_nd' => 0, 'reg_ot' => 0, 'reg_nd_ot' => 0
@@ -1114,15 +1114,15 @@ class Messervelib_Payroll
 
                         $monthly_work_duration = $this->_get_work_duration($employee_id, 0, $prev_date_start, $prev_date_end);
 
-                        $fuel_alloted = $Group->getFuelperhour() * $monthly_work_duration;
+                        $fuel_allotted = $Group->getFuelperhour() * $monthly_work_duration;
 
                         $fuel_purchased = $this->_get_monthly_fuel_purchase($first_day, $monthly_work_duration, $prev_date_start, $prev_date_end);
 
-                        $fuel_consumption = $fuel_purchased - $fuel_alloted;
+                        $fuel_consumption = $fuel_purchased - $fuel_allotted;
 
                         $first_day
                             ->setFuelHours($monthly_work_duration)
-                            ->setFuelAlloted($fuel_alloted)
+                            ->setFuelAlloted($fuel_allotted)
                             ->setFuelConsumed($fuel_purchased)
                             ->setFuelOverage($fuel_consumption)
                             ->save();

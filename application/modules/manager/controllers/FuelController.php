@@ -19,7 +19,7 @@ class Manager_FuelController extends Zend_Controller_Action
 
         $this->view->user_auth = $this->_user_auth;
 
-        if ($this->_user_auth->type != 'admin') {
+        if ($this->_user_auth->type !== 'admin') {
             throw new Exception('You are not allowed to access this module.');
         }
     }
@@ -80,214 +80,202 @@ class Manager_FuelController extends Zend_Controller_Action
 
 
             if (!$upload->receive()) {
-                $messages = $upload->getMessages();
-                die(implode("\n", $messages));
-            } else {
+                throw new Exception($upload->getMessages());
+            }
 
-                $filename = $upload->getFilename();
+            $filename = $upload->getFilename();
 
-                $file = new SplFileObject($filename);
-                $file->setFlags(SplFileObject::READ_CSV);
+            $file = new SplFileObject($filename);
+            $file->setFlags(SplFileObject::READ_CSV);
 
-                $saved = [];
-                $orphans = [];
-                $gascard_no_user = [];
-                $gascard_employee = [];
+            $saved = [];
+            $orphans = [];
+            $gascard_no_user = [];
+            $gascard_employee = [];
 
-                $row_count = 0;
+            $row_count = 0;
 
-                foreach ($file as $row) {
+            foreach ($file as $row) {
 
-                    $row_count++;
-                    array_map('trim', $row);
+                $row_count++;
+                array_map('trim', $row);
 
-                    /*if($i < 3) {
-                        $i++; continue; // skip header row
+                if (!isset($row[C_GASCARD_NO]) || $row[C_GASCARD_NO] == '') {
+                    echo "No gas card number<br/>";
+                    continue;
+                }
 
-                    }*/
+                if (
+                    isset($row[C_GASCARD_NO]) && $row[C_GASCARD_NO] != ''
+                    && isset($row[C_INVOICE_NUMBER]) && $row[C_INVOICE_NUMBER] != ''
+                    && isset($row[C_INVOICE_DATE]) && $row[C_INVOICE_DATE] != ''
+                ) {
 
-                    // preprint($row, true);
+                    echo "Gas card number {$row[C_GASCARD_NO]}<br/>";
 
-                    if (!isset($row[C_GASCARD_NO]) || $row[C_GASCARD_NO] == '') {
-                        echo "No gas card number<br/>";
+                    $invoice_date = false;
+
+                    $split_time = explode(':', $row[C_INVOICE_TIME]);
+
+                    $invoice_time = '';
+
+                    if (!$split_time[0]) {
+                        $invoice_time .= '00:';
+                    } else {
+                        $invoice_time .= $split_time[0] . ':';
+                    }
+
+
+                    if (!$split_time[1]) {
+                        $invoice_time .= '00:';
+                    } else {
+                        $invoice_time .= $split_time[1] . ':';
+                    }
+
+
+                    if (!$split_time[2]) {
+                        $invoice_time .= '00';
+                    } else {
+                        $invoice_time .= $split_time[2];
+                    }
+
+
+                    $full_date = $row[C_INVOICE_DATE] . ' ' . $invoice_time;
+
+                    try {
+                        $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y His', $full_date)->toDateTimeString();
+                    } catch (Exception $exception) {
+                        echo "Invalid date d/m/Y His -- " . $full_date . "...";
+                    }
+
+                    try {
+                        $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y H:i', $full_date)->toDateTimeString();
+                    } catch (Exception $exception) {
+                        echo "Invalid date d/m/Y H:i -- " . $full_date . "...";
+                    }
+
+                    try {
+                        $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y H:i:s', $full_date)->toDateTimeString();
+                    } catch (Exception $exception) {
+                        echo "Invalid date d/m/Y H:i -- " . $full_date . "...";
+                    }
+
+
+                    /*
+                    try {
+                        $invoice_date = \Carbon\Carbon::createFromFormat('m/d/Y H:i', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME]);
+                    } catch (Exception $exception) {
+                        echo "Invalid date m/d/Y H:i -- " . $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME] . "...";
+                        // continue;
+                    }
+                    */
+
+                    try {
+                        if ($invoice_date->year >= \Carbon\Carbon::now()->year) {
+                            throw new Exception('HALT.  Invoice date is in the future! At line ' . $row_count);
+                        }
+                    } catch (Exception $exception) {
+                        $invoice_date = false;
+                    }
+
+
+                    if (!$invoice_date && is_numeric($row[C_GASCARD_NO])) {
+                        throw new Exception('Invoice date is invalid! Expecting DD/MM/YYYY HH:MM:SS but got: ' . $full_date . ' at line ' . $row_count);
+                    }
+
+                    $statement_date = false;
+
+                    /*
+                    try {
+                        $statement_date = \Carbon\Carbon::createFromFormat('d/m/Y', $row[C_STATEMENT_DATE])->toDateString();
+                    } catch (Exception $exception) {
+                        echo "Invalid statement date d/m/Y -- " . $row[C_STATEMENT_DATE] . "...";
+                    }
+
+                     */
+                    try {
+                        $statement_date = \Carbon\Carbon::createFromFormat('m/d/Y', $row[C_STATEMENT_DATE])->toDateString();
+                    } catch (Exception $exception) {
+                        echo "Invalid statement date m/d/Y -- " . $row[C_STATEMENT_DATE] . "...";
+                    }
+
+                    if (!$statement_date) {
+                        echo "No valid statement date found; skipping. <br>";
+                        continue;
+                    }
+                    // echo "$invoice_date : $statement_date<br>"; continue;
+
+
+                    $data = array(
+                        'gascard' => $row[C_GASCARD_NO]
+                    , 'raw_invoice_date' => $invoice_date
+                    , 'statement_date' => $statement_date
+                    , 'invoice_date' => $invoice_date
+                    , 'product_quantity' => $row[C_PRODUCT_QUANTITY]
+                    , 'invoice_number' => $row[C_INVOICE_NUMBER]
+                    , 'station_name' => $row[C_STATION_NAME]
+                    , 'product' => $row[C_PRODUCT]
+                    , 'fuel_cost' => $row[C_FUEL_NET] + $row[C_VAT]
+                    );
+
+                    if (in_array($row[C_GASCARD_NO], $gascard_no_user)) {
+                        $orphans[] = $data;
                         continue;
                     }
 
-                    if (
-                        isset($row[C_GASCARD_NO]) && $row[C_GASCARD_NO] != ''
-                        && isset($row[C_INVOICE_NUMBER]) && $row[C_INVOICE_NUMBER] != ''
-                        && isset($row[C_INVOICE_DATE]) && $row[C_INVOICE_DATE] != ''
-                    ) {
-
-                        echo "Gas card number {$row[C_GASCARD_NO]}<br/>";
-
-                        $invoice_date = false;
-
-                        $split_time = explode(':', $row[C_INVOICE_TIME]);
-
-                        $invoice_time = '';
-
-                        if (!$split_time[0]) {
-                            $invoice_time .= '00:';
-                        } else {
-                            $invoice_time .= $split_time[0] . ':';
-                        }
-
-
-                        if (!$split_time[1]) {
-                            $invoice_time .= '00:';
-                        } else {
-                            $invoice_time .= $split_time[1] . ':';
-                        }
-
-
-                        if (!$split_time[2]) {
-                            $invoice_time .= '00';
-                        } else {
-                            $invoice_time .= $split_time[2];
-                        }
-
-
-                        $full_date = $row[C_INVOICE_DATE] . ' ' . $invoice_time;
-
-                        try {
-                            $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y His', $full_date)->toDateTimeString();
-                        } catch (Exception $exception) {
-                            echo "Invalid date d/m/Y His -- " . $full_date . "...";
-                        }
-
-                        try {
-                            $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y H:i', $full_date)->toDateTimeString();
-                        } catch (Exception $exception) {
-                            echo "Invalid date d/m/Y H:i -- " . $full_date . "...";
-                        }
-
-                        try {
-                            $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y H:i:s', $full_date)->toDateTimeString();
-                        } catch (Exception $exception) {
-                            echo "Invalid date d/m/Y H:i -- " . $full_date . "...";
-                        }
-
-
-                        /*
-                        try {
-                            $invoice_date = \Carbon\Carbon::createFromFormat('m/d/Y H:i', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME]);
-                        } catch (Exception $exception) {
-                            echo "Invalid date m/d/Y H:i -- " . $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME] . "...";
-                            // continue;
-                        }
-                        */
-
-                        try {
-                            if ($invoice_date->year >= \Carbon\Carbon::now()->year) {
-                                throw new Exception('HALT.  Invoice date is in the future! At line ' . $row_count);
-                            }
-                        } catch (Exception $exception) {
-                            $invoice_date = false;
-                        }
-
-
-                        if (!$invoice_date && is_numeric($row[C_GASCARD_NO])) {
-                            throw new Exception('Invoice date is invalid! Expecting DD/MM/YYYY HH:MM:SS but got: ' . $full_date . ' at line ' . $row_count);
-                            echo "No valid invoice date found; skipping. <br>";
-                            continue;
-                        }
-
-                        $statement_date = false;
-
-                        /*
-                        try {
-                            $statement_date = \Carbon\Carbon::createFromFormat('d/m/Y', $row[C_STATEMENT_DATE])->toDateString();
-                        } catch (Exception $exception) {
-                            echo "Invalid statement date d/m/Y -- " . $row[C_STATEMENT_DATE] . "...";
-                        }
-
-                         */
-                        try {
-                            $statement_date = \Carbon\Carbon::createFromFormat('m/d/Y', $row[C_STATEMENT_DATE])->toDateString();
-                        } catch (Exception $exception) {
-                            echo "Invalid statement date m/d/Y -- " . $row[C_STATEMENT_DATE] . "...";
-                        }
-
-                        if (!$statement_date) {
-                            echo "No valid statement date found; skipping. <br>";
-                            continue;
-                        }
-                        // echo "$invoice_date : $statement_date<br>"; continue;
-
-
-                        $data = array(
-                            'gascard' => $row[C_GASCARD_NO]
-                        , 'raw_invoice_date' => $invoice_date
-                        , 'statement_date' => $statement_date
-                        , 'invoice_date' => $invoice_date
-                        , 'product_quantity' => $row[C_PRODUCT_QUANTITY]
-                        , 'invoice_number' => $row[C_INVOICE_NUMBER]
-                        , 'station_name' => $row[C_STATION_NAME]
-                        , 'product' => $row[C_PRODUCT]
-                        , 'fuel_cost' => $row[C_FUEL_NET] + $row[C_VAT]
-                        );
-
-                        if (in_array($row[C_GASCARD_NO], $gascard_no_user)) {
-                            $orphans[] = $data;
-                            continue;
-                        }
-
-                        if (isset($gascard_employee[$row[C_GASCARD_NO]])) {
-                            $Employee = $gascard_employee[$row[C_GASCARD_NO]];
-                        } else {
-                            $Employee = Messerve_Model_Eloquent_Employee::where('gascard2', $row[C_GASCARD_NO])->first();
-
-                            if ($Employee) {
-                                $gascard_employee[$row[C_GASCARD_NO]] = $Employee;
-                            }
-                        }
-
-                        if ($Employee && $Employee->id > 0) {
-                            $Fuel = new Messerve_Model_Fuelpurchase();
-
-                            $Fuel->getMapper()->findOneByField(
-                                array(
-                                    'invoice_date'
-                                , 'invoice_number'
-                                , 'employee_id'
-                                )
-                                , array(
-                                    $invoice_date
-                                , $row[C_INVOICE_NUMBER]
-                                , $Employee->id
-                                )
-                                , $Fuel);
-
-                            if ($Fuel->getId() > 0) {
-                                echo "Skipped existing fuel record: ";
-                                preprint($Fuel->toArray());
-                                continue;
-                            }
-
-                            $Fuel
-                                ->setOptions($data)
-                                ->setEmployeeId($Employee->id)
-                                ->save();
-
-                            $data['employee'] = $Employee->firstname . ' ' . $Employee->lastname . ' ' . $Employee->employee_number;
-                            $saved[] = $data;
-                        } else {
-                            $gascard_no_user[] = $row[C_GASCARD_NO];
-                            $orphans[] = $data;
-                        }
-
+                    if (isset($gascard_employee[$row[C_GASCARD_NO]])) {
+                        $Employee = $gascard_employee[$row[C_GASCARD_NO]];
                     } else {
-                        // echo "Skipping: " .  preprint($row);
+                        $Employee = Messerve_Model_Eloquent_Employee::where('gascard2', $row[C_GASCARD_NO])->first();
+
+                        if ($Employee) {
+                            $gascard_employee[$row[C_GASCARD_NO]] = $Employee;
+                        }
+                    }
+
+                    if ($Employee && $Employee->id > 0) {
+                        $Fuel = new Messerve_Model_Fuelpurchase();
+
+                        $Fuel->getMapper()->findOneByField(
+                            array(
+                                'invoice_date'
+                            , 'invoice_number'
+                            , 'employee_id'
+                            )
+                            , array(
+                                $invoice_date
+                            , $row[C_INVOICE_NUMBER]
+                            , $Employee->id
+                            )
+                            , $Fuel);
+
+                        if ($Fuel->getId() > 0) {
+                            echo "Skipped existing fuel record: ";
+                            preprint($Fuel->toArray());
+                            continue;
+                        }
+
+                        $Fuel
+                            ->setOptions($data)
+                            ->setEmployeeId($Employee->id)
+                            ->save();
+
+                        $data['employee'] = $Employee->firstname . ' ' . $Employee->lastname . ' ' . $Employee->employee_number;
+                        $saved[] = $data;
+                    } else {
+                        $gascard_no_user[] = $row[C_GASCARD_NO];
+                        $orphans[] = $data;
                     }
 
                 }
 
-                $this->view->saved = $saved;
-                $this->view->orphans = $orphans;
-
-                echo "<h1>SAVED : " . count($saved) . "</h1>";
             }
+
+            $this->view->saved = $saved;
+            $this->view->orphans = $orphans;
+
+            echo "<h1>SAVED : " . count($saved) . "</h1>";
+
         }
     }
 

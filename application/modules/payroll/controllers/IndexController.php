@@ -67,11 +67,31 @@ class Payroll_IndexController extends Zend_Controller_Action
             str_pad($cutoff_end->day, 2, 0, STR_PAD_LEFT)
         );
 
-        $this->view->payroll_dates = (object) [
+        $this->view->payroll_dates = (object)[
             'period' => $pay_period,
             'start' => $cutoff_range->start,
             'end' => $cutoff_range->end,
         ];
+    }
+
+    public function updateDtrAnomalyAction()
+    {
+        $this->_helper->layout()->disableLayout();
+        $this->_helper->viewRenderer->setNoRender(true);
+
+        $anomaly_id = (int)$this->_request->getParam('anomaly_id');
+        $is_approved = (bool)$this->_request->getParam('is_approved', 0);
+
+        $Anomaly = Messerve_Model_Eloquent_DtrAnomaly::find($anomaly_id);
+
+        if (!$Anomaly) {
+            throw new Zend_Controller_Action_Exception('Anomaly does not exist!', 404);
+        }
+
+        $Anomaly->is_approved = $is_approved;
+        $Anomaly->save();
+
+        print(json_encode($Anomaly->toArray()));
     }
 
     protected function parseAnomalousAttendance(\Illuminate\Database\Eloquent\Collection $attendance, $period)
