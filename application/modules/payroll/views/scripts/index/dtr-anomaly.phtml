@@ -9,7 +9,7 @@
     foreach ($this->anomalies as $anomaly): $i++; ?>
         <tr class="anomaly-list <?php if ($anomaly->is_approved == 1): ?>disabled<?php endif; ?>"
             data-anomaly-id="<?= $anomaly->id ?>">
-            <td><?= $i; ?> <?= $anomaly->id ?></td>
+            <td><?= $i; ?></td>
             <td>
                 <a href="/dataentry/attendance/employee/id/<?= $anomaly->employee_id;
                 ?>/date_start/<?= $this->payroll_dates->start;
