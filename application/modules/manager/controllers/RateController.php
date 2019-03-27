@@ -16,7 +16,7 @@ class Manager_RateController extends Zend_Controller_Action
 
         $this->_user_auth = $data;
 
-        if ($this->_user_auth->type != 'admin') {
+        if ($this->_user_auth->type !== 'admin') {
             throw new Exception('You are not allowed to access this module.');
         }
 
@@ -216,7 +216,7 @@ class Manager_RateController extends Zend_Controller_Action
         $this->_helper->viewRenderer->setNoRender(true);
 
         $rate_columns = [
-            'id' => 0, 'client_name'=>'', 'name' => '',
+            'id' => 0, 'client_name' => '', 'name' => '',
             'code' => '',
             'reg' => 0, 'reg_ot' => 0, 'reg_nd' => 0, 'reg_nd_ot' => 0, 'spec' => 0, 'spec_ot' => 0,
             'spec_nd' => 0, 'spec_nd_ot' => 0, 'legal' => 0, 'legal_ot' => 0, 'legal_nd' => 0,
@@ -245,6 +245,108 @@ class Manager_RateController extends Zend_Controller_Action
             fputcsv($f, $this_group_rate, ',');
         }
 
+    }
+
+    public function clientRateImportAction()
+    {
+        if (!$this->_request->isPost()) {
+            return $this->clientRateImportForm();
+        }
+
+        $this->_helper->_layout->setLayout('iframe');
+        $this->_helper->viewRenderer->setRender('client-rate-import-output');
+
+        $upload = new Zend_File_Transfer_Adapter_Http();
+        $upload->addValidator('Count', false, array('min' => 1, 'max' => 1))
+            ->addValidator('Extension', false, 'csv')
+            ->addValidator('Size', false, array('max' => '1024kb'))
+            ->setDestination('/tmp');
+
+        if (!$upload->isValid()) {
+            throw new Exception('Bad upload data: ' . implode(',', $upload->getMessages()));
+        }
+
+        try {
+            $upload->receive();
+        } catch (Zend_File_Transfer_Exception $e) {
+            throw new Exception('Bad upload data: ' . $e->getMessage());
+        }
+
+        $file = new SplFileObject($upload->getFileName());
+
+        $file->setFlags(SplFileObject::READ_CSV);
+
+        $prefix = date('Y-m-d_') . str_random(8);
+
+        $client_rates = [];
+
+        foreach ($file as $row) {
+            if (!((int)$row[0] > 0)) {
+                continue;
+            }
+
+            list($id, $client_name, $name, $code, $reg, $reg_ot, $reg_nd, $reg_nd_ot, $spec,
+                $spec_ot, $spec_nd, $spec_nd_ot, $legal, $legal_ot, $legal_nd, $legal_nd_ot, $legal_unattend,
+                ) = $row;
+
+            if (!((int)$reg > 0)) {
+                continue;
+            }
+
+            $rate_name = str_replace(' ', '', sprintf("%s-%d-%s-%s", $prefix, $id, $client_name, $name));
+
+            // Create new rate
+            $client_rate = Messerve_Model_Eloquent_ClientRate::create([
+                'name' => $rate_name,
+                'reg' => $reg,
+                'reg_ot' => $reg_ot,
+                'reg_nd' => $reg_nd,
+                'reg_nd_ot' => $reg_nd_ot,
+                'spec' => $spec,
+                'spec_ot' => $spec_ot,
+                'spec_nd' => $spec_nd,
+                'spec_nd_ot' => $spec_nd_ot,
+                'legal' => $legal,
+                'legal_ot' => $legal_ot,
+                'legal_nd' => $legal_nd,
+                'legal_nd_ot' => $legal_nd_ot,
+                'legal_unattend' => $legal_unattend,
+            ]);
+
+            // Update groups to use client rate
+            try {
+                $group = Messerve_Model_Eloquent_Group::find($id);
+
+                if (!$group) {
+                    $client_rates[] = (object)[
+                        'name' => $client_rate->name,
+                        'error' => 'Did not find group with id ' . $id
+                    ];
+
+                } else {
+                    $group->rate_client_id = $client_rate->id;
+                    $group->save();
+                    $client_rates[] = (object)[
+                        'name' => $client_rate->name,
+                        'error' => ''
+                    ];
+
+                }
+
+            } catch (\Exception $exception) {
+                $client_rates[] = (object)[
+                    'name' => $client_rate->name,
+                    'error' => 'Failed assigning rate to group; error follows: '. $exception->getMessage()
+                ];
+
+            }
+        }
+
+        $this->view->client_rates = $client_rates;
+    }
+
+    protected function clientRateImportForm()
+    {
     }
 }
 

@@ -1,0 +1,13 @@
+<h4>Uploading...</h4>
+<table class="table">
+    <?php foreach ($this->client_rates as $rate) : ?>
+        <tr
+        <?php if($rate->error !== ''): ?>
+            class="label alert"
+        <?php endif; ?>
+        >
+            <td><?=$rate->name; ?></td>
+            <td><?=$rate->error; ?></td>
+        </tr>
+    <?php endforeach; ?>
+</table>

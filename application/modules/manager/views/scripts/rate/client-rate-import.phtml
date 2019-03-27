@@ -1,0 +1,18 @@
+<form class="client-rate-upload-form" method="post" enctype="multipart/form-data" target="upload-here">
+    <h4>Client rate import</h4>
+    <input type="file" name="csv-import" class="csv-import">
+    <button>Upload</button>
+</form>
+
+<iframe name="upload-here" style="width: 800px; height: 500px;" frameborder="0"  class="upload-here"></iframe>
+
+<script>
+    $(function () {
+        $('.client-rate-upload-form').on('submit', function () {
+            if ($('.csv-import').get(0).files.length === 0) {
+                alert("No file selected.");
+                return false;
+            }
+        });
+    })
+</script>
