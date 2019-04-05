@@ -111,8 +111,9 @@ class Payroll_IndexController extends Zend_Controller_Action
         $group_id = $this->_request->getParam('group_id');
         $date_start = $this->_request->getParam('date_start');
         $date_end = $this->_request->getParam('date_end');
+        $fuel_cost = $this->_request->getParam('fuel_cost');
 
-        $this->queuePayslipProcessing($group_id, $date_start, $date_end);
+        $this->queuePayslipProcessing($group_id, $date_start, $date_end, $fuel_cost);
 
         echo 'OK';
     }
@@ -135,14 +136,17 @@ class Payroll_IndexController extends Zend_Controller_Action
                 'group_id' => $params[0],
                 'date_start' => $params[1],
                 'date_end' => $params[2],
+                'fuelcost'=> $params[3],
                 'is_ajax' => true
             ]
         );
 
+        $this->_fuelcost = $params[3];
+
         echo $this->payslipsAction();
     }
 
-    protected function queuePayslipProcessing($group_id, $date_start, $date_end)
+    protected function queuePayslipProcessing($group_id, $date_start, $date_end, $fuel_cost = 0)
     {
         $process = new Messervelib_ProcessGroupPayroll();
 
@@ -150,7 +154,8 @@ class Payroll_IndexController extends Zend_Controller_Action
             [
                 'group_id' => $group_id,
                 'date_start' => $date_start,
-                'date_end' => $date_end
+                'date_end' => $date_end,
+                'fuel_cost' => $fuel_cost
             ]
         );
 
@@ -725,6 +730,8 @@ class Payroll_IndexController extends Zend_Controller_Action
             $bop_slip_data['metadata']['client'] = $Client->getName() . ' - ' . $Group->getName();
 
             if ($Attendance) {
+                logger("Setting fuel cost to " . $this->_fuelcost);
+
                 $Attendance->setFuelCost($this->_fuelcost)->save();
 
                 if ($group_id == $Employee->getGroupId()) { // Apply adjustments only on mother group payslip

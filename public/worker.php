@@ -116,11 +116,12 @@ while (1) {
         print_r($data);
 
         $pending_payroll = $message->pendingPayroll;
-        print_r((array) $pending_payroll);
+        print_r($pending_payroll->toArray());
 
         $index = realpath(dirname(APPLICATION_PATH) . '/public/index.php');
 
-        $command = sprintf('php7.1 -f %s index payroll %d %s %s', $index, $data['group_id'], $data['date_start'], $data['date_end']);
+        $command = sprintf('php7.1 -f %s index payroll %d %s %s %s', $index, $data['group_id'], $data['date_start'], $data['date_end'], $data['fuel_cost']);
+        // $command = sprintf('php -f %s index payroll %d %s %s %s', $index, $data['group_id'], $data['date_start'], $data['date_end'], $data['fuel_cost']);
 
         $result = exec($command);
 
