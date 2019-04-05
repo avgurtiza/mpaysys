@@ -115,6 +115,9 @@ while (1) {
         $data = $object->getData();
         print_r($data);
 
+        $pending_payroll = $message->pendingPayroll;
+        print_r($pending_payroll);
+
         $index = realpath(dirname(APPLICATION_PATH) . '/public/index.php');
 
         $command = sprintf('php7.1 -f %s index payroll %d %s %s', $index, $data['group_id'], $data['date_start'], $data['date_end']);
@@ -123,7 +126,6 @@ while (1) {
 
         if (stripos($result, 'ok') !== false) {
             // if ($result === 'OK') {
-            $pending_payroll = $message->pendingPayroll;
 
             if ($pending_payroll) {
                 echo "Found payroll..." . PHP_EOL;
