@@ -167,17 +167,14 @@ class Manager_FuelController extends Zend_Controller_Action
                         echo "Invalid date m/d/Y H:i -- " . $full_date . "...";
                     }
 
-                    try {
-                        if (Carbon\Carbon::parse($invoice_date)->year >= \Carbon\Carbon::now()->year) {
-                            throw new Exception('HALT.  Invoice date is in the future! At line ' . $row_count);
-                        }
-                    } catch (Exception $exception) {
-                        $invoice_date = false;
+
+                    if (is_numeric($row[C_GASCARD_NO]) && Carbon\Carbon::parse($invoice_date)->year > \Carbon\Carbon::now()->year) {
+                        throw new Exception('HALT.  Invoice date is in the future! At line ' . $row_count. ' -- ' . $full_date . Carbon\Carbon::parse($invoice_date)->year);
                     }
 
 
                     if (!$invoice_date && is_numeric($row[C_GASCARD_NO])) {
-                        throw new Exception('Invoice date is invalid! Expecting MM/DD/YYYY HH:MM:SS but got: ' . $full_date . ' at line ' . $row_count);
+                        throw new Exception('Your invoice date is invalid! Expecting MM/DD/YYYY HH:MM:SS but got: ' . $invoice_date . $full_date . ' at line ' . $row_count . ' -- ' . $row[C_INVOICE_DATE]);
                     }
 
                     $statement_date = false;
