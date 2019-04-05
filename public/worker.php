@@ -116,7 +116,7 @@ while (1) {
         print_r($data);
 
         $pending_payroll = $message->pendingPayroll;
-        print_r($pending_payroll);
+        print_r((array) $pending_payroll);
 
         $index = realpath(dirname(APPLICATION_PATH) . '/public/index.php');
 
