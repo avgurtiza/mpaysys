@@ -162,7 +162,7 @@ class Manager_FuelController extends Zend_Controller_Action
                     */
 
                     try {
-                        $invoice_date = \Carbon\Carbon::createFromFormat('m/d/Y H:i:s', $full_date);
+                        $invoice_date = \Carbon\Carbon::createFromFormat('m/d/Y H:i:s', $full_date)->toDateTimeString();
                     } catch (Exception $exception) {
                         echo "Invalid date m/d/Y H:i -- " . $full_date . "...";
                     }
@@ -177,7 +177,7 @@ class Manager_FuelController extends Zend_Controller_Action
 
 
                     if (!$invoice_date && is_numeric($row[C_GASCARD_NO])) {
-                        throw new Exception('Invoice date is invalid! Expecting DD/MM/YYYY HH:MM:SS but got: ' . $full_date . ' at line ' . $row_count);
+                        throw new Exception('Invoice date is invalid! Expecting MM/DD/YYYY HH:MM:SS but got: ' . $full_date . ' at line ' . $row_count);
                     }
 
                     $statement_date = false;
