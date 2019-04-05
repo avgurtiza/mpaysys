@@ -141,7 +141,7 @@ class Manager_FuelController extends Zend_Controller_Action
 
 
                     $full_date = $row[C_INVOICE_DATE] . ' ' . $invoice_time;
-
+                    /*
                     try {
                         $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y His', $full_date)->toDateTimeString();
                     } catch (Exception $exception) {
@@ -159,19 +159,16 @@ class Manager_FuelController extends Zend_Controller_Action
                     } catch (Exception $exception) {
                         echo "Invalid date d/m/Y H:i -- " . $full_date . "...";
                     }
-
-
-                    /*
-                    try {
-                        $invoice_date = \Carbon\Carbon::createFromFormat('m/d/Y H:i', $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME]);
-                    } catch (Exception $exception) {
-                        echo "Invalid date m/d/Y H:i -- " . $row[C_INVOICE_DATE] . ' ' . $row[C_INVOICE_TIME] . "...";
-                        // continue;
-                    }
                     */
 
                     try {
-                        if ($invoice_date->year >= \Carbon\Carbon::now()->year) {
+                        $invoice_date = \Carbon\Carbon::createFromFormat('m/d/Y H:i:s', $full_date);
+                    } catch (Exception $exception) {
+                        echo "Invalid date m/d/Y H:i -- " . $full_date . "...";
+                    }
+
+                    try {
+                        if (Carbon\Carbon::parse($invoice_date)->year >= \Carbon\Carbon::now()->year) {
                             throw new Exception('HALT.  Invoice date is in the future! At line ' . $row_count);
                         }
                     } catch (Exception $exception) {

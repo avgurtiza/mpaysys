@@ -656,6 +656,11 @@ class Payroll_IndexController extends Zend_Controller_Action
         $cmd = "mkdir -p $folder";
         shell_exec($cmd); // Create folder
 
+        $cmd = "chmod -R 777 $folder";
+        shell_exec($cmd); // Change permissions since queue runs this as user fixstop and will fail creation of
+            // user-initiated client billing
+            // TODO:  add www-data to fixstop group
+
         $rec_copy_data = array(
             'branch' => $Client->getName() . '-' . $Group->getName()
         , 'riders' => array()
