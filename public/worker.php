@@ -126,9 +126,10 @@ while (1) {
             $pending_payroll = $message->pendingPayroll;
 
             if ($pending_payroll) {
-                echo "Found payroll!" . PHP_EOL;
+                echo "Found payroll..." . PHP_EOL;
                 $pending_payroll->is_done = true;
                 $pending_payroll->save();
+                echo "Done!" . PHP_EOL;
             }
 
         } else {
