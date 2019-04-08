@@ -1085,6 +1085,7 @@ class Messervelib_Payroll
         logger("Doing things for: {$Employee->getFirstname()} {$Employee->getLastname()}");
 
         if (!($cutoff_total_duration > 0)) {
+            logger("No cutoff total duration, resetting! : {$Employee->getFirstname()} {$Employee->getLastname()}");
 
             $reset = array('today' => 0, 'today_nd' => 0, 'today_ot' => 0, 'today_nd_ot' => 0, 'tomorrow_nd_ot' => 0
             , 'reg' => 0, 'reg_nd' => 0, 'reg_ot' => 0, 'reg_nd_ot' => 0
@@ -1093,7 +1094,10 @@ class Messervelib_Payroll
             , 'rest' => 0, 'rest_nd' => 0, 'rest_ot' => 0, 'rest_nd_ot' => 0);
 
         } else {
+            logger("Has cutoff total duration, doing stuff! : {$Employee->getFirstname()} {$Employee->getLastname()}");
+
             if ($cutoff == 2) {
+                logger('Cut-off is 2.');
 
                 if ($Employee->getGroupId() == $group_id) { // Parent group?  Process fuel calcs
                     $first_day
@@ -1133,6 +1137,8 @@ class Messervelib_Payroll
                     } else {
                         logger("NO GASCARD FOR: " . $Employee->getId());
                     }
+                } else {
+                    logger("Not in parent group! {$Employee->getFirstname()} {$Employee->getLastname()}");
                 }
             }
         }
