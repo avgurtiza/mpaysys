@@ -1131,7 +1131,7 @@ class Messervelib_Payroll
                             ->save();
 
                         logger("Fuel for: {$Employee->getFirstname()} {$Employee->getLastname()}");
-                        logger(print_r($first_day->toArray()));
+                        logger(print_r($first_day->toArray(), true));
                     } else {
                         logger("NO GASCARD FOR: " . $Employee->getId());
                     }
