@@ -1096,7 +1096,7 @@ class Messervelib_Payroll
         } else {
             logger("Has cutoff total duration, doing stuff! : {$Employee->getFirstname()} {$Employee->getLastname()}");
 
-            if ($cutoff == 2) {
+            if ($cutoff === '2') {
                 logger('Cut-off is 2.');
 
                 if ($Employee->getGroupId() == $group_id) { // Parent group?  Process fuel calcs
@@ -1140,6 +1140,8 @@ class Messervelib_Payroll
                 } else {
                     logger("Not in parent group! {$Employee->getFirstname()} {$Employee->getLastname()}");
                 }
+            } else {
+                logger("Un2 cuttoff! not doing fuel... {$Employee->getFirstname()} {$Employee->getLastname()}");
             }
         }
 
