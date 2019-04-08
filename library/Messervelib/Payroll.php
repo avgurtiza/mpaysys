@@ -64,6 +64,8 @@ class Messervelib_Payroll
 
             $today_d = date('d', strtotime($date));
 
+            $cutoff = '0';
+
             if ($today_d == '1' || $today_d == '16') {
                 $first_day = $Attendance;
 
@@ -74,7 +76,6 @@ class Messervelib_Payroll
                     $cutoff = '1';
                     $rate_date_start = date('Y-m-01', $unix_date);
                     $rate_date_end = date('Y-m-15', $unix_date);
-                    // } elseif (date('d', $unix_date) == '16') {
                 } else {
                     $cutoff = '2';
                     $rate_date_start = date('Y-m-16', $unix_date);
@@ -855,7 +856,7 @@ class Messervelib_Payroll
             }
 
 
-            if ($Attendance->getOtApproved() != 'yes' && !$has_extended_shift) {
+            if ($Attendance->getOtApproved() !== 'yes' && !$has_extended_shift) {
 
                 // echo __LINE__ . " Resetting OT <br>";
 
@@ -934,7 +935,7 @@ class Messervelib_Payroll
 
                 $pay_rate_prefix = "reg";
 
-                if ($attendance['type'] == "rest") {
+                if ($attendance['type'] === "rest") {
                     $holiday_type_today = "Rest";
                     $pay_rate_prefix = "sun";
                 }
@@ -944,7 +945,7 @@ class Messervelib_Payroll
                     $pay_rate_prefix = strtolower($holiday_today->getType());
                 }
 
-                if ($pay_rate_prefix == 'special') $pay_rate_prefix = "spec";
+                if ($pay_rate_prefix === 'special') $pay_rate_prefix = "spec";
 
                 $PayrollToday = new Messerve_Model_AttendancePayroll();
 
@@ -1003,7 +1004,7 @@ class Messervelib_Payroll
                 $pay_rate_prefix = "reg";
 
 
-                if ($attendance['type'] == "rest") {
+                if ($attendance['type'] === "rest") {
                     $holiday_type_tomorrow = $holiday_type_today;
                     $holiday_type_today = "Rest";
                     $pay_rate_prefix = "sun";
@@ -1026,7 +1027,7 @@ class Messervelib_Payroll
                     , $PayrollTomorrow
                 );
 
-                if ($pay_rate_prefix == 'special') $pay_rate_prefix = "spec";
+                if ($pay_rate_prefix === 'special') $pay_rate_prefix = "spec";
 
                 $rates_tomorrow['_prefix'] = $pay_rate_prefix;
 
@@ -1081,6 +1082,8 @@ class Messervelib_Payroll
 
         }
 
+        logger("Doing things for: {$Employee->getFirstname()} {$Employee->getLastname()}");
+
         if (!($cutoff_total_duration > 0)) {
 
             $reset = array('today' => 0, 'today_nd' => 0, 'today_ot' => 0, 'today_nd_ot' => 0, 'tomorrow_nd_ot' => 0
@@ -1091,6 +1094,7 @@ class Messervelib_Payroll
 
         } else {
             if ($cutoff == 2) {
+
                 if ($Employee->getGroupId() == $group_id) { // Parent group?  Process fuel calcs
                     $first_day
                         ->setFuelHours(0)
@@ -1124,9 +1128,10 @@ class Messervelib_Payroll
                             ->setFuelOverage($fuel_consumption)
                             ->save();
 
-                        logger(json_encode($first_day->toArray()));
+                        logger("Fuel for: {$Employee->getFirstname()} {$Employee->getLastname()}");
+                        logger(print_r($first_day->toArray()));
                     } else {
-                        logger("NO GASCARD FOR" . $Employee->getId());
+                        logger("NO GASCARD FOR: " . $Employee->getId());
                     }
                 }
             }
