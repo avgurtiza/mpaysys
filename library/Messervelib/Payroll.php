@@ -1124,7 +1124,7 @@ class Messervelib_Payroll
                             ->setFuelOverage($fuel_consumption)
                             ->save();
 
-                        logger(json_encode($first_day));
+                        logger(json_encode($first_day->toArray()));
                     } else {
                         logger("NO GASCARD FOR" . $Employee->getId());
                     }
