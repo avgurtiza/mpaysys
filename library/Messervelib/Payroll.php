@@ -64,8 +64,6 @@ class Messervelib_Payroll
 
             $today_d = date('d', strtotime($date));
 
-            $cutoff = '0';
-
             if ($today_d == '1' || $today_d == '16') {
                 $first_day = $Attendance;
 
