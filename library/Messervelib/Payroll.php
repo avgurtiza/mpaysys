@@ -1126,7 +1126,7 @@ class Messervelib_Payroll
 
                         logger(json_encode($first_day));
                     } else {
-                        logger("NO GASCARD FOR" . json_encode($Employee));
+                        logger("NO GASCARD FOR" . $Employee->getId());
                     }
                 }
             }
