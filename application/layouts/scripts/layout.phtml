@@ -8,19 +8,14 @@
 
     <link rel="stylesheet" href="/css/normalize.css">
     <link rel="stylesheet" href="/css/foundation.css">
-    <!--<link rel="stylesheet" href="/css/foundation-datepicker.css">-->
     <link rel="stylesheet" href="/css/foundation-icons.css"/>
 
     <link href="/css/messerve.css?update=20171025A" type="text/css" rel="stylesheet"/>
     <link href="/css/smoothness/jquery-ui-1.9.0.custom.min.css" type="text/css" rel="stylesheet"/>
 
-    <!--<script src="/js/vendor/modernizr.js"></script>-->
     <script src="/js/jquery-1.8.2.js"></script>
     <script src="/js/foundation.min.js"></script>
     <script src="/js/jquery-ui-1.9.0.custom.min.js"></script>
-    <!--<script src="/js/foundation-datepicker.js"></script>-->
-
-
 </head>
 <body class="<?php
 echo Zend_Controller_Front::getInstance()->getRequest()->getModuleName(); ?> <?php
@@ -35,30 +30,49 @@ if (Zend_Controller_Front::getInstance()->getRequest()->getControllerName() != Z
 
             <?php echo $this->partial('partials/encoder.phtml'); ?>
 
-            <dl class="hor-menu">
-                <?php if ($this->user_auth && $this->user_auth->type == 'admin'): ?>
-                    <dd><a href="/manager/client">Clients / Employees</a></dd>
-                    <dd><a href="/manager/bop">BOP</a></dd>
-                    <dd><a href="/manager/fuel/import">Petron import</a></dd>
-                    <dd><a href="/manager/fuel/caltex">Caltex import</a></dd>
-                    <dd><a href="/manager/rate">Rates</a></dd>
-                    <dd><a href="/manager/rate/calendar">Calendars</a></dd>
-                    <dd><a href="/user/grid">Users</a></dd>
-                    <dd><a href="/payroll/index">Payroll</a></dd>
-                    <dd><a href="/payroll/floating">Floating OT</a></dd>
-                    <dd><a href="/payroll/index/pending">Pending payroll</a></dd>
-                    <dd><a href="/payroll/index/dtr-anomaly">DTR Anomalies</a></dd>
-                <?php endif; ?>
 
-                <?php if ($this->user_auth && $this->user_auth->type !== 'encoder'): ?>
-                    <dd><a href="/dataentry/attendance">Attendance</a></dd>
-                <?php endif; ?>
 
-                <?php if ($this->user_auth && $this->user_auth->type === 'encoder'): ?>
-                    <dd><a href="/dataentry/index/start">Deductions</a></dd>
-                <?php endif; ?>
 
-            </dl>
+            <?php if ($this->user_auth && $this->user_auth->type === 'admin'): ?>
+                <blockquote style="float: left">
+                    <dl class="hor-menu">
+                        <dd><label>Configuration</label></dd>
+                        <dd><a href="/manager/client">Clients / Employees</a></dd>
+                        <dd><a href="/manager/bop">BOP</a></dd>
+                        <dd><a href="/manager/rate">Rates</a></dd>
+                        <dd><a href="/manager/rate/calendar">Calendars</a></dd>
+                        <dd><a href="/user/grid">Users</a></dd>
+                    </dl>
+                </blockquote>
+                <blockquote style="float: left; clear: right;">
+                    <dl class="hor-menu">
+                        <dd><label>Fuel Import</label></dd>
+                        <dd><a href="/manager/fuel/petron">Petron</a></dd>
+                        <dd><a href="/manager/fuel/caltex">Caltex</a></dd>
+                        <dd><a href="/manager/fuel/oil-empire">Oil Empire</a></dd>
+                    </dl>
+                </blockquote>
+            <?php endif; ?>
+
+            <blockquote>
+                <dl class="hor-menu">
+                    <?php if ($this->user_auth && $this->user_auth->type === 'admin'): ?>
+                        <dd><a href="/payroll/index">Payroll</a></dd>
+                        <dd><a href="/payroll/floating">Floating OT</a></dd>
+                        <dd><a href="/payroll/index/pending">Pending payroll</a></dd>
+                        <dd><a href="/payroll/index/dtr-anomaly">DTR Anomalies</a></dd>
+                    <?php endif; ?>
+
+                    <?php if ($this->user_auth && $this->user_auth->type !== 'encoder'): ?>
+                        <dd><a href="/dataentry/attendance">Attendance</a></dd>
+                    <?php endif; ?>
+
+                    <?php if ($this->user_auth && $this->user_auth->type === 'encoder'): ?>
+                        <dd><a href="/dataentry/index/start">Deductions</a></dd>
+                    <?php endif; ?>
+
+                </dl>
+            </blockquote>
 
             <br clear="all"/>
             <br clear="all"/>
@@ -70,7 +84,7 @@ if (Zend_Controller_Front::getInstance()->getRequest()->getControllerName() != Z
 <br clear="all"/><br/>
 
 <div
-    style="background-color: #fea; border: 1px solid #999; width: 100%; position: fixed; bottom:0px; padding: 10px; margin-top: 10px; margin-bottom: 0;">
+        style="background-color: #fea; border: 1px solid #999; width: 100%; position: fixed; bottom:0px; padding: 10px; margin-top: 10px; margin-bottom: 0;">
 
 
     <dl class="hor-menu">

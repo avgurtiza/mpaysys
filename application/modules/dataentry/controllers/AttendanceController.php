@@ -60,8 +60,8 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             $employee_count = $Employee->countByQuery('group_id = ' . $gvalue->getId());
 
             // if ($employee_count > 0) {
-                $groups_array[$gvalue->getId()] = $clients[$gvalue->getClientId()] . ' ' . $gvalue->getName()
-                    . ' (' . $employee_count . ')';
+            $groups_array[$gvalue->getId()] = $clients[$gvalue->getClientId()] . ' ' . $gvalue->getName()
+                . ' (' . $employee_count . ')';
             //}
         }
 
@@ -1009,26 +1009,25 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                     ->setDatetimeStart($current_date)
                     ->setDatetimeEnd($current_date)
                     ->setGroupId($group_id)
-                    ->setEmployeeNumber($Employee->getEmployeeNumber())
-                ;
+                    ->setEmployeeNumber($Employee->getEmployeeNumber());
 
-                if(!$new_attendance->save(true)) {
+                if (!$new_attendance->save(true)) {
                     throw new Exception('Did not insert initial attendance.');
-                } else {
-                    echo "New attendance"; preprint($new_attendance->toArray());
                 }
+                echo "New attendance";
+                preprint($new_attendance->toArray());
+
 
                 try {
                     $Attendance = new Messerve_Model_Attendance();
                     $Attendance->find($new_attendance->id);
-                } catch ( Exception $e) {
-                    die( 'Caught exception: ' . $e->getMessage() . "\n");
+                } catch (Exception $e) {
+                    die('Caught exception: ' . $e->getMessage() . "\n");
                 }
 
             }
 
             $dates[$current_date] = $Attendance;
-
 
 
             $current_date = date('Y-m-d', strtotime('+1 day', strtotime($current_date)));
@@ -1229,7 +1228,8 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         }
     }
 
-    protected function getLateDtr() {
+    protected function getLateDtr()
+    {
         return "--";
     }
 }

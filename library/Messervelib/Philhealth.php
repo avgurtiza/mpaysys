@@ -47,7 +47,6 @@ class Messervelib_Philhealth {
                 ->where('employee_id', $employee_id)
                 ->get();
 
-            $previous_philhealth = 0;
             $previous_basic = 0;
 
             if ($philhealth->count() > 0) { // TODO: Fix this, maybe.
@@ -61,12 +60,17 @@ class Messervelib_Philhealth {
 
                 $monthly_pay = $basic_pay + $previous_basic; // TODO:  make sure you get ALL the basic pay for current cutoff
 
-                if($monthly_pay >= 10000) { // TODO: config this threshold
-                    logger("-- Monthly pay >= 10k $monthly_pay");
-                    // $total_monthly_share = (($monthly_pay * 275) / 10000) / 2;
-                    $total_monthly_share = 180.04;
+                if($monthly_pay >= 14006.75) { // TODO: config these threshold
+                    logger("-- Monthly pay >= 537/day $monthly_pay");
+                    $total_monthly_share = 192.59;
+                } elseif($monthly_pay >= 10433.33) {
+                    logger("-- Monthly pay >= 400/day $monthly_pay");
+                    $total_monthly_share = 143.46;
+                } elseif($monthly_pay >= 10329.00) {
+                    logger("-- Monthly pay >= 396/day $monthly_pay");
+                    $total_monthly_share = 142.02;
                 } else {
-                    logger("-- Monthly pay < 10k $monthly_pay");
+                    logger("-- Monthly pay below threshold; assuming minimum $monthly_pay");
                     $total_monthly_share = $minimum_monthly_deduction;
                 }
 

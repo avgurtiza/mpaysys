@@ -29,7 +29,7 @@ class Manager_FuelController extends Zend_Controller_Action
         // action body
     }
 
-    protected function caltexAction()
+    public function caltexAction()
     {
         ini_set('memory_limit', '1G');
 
@@ -273,7 +273,16 @@ class Manager_FuelController extends Zend_Controller_Action
         }
     }
 
-    public function importAction() // Petron import
+
+    public function petronAction() {
+        return $this->importAction();
+    }
+
+    public function oilEmpireAction() {
+        return $this->importAction();
+    }
+
+    public function importAction()
     {
         ini_set('memory_limit', '1G');
 
