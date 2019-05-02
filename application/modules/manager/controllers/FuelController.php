@@ -3,7 +3,9 @@
 class Manager_FuelController extends Zend_Controller_Action
 {
 
-    protected $_user_auth;
+    protected $_user_auth,
+        $gascard_type,
+        $gascard_field;
 
     public function init()
     {
@@ -31,22 +33,8 @@ class Manager_FuelController extends Zend_Controller_Action
 
     public function caltexAction()
     {
+        $this->gascard_type = 'caltex';
         ini_set('memory_limit', '1G');
-
-        /*
-        define('C_GASCARD_NO', 12);
-        define('C_STATEMENT_DATE', 11);
-        define('C_INVOICE_DATE', 9);
-        define('C_INVOICE_TIME', 10);
-        define('C_PRODUCT_QUANTITY', 23);
-        define('C_INVOICE_NUMBER', 8);
-        define('C_STATION_NAME', 1);
-        define('C_PRODUCT', 22);
-        define('C_FUEL_NET', 25);
-        define('C_VAT', 27);
-        */
-
-        // 2018-12-05
 
         define('C_GASCARD_NO', 7);
         define('C_STATEMENT_DATE', 6);
@@ -58,19 +46,6 @@ class Manager_FuelController extends Zend_Controller_Action
         define('C_PRODUCT', 17);
         define('C_FUEL_NET', 21);
         define('C_VAT', 22);
-
-        /*
-        define('C_GASCARD_NO', 9);
-        define('C_STATEMENT_DATE', 8);
-        define('C_INVOICE_DATE', 6);
-        define('C_INVOICE_TIME', 7);
-        define('C_PRODUCT_QUANTITY', 21);
-        define('C_INVOICE_NUMBER', 5);
-        define('C_STATION_NAME', 3);
-        define('C_PRODUCT', 20);
-        define('C_FUEL_NET', 24);
-        define('C_VAT', 25);
-        */
 
         if ($this->_request->isPost()) {
             set_time_limit(0);
@@ -141,25 +116,7 @@ class Manager_FuelController extends Zend_Controller_Action
 
 
                     $full_date = $row[C_INVOICE_DATE] . ' ' . $invoice_time;
-                    /*
-                    try {
-                        $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y His', $full_date)->toDateTimeString();
-                    } catch (Exception $exception) {
-                        echo "Invalid date d/m/Y His -- " . $full_date . "...";
-                    }
 
-                    try {
-                        $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y H:i', $full_date)->toDateTimeString();
-                    } catch (Exception $exception) {
-                        echo "Invalid date d/m/Y H:i -- " . $full_date . "...";
-                    }
-
-                    try {
-                        $invoice_date = \Carbon\Carbon::createFromFormat('d/m/Y H:i:s', $full_date)->toDateTimeString();
-                    } catch (Exception $exception) {
-                        echo "Invalid date d/m/Y H:i -- " . $full_date . "...";
-                    }
-                    */
 
                     try {
                         $invoice_date = \Carbon\Carbon::createFromFormat('m/d/Y H:i:s', $full_date)->toDateTimeString();
@@ -169,7 +126,7 @@ class Manager_FuelController extends Zend_Controller_Action
 
 
                     if (is_numeric($row[C_GASCARD_NO]) && Carbon\Carbon::parse($invoice_date)->year > \Carbon\Carbon::now()->year) {
-                        throw new Exception('HALT.  Invoice date is in the future! At line ' . $row_count. ' -- ' . $full_date . Carbon\Carbon::parse($invoice_date)->year);
+                        throw new Exception('HALT.  Invoice date is in the future! At line ' . $row_count . ' -- ' . $full_date . Carbon\Carbon::parse($invoice_date)->year);
                     }
 
 
@@ -179,14 +136,6 @@ class Manager_FuelController extends Zend_Controller_Action
 
                     $statement_date = false;
 
-                    /*
-                    try {
-                        $statement_date = \Carbon\Carbon::createFromFormat('d/m/Y', $row[C_STATEMENT_DATE])->toDateString();
-                    } catch (Exception $exception) {
-                        echo "Invalid statement date d/m/Y -- " . $row[C_STATEMENT_DATE] . "...";
-                    }
-
-                     */
                     try {
                         $statement_date = \Carbon\Carbon::createFromFormat('m/d/Y', $row[C_STATEMENT_DATE])->toDateString();
                     } catch (Exception $exception) {
@@ -197,8 +146,6 @@ class Manager_FuelController extends Zend_Controller_Action
                         echo "No valid statement date found; skipping. <br>";
                         continue;
                     }
-                    // echo "$invoice_date : $statement_date<br>"; continue;
-
 
                     $data = array(
                         'gascard' => $row[C_GASCARD_NO]
@@ -228,20 +175,8 @@ class Manager_FuelController extends Zend_Controller_Action
                     }
 
                     if ($Employee && $Employee->id > 0) {
-                        $Fuel = new Messerve_Model_Fuelpurchase();
 
-                        $Fuel->getMapper()->findOneByField(
-                            array(
-                                'invoice_date'
-                            , 'invoice_number'
-                            , 'employee_id'
-                            )
-                            , array(
-                                $invoice_date
-                            , $row[C_INVOICE_NUMBER]
-                            , $Employee->id
-                            )
-                            , $Fuel);
+                        $Fuel = $this->getFuelPurchase($invoice_date, $row[P_INVOICE_NUMBER], $Employee->getId(), $this->gascard_type);
 
                         if ($Fuel->getId() > 0) {
                             echo "Skipped existing fuel record: ";
@@ -274,18 +209,23 @@ class Manager_FuelController extends Zend_Controller_Action
     }
 
 
-    public function petronAction() {
+    public function petronAction()
+    {
+        $this->gascard_type = 'petron';
+        $this->gascard_field = 'gascard';
         return $this->importAction();
     }
 
-    public function oilEmpireAction() {
+    public function oilEmpireAction()
+    {
+        $this->gascard_type = 'oilempire';
+        $this->gascard_field = 'gascard3';
         return $this->importAction();
     }
 
     public function importAction()
     {
         ini_set('memory_limit', '1G');
-
 
         define('P_GASCARD_NO', 5);
         define('P_STATEMENT_DATE', 2);
@@ -321,29 +261,9 @@ class Manager_FuelController extends Zend_Controller_Action
 
                 $i = 0;
 
-                /*
-                 *  ORIGINAL MAP
-                 *
-                 *
-                 $data = array(
-                    'gascard' => $row[7]
-                , 'raw_invoice_date' => $raw_invoice_date
-                , 'statement_date' => $statement_date
-                , 'invoice_date' => $invoice_date
-                , 'product_quantity' => $row[17]
-                , 'invoice_number' => $row[15]
-                , 'station_name' => $row[13]
-                , 'product' => $row[16]
-                , 'fuel_cost' => $row[18]
-                );
-                */
 
                 foreach ($file as $row) {
                     array_map('trim', $row);
-
-                    /*if($i < 3) {
-                        $i++; continue; // skip header row
-                    }*/
 
                     if (!isset($row[P_GASCARD_NO]) || !is_numeric($row[P_GASCARD_NO])) {
                         continue;
@@ -398,26 +318,15 @@ class Manager_FuelController extends Zend_Controller_Action
                         if (isset($gascard_employee[$row[P_GASCARD_NO]])) {
                             $Employee = $gascard_employee[$row[P_GASCARD_NO]];
                         } else {
-                            $EmployeeMap = new Messerve_Model_Mapper_Employee();
-                            $Employee = $EmployeeMap->findOneByField('gascard', $row[P_GASCARD_NO]);
+                            // Get employee by gascard
+                            // $EmployeeMap = new Messerve_Model_Mapper_Employee();
+                            // $Employee = $EmployeeMap->findOneByField('gascard', $row[P_GASCARD_NO]);
+                            $Employee = $this->getEmployeeByGascard($row[P_GASCARD_NO]);
                             $gascard_employee[$row[P_GASCARD_NO]] = $Employee;
                         }
 
                         if ($Employee && $Employee->getId() > 0) {
-                            $Fuel = new Messerve_Model_Fuelpurchase();
-
-                            $Fuel->getMapper()->findOneByField(
-                                array(
-                                    'invoice_date'
-                                , 'invoice_number'
-                                , 'employee_id'
-                                )
-                                , array(
-                                    $invoice_date
-                                , $row[P_INVOICE_NUMBER]
-                                , $Employee->getId()
-                                )
-                                , $Fuel);
+                            $Fuel = $this->getFuelPurchase($invoice_date, $row[P_INVOICE_NUMBER], $Employee->getId(), $this->gascard_type);
 
                             if ($Fuel->getId() > 0) {
                                 echo "Skipped existing fuel record: ";
@@ -446,5 +355,34 @@ class Manager_FuelController extends Zend_Controller_Action
                 echo "<h1>SAVED : " . count($saved) . "</h1>";
             }
         }
+    }
+
+    protected function getFuelPurchase($invoice_date, $invoice_number, $employee_id, $gascard_type)
+    {
+        $Fuel = new Messerve_Model_Fuelpurchase();
+
+        $Fuel->getMapper()->findOneByField(
+            array(
+                'invoice_date'
+            , 'invoice_number'
+            , 'employee_id'
+            , 'gascard_type'
+            )
+            , array(
+                $invoice_date
+            , $invoice_number
+            , $employee_id
+            , $gascard_type
+            )
+            , $Fuel);
+
+        return $Fuel;
+    }
+
+    protected function getEmployeeByGascard($gascard_number)
+    {
+        $EmployeeMap = new Messerve_Model_Mapper_Employee();
+        return $EmployeeMap->findOneByField($this->gascard_field, $gascard_number);
+
     }
 }

@@ -183,6 +183,7 @@ class Messerve_Model_Employee extends Messerve_Model_ModelAbstract
      * @var int
      */
     protected $_Gascard2;
+    protected $_Gascard3;
 
 
 
@@ -216,6 +217,7 @@ class Messerve_Model_Employee extends Messerve_Model_ModelAbstract
             'bop_currentbalance'=>'BopCurrentbalance',
             'gascard'=>'Gascard',
             'gascard2'=>'Gascard2',
+            'gascard3'=>'Gascard3',
         ));
 
         $this->setParentList(array(
@@ -751,6 +753,28 @@ class Messerve_Model_Employee extends Messerve_Model_ModelAbstract
     public function getGascard2()
     {
         return $this->_Gascard2;
+    }
+
+    /**
+     * Sets column gascard3
+     *
+     * @param int $data
+     * @return Messerve_Model_Employee
+     */
+    public function setGascard3($data)
+    {
+        $this->_Gascard3 = $data;
+        return $this;
+    }
+
+    /**
+     * Gets column gascard3
+     *
+     * @return int
+     */
+    public function getGascard3()
+    {
+        return $this->_Gascard3;
     }
 
     /**
