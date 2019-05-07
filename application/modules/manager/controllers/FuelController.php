@@ -36,6 +36,7 @@ class Manager_FuelController extends Zend_Controller_Action
         $this->gascard_type = 'caltex';
         ini_set('memory_limit', '1G');
 
+        define('C_LOC_NUM', 0);
         define('C_GASCARD_NO', 7);
         define('C_STATEMENT_DATE', 6);
         define('C_INVOICE_DATE', 4);
@@ -76,9 +77,16 @@ class Manager_FuelController extends Zend_Controller_Action
                 array_map('trim', $row);
 
                 if (!isset($row[C_GASCARD_NO]) || $row[C_GASCARD_NO] == '') {
-                    echo "No gas card number<br/>";
+                    echo "No gas card numbe, skipping...<br/>";
                     continue;
                 }
+
+
+                if (!isset($row[C_LOC_NUM]) || !is_numeric($row[C_LOC_NUM])) {
+                    echo "No location number, skipping...<br/>";
+                    continue;
+                }
+
 
                 if (
                     isset($row[C_GASCARD_NO]) && $row[C_GASCARD_NO] != ''
