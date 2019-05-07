@@ -77,7 +77,7 @@ class Manager_FuelController extends Zend_Controller_Action
                 array_map('trim', $row);
 
                 if (!isset($row[C_GASCARD_NO]) || $row[C_GASCARD_NO] == '') {
-                    echo "No gas card numbe, skipping...<br/>";
+                    echo "No gas card number, skipping...<br/>";
                     continue;
                 }
 
