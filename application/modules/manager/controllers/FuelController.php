@@ -184,7 +184,7 @@ class Manager_FuelController extends Zend_Controller_Action
 
                     if ($Employee && $Employee->id > 0) {
 
-                        $Fuel = $this->getFuelPurchase($invoice_date, $row[P_INVOICE_NUMBER], $Employee->getId(), $this->gascard_type);
+                        $Fuel = $this->getFuelPurchase($invoice_date, $row[P_INVOICE_NUMBER], $Employee->id, $this->gascard_type);
 
                         if ($Fuel->getId() > 0) {
                             echo "Skipped existing fuel record: ";
