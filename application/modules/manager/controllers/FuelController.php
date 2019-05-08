@@ -184,7 +184,7 @@ class Manager_FuelController extends Zend_Controller_Action
 
                     if ($Employee && $Employee->id > 0) {
 
-                        $Fuel = $this->getFuelPurchase($invoice_date, $row[P_INVOICE_NUMBER], $Employee->id, $this->gascard_type);
+                        $Fuel = $this->getFuelPurchase($invoice_date, $row[C_INVOICE_NUMBER], $Employee->id, $this->gascard_type);
 
                         if ($Fuel->getId() > 0) {
                             echo "Skipped existing fuel record: ";
@@ -369,20 +369,25 @@ class Manager_FuelController extends Zend_Controller_Action
     {
         $Fuel = new Messerve_Model_Fuelpurchase();
 
-        $Fuel->getMapper()->findOneByField(
-            array(
-                'invoice_date'
-            , 'invoice_number'
-            , 'employee_id'
-            , 'gascard_type'
-            )
-            , array(
-                $invoice_date
-            , $invoice_number
-            , $employee_id
-            , $gascard_type
-            )
-            , $Fuel);
+        try {
+            $Fuel->getMapper()->findOneByField(
+                array(
+                    'invoice_date'
+                , 'invoice_number'
+                , 'employee_id'
+                , 'gascard_type'
+                )
+                , array(
+                    $invoice_date
+                , $invoice_number
+                , $employee_id
+                , $gascard_type
+                )
+                , $Fuel);
+        } catch(Exception $exception) {
+            die($exception->getMessage());
+        }
+
 
         return $Fuel;
     }
