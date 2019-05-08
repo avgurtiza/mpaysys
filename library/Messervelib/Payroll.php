@@ -166,6 +166,14 @@ class Messervelib_Payroll
                         }
                     }
 
+                    // If Good friday 2019 and not yet viable
+                    if(!$legal_unattended_viable
+                        && $date === '2019-04-19'
+                    ) {
+                        $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2019-04-17');
+                        $legal_unattended_viable = $legal_unattended_group > 0;
+                    }
+
                     // Check if there is actual legal holiday attendance for other outlets
                     $AttendanceN = new Messerve_Model_Attendance();
                     $AttendanceN = $AttendanceN->getMapper()->findByField(
@@ -676,7 +684,7 @@ class Messervelib_Payroll
 
                     }
 
-                    //if (isset($time_array[$i]['today'])) echo "Total reg $reg : Duration reg {$time_array[$i]['today']} <br>";
+                    // if (isset($time_array[$i]['today'])) echo "Total reg $reg : Duration reg {$time_array[$i]['today']} <br>";
 
                 }
             }
@@ -786,7 +794,7 @@ class Messervelib_Payroll
             $time_array['spec_ot'] = 0;
             $time_array['spec_nd_ot'] = 0;
 
-            if ($attendance['type'] == 'rest') {
+            if ($attendance['type'] === 'rest') {
                 $time_array['rest'] = $reg + $tomorrow;
                 $time_array['rest_ot'] = $ot + $tomorrow_ot;
                 $time_array['rest_nd'] = $nd + $tomorrow_nd;
@@ -815,7 +823,7 @@ class Messervelib_Payroll
 
                 switch ($holiday_today->getType()) {
                     case 'legal':
-                        if (!$work_duration > 0) { // Do unattended OT calcs
+                        if (!($work_duration > 0)) { // Do unattended OT calcs
                             // echo "Doing unattended <br>";
                             $time_array['legal_unattend'] = $this->_max_regular_hours;
                         } else {
@@ -1147,6 +1155,22 @@ class Messervelib_Payroll
         $this->_clean_up_holidays($Employee, $rate_date_start, $group_id);
     }
 
+    protected function groupWithAttendanceOnDay($employee_id, $date) {
+        $attendance = (new Messerve_Model_Attendance())->getMapper()->findByField(
+            array('employee_id', 'datetime_start')
+            , array($employee_id, $date)
+        );
+
+        foreach ($attendance as $avalue) {
+            if ($avalue->getStart1() > 0) {
+                // Day before attendance gets priority for billing group
+                return $avalue->getGroupId();
+            }
+        }
+
+        return 0;
+
+    }
     protected function _clean_up_holidays($Employee, $period_start, $group_id)
     {
         $AttendancePayroll = new Messerve_Model_Mapper_AttendancePayroll();
