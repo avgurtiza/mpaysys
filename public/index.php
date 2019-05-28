@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ERROR || E_WARNING);
+
 if (!function_exists('preprint')) {
     function preprint($mixed, $exit_after = false)
     {
@@ -10,13 +12,13 @@ if (!function_exists('preprint')) {
 if (!function_exists('checkaccess')) {  // TODO:  Primitive acl,  replace with Zend ACL
     function checkaccess($usertype, $allowed_types)
     {
-        if (!is_array($allowed_types)) die('Invalid user types list.');
+        if (!is_array($allowed_types)) ('Invalid user types list.');
 
         if (!in_array($usertype, $allowed_types)) {
             return false;
-        } else {
-            return true;
         }
+
+        return true;
     }
 }
 
@@ -96,44 +98,14 @@ if (!function_exists('logger')) {
 }
 
 
-/** Zend_Application */
 require_once dirname(APPLICATION_PATH) . '/vendor/autoload.php';
 
-// require_once 'Zend/Application.php';
+/** Zend_Application */
 
-// Create application, bootstrap, and run
 $application = new Zend_Application(
     APPLICATION_ENV,
     APPLICATION_PATH . '/configs/application.ini'
 );
-
-
-// TODO:  get db creds from config
-
-use Illuminate\Database\Capsule\Manager as Capsule;
-
-/**
- * Configure the database and boot Eloquent
- */
-
-$capsule = new Capsule;
-
-$config = new Zend_Config_Ini(APPLICATION_PATH . '/configs/application.ini', APPLICATION_ENV);
-
-$db_params = $config->resources->db->params;
-
-$capsule->addConnection([
-    'driver' => 'mysql',
-    'host' => $db_params->host,
-    'database' => $db_params->dbname,
-    'username' => $db_params->username,
-    'password' => $db_params->password,
-    'charset' => 'utf8',
-    'collation' => 'utf8_general_ci',
-]);
-
-$capsule->setAsGlobal();
-$capsule->bootEloquent();
 
 $application->bootstrap()
     ->run();

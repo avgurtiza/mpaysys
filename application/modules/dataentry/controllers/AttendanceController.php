@@ -230,7 +230,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
                 $attendance_array = $this->_request->getPost();
 
-                if ($weekday == 'Sun') {
+                if ($weekday === 'Sun') {
                     $attendance_array['sun'] = $regular_duration;
                     $attendance_array['sun_ot'] = $ot;
                     $attendance_array['sun_nd_ot'] = $nd_ot;
@@ -241,7 +241,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                 }
 
                 if ($post_mn_ot > 0) {
-                    if ($weekday_midnight == 'Sun') {
+                    if ($weekday_midnight === 'Sun') {
                         $attendance_array['sun_nd_ot'] = $post_mn_ot;
                     } else {
                         $attendance_array['reg_nd_ot'] = $post_mn_ot;
@@ -251,7 +251,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
                 // preprint($attendance_array);
 
-                if (!$form->getValue('id') > 0) {
+                if (!($form->getValue('id') > 0)) {
                     $form->removeElement('id');
                 }
 
@@ -569,7 +569,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         $year_month = "{$period_array[0]}-{$period_array[1]}";
 
-        if ($period_array[2] == '1_15') {
+        if ($period_array[2] === '1_15') {
             $date_start = date('Y-m-d', strtotime($year_month . '-1'));
             $date_end = date('Y-m-d', strtotime($year_month . '-15'));
         } else {
@@ -582,219 +582,223 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
 
         if ($this->_request->isPost()) {
+
             $filename = realpath($_FILES['file']['tmp_name']);
 
-            $row = 0;
-
-            $attendance = array();
-
-            $missing = array();
-
-            if (($handle = fopen($filename, "r")) !== FALSE) {
-
-                while (!feof($handle)) {
-                    $line = fgets($handle, 1024);
-
-                    if (count(explode("\t", $line)) > 1) {
-                        $delimiter = "\t";
-                        echo "<br /> TAB" . count(explode("\t", $line));
-
-                    } elseif (count(explode(",", $line)) > 1) {
-                        echo "<br /> COMMA";
-                        $delimiter = "," . count(explode("\t", $line));
-                    } else {
-                        continue;
-                    }
-
-                    $data = str_getcsv($line, $delimiter);
-                    $data = array_map('trim', $data);
-
-                    if ($row > 0) { // Skip first row, headers
-                        $employee_number = isset($data[6]) ? (int)$data[6] : 0;
-
-                        if ($employee_number > 0) {
-                            $data['date'] = date('Y-m-d', strtotime($data[0]));
-                            $date_now = $data['date'];
-
-                            $data['start_1'] = date('Y-m-d H:i', strtotime($data[0] . ' ' . $data[7]));
-
-                            if (
-                            (strpos($data[7], 'PM') > 0 && strpos($data[8], 'AM') > 0)
-                                // || (strpos($data[7], 'AM') > 0 && strpos($data[8], 'PM') > 0)
-
-                            ) {
-                                $date_now = date('Y-m-d', strtotime('+1 day', strtotime($data[0])));
-                            }
-
-                            $data['end_1'] = date('Y-m-d H:i', strtotime($date_now . ' ' . $data[8]));
-
-                            if ($data[9] != '' & $data[10] != '') {
-                                $data['start_2'] = date('Y-m-d H:i', strtotime($date_now . ' ' . $data[9]));
-
-                                if (
-                                    strpos($data[9], 'PM') > 0 && strpos($data[10], 'AM') > 0
-                                    // || strpos($data[9], 'AM') > 0 && strpos($data[10], 'PM') > 0
-                                ) {
-                                    $date_now = date('Y-m-d', strtotime('+1 day', strtotime($data[0])));
-                                }
-
-                                $data['end_2'] = date('Y-m-d H:i', strtotime($date_now . ' ' . $data[10]));
-
-                            }
-
-                            if ($data[11] != '' && $data[12] != '') {
-                                $data['start_3'] = date('Y-m-d H:i', strtotime($date_now . ' ' . $data[11]));
-
-                                if (
-                                    strpos($data[11], 'PM') > 0 && strpos($data[12], 'AM') > 0
-                                ) {
-                                    $date_now = date('Y-m-d', strtotime('+1 day', strtotime($data[0])));
-                                }
-
-                                $data['end_3'] = date('Y-m-d H:i', strtotime($date_now . ' ' . $data[12]));
-
-                            }
-
-                            $Employee = new Messerve_Model_Employee();
-
-                            $Employee = $Employee->getMapper()->findOneByField('employee_number', $employee_number);
-
-                            if ($Employee) {
-                                // Find attendance
-                                $Attendance = new Messerve_Model_Attendance();
-
-                                $Attendance = $Attendance->getMapper()->findOneByField(
-                                    array('datetime_start', 'employee_id'
-                                        // ,'group_id'
-                                    )
-                                    , array($data['date'], $Employee->getId()
-                                        // , $group_id
-                                    )
-                                );
-
-                                $save_this_day = array();
-
-                                if (!$Attendance) {
-                                    $Attendance = new Messerve_Model_Attendance();
-                                } else {
-                                    //  echo "OLD ATTENDANCE";  preprint($Attendance->toArray());
-                                }
-
-                                $Attendance
-                                    ->setEmployeeId($Employee->getId())
-                                    ->setEmployeeNumber($employee_number)
-                                    ->setGroupId($group_id)
-                                    ->setDatetimeStart($data['date'])
-                                    ->setStart1(date('Hi', strtotime($data    ['start_1'])))
-                                    ->setEnd1(date('Hi', strtotime($data['end_1'])));
-
-                                $save_this_day = array(
-                                    'start_1' => $Attendance->getStart1()
-                                , 'end_1' => $Attendance->getEnd1()
-                                );
-
-                                if (isset($data['start_2'])) {
-                                    $Attendance
-                                        ->setStart2(date('Hi', strtotime($data['start_2'])))
-                                        ->setEnd2(date('Hi', strtotime($data['end_2'])));
-
-                                    $save_this_day += array(
-                                        'start_2' => $Attendance->getStart2()
-                                    , 'end_2' => $Attendance->getEnd2()
-                                    );
-
-                                }
-
-                                if (isset($data['start_3'])) {
-                                    $Attendance
-                                        ->setStart3(date('Hi', strtotime($data['start_3'])))
-                                        ->setEnd3(date('Hi', strtotime($data['end_3'])));
-
-                                    $save_this_day += array(
-                                        'start_3' => $Attendance->getStart3()
-                                    , 'end_3' => $Attendance->getEnd3()
-                                    );
-
-                                }
-
-
-                                if (isset($data[17])) {
-
-                                    $approved_ot = (float)$data[17];
-
-                                    if ($data[18] != '' && $approved_ot > 0) {
-                                        $Attendance->setOtApproved('yes')->setOtApprovedHours($approved_ot);
-                                        $Attendance->save();
-                                        $save_this_day['ot_approved'] = 'yes';
-                                        $save_this_day['ot_approved_hours'] = $approved_ot;
-                                        // preprint($data); preprint($Attendance->toArray(),1);
-                                    } else {
-                                        $Attendance->setOtApproved('no')->setOtApprovedHours(0);
-                                    }
-                                }
-
-
-                                $Attendance->save();
-
-                                $save_this_day['id'] = $Attendance->getId();
-                                $save_this_day['type'] = 'regular';
-                                // $save_this_day['ot_approved'] = $data[18];
-
-                                $this->_save_the_day($Attendance->getEmployeeId(), $Attendance->getGroupId(), array($data['date'] => $save_this_day));
-
-                            } else {
-                                echo "<br />MISSING $employee_number:";
-                                preprint($data);
-                                $missing[$data[6]] = $data;
-                                echo "End MISSING";
-                            }
-                        }
-
-                    } else { // First row
-                        // preprint($data);
-                        $csv_group_code = $data[3];
-                        $csv_date_start = date('Y-m-d', strtotime($data[1]));
-                        $csv_date_end = date('Y-m-d', strtotime($data[2]));
-                        /*
-                         echo "<br /> {$Group->getCode()}: $csv_group_code";
-                        echo "<br /> $date_start : " . $csv_date_start;
-                        echo "<br /> $date_end : " . $csv_date_end;
-                        */
-                        $errors = array();
-
-                        if ($Group->getCode() != $csv_group_code) {
-                            $errors[] = "Outlet codes do not match ({$Group->getCode()} : $csv_group_code)";
-                        }
-
-                        if ($date_start != $csv_date_start) {
-                            $errors[] = "Start dates do not match ($date_start} : $csv_date_start)";
-                        }
-
-                        if ($date_start != $csv_date_start) {
-                            $errors[] = "Start dates do not match ($date_end} : $csv_date_end)";
-                        }
-
-                        if (count($errors) > 0) {
-                            echo implode("<br />", $errors);
-                            die('<br />Click back to try again.');
-                        }
-
-                        // preprint($data,1);
-                    }
-
-                    $row++;
-
-                }
-
-                foreach ($missing as $value) {
-                    echo("Missing: {$value[1]}\t{$value[6]}\t{$value[4]}\t{$value[3]} \n");
-                }
-
-                fclose($handle);
+            if ($Group->getClientId() == 14) {
+                $this->readAaiBiometrics($filename);
             } else {
-                die('File fail.');
-            }
 
+
+                $row = 0;
+
+                $missing = [];
+
+                if (($handle = fopen($filename, "rb")) !== FALSE) {
+
+                    while (!feof($handle)) {
+                        $line = fgets($handle, 1024);
+
+                        if (count(explode("\t", $line)) > 1) {
+                            $delimiter = "\t";
+                            echo "<br /> TAB" . count(explode("\t", $line));
+
+                        } elseif (count(explode(",", $line)) > 1) {
+                            echo "<br /> COMMA";
+                            $delimiter = "," . count(explode("\t", $line));
+                        } else {
+                            continue;
+                        }
+
+                        $data = str_getcsv($line, $delimiter);
+                        $data = array_map('trim', $data);
+
+                        if ($row > 0) { // Skip first row, headers
+                            $employee_number = isset($data[6]) ? (int)$data[6] : 0;
+
+                            if ($employee_number > 0) {
+                                $data['date'] = date('Y-m-d', strtotime($data[0]));
+                                $date_now = $data['date'];
+
+                                $data['start_1'] = date('Y-m-d H:i', strtotime($data[0] . ' ' . $data[7]));
+
+                                if (
+                                (strpos($data[7], 'PM') > 0 && strpos($data[8], 'AM') > 0)
+                                    // || (strpos($data[7], 'AM') > 0 && strpos($data[8], 'PM') > 0)
+
+                                ) {
+                                    $date_now = date('Y-m-d', strtotime('+1 day', strtotime($data[0])));
+                                }
+
+                                $data['end_1'] = date('Y-m-d H:i', strtotime($date_now . ' ' . $data[8]));
+
+                                if ($data[9] != '' & $data[10] != '') {
+                                    $data['start_2'] = date('Y-m-d H:i', strtotime($date_now . ' ' . $data[9]));
+
+                                    if (
+                                        strpos($data[9], 'PM') > 0 && strpos($data[10], 'AM') > 0
+                                        // || strpos($data[9], 'AM') > 0 && strpos($data[10], 'PM') > 0
+                                    ) {
+                                        $date_now = date('Y-m-d', strtotime('+1 day', strtotime($data[0])));
+                                    }
+
+                                    $data['end_2'] = date('Y-m-d H:i', strtotime($date_now . ' ' . $data[10]));
+
+                                }
+
+                                if ($data[11] != '' && $data[12] != '') {
+                                    $data['start_3'] = date('Y-m-d H:i', strtotime($date_now . ' ' . $data[11]));
+
+                                    if (
+                                        strpos($data[11], 'PM') > 0 && strpos($data[12], 'AM') > 0
+                                    ) {
+                                        $date_now = date('Y-m-d', strtotime('+1 day', strtotime($data[0])));
+                                    }
+
+                                    $data['end_3'] = date('Y-m-d H:i', strtotime($date_now . ' ' . $data[12]));
+
+                                }
+
+                                $Employee = new Messerve_Model_Employee();
+
+                                $Employee = $Employee->getMapper()->findOneByField('employee_number', $employee_number);
+
+                                if ($Employee) {
+                                    // Find attendance
+                                    $Attendance = new Messerve_Model_Attendance();
+
+                                    $Attendance = $Attendance->getMapper()->findOneByField(
+                                        array('datetime_start', 'employee_id'
+                                            // ,'group_id'
+                                        )
+                                        , array($data['date'], $Employee->getId()
+                                            // , $group_id
+                                        )
+                                    );
+
+                                    $save_this_day = array();
+
+                                    if (!$Attendance) {
+                                        $Attendance = new Messerve_Model_Attendance();
+                                    } else {
+                                        //  echo "OLD ATTENDANCE";  preprint($Attendance->toArray());
+                                    }
+
+                                    $Attendance
+                                        ->setEmployeeId($Employee->getId())
+                                        ->setEmployeeNumber($employee_number)
+                                        ->setGroupId($group_id)
+                                        ->setDatetimeStart($data['date'])
+                                        ->setStart1(date('Hi', strtotime($data    ['start_1'])))
+                                        ->setEnd1(date('Hi', strtotime($data['end_1'])));
+
+                                    $save_this_day = array(
+                                        'start_1' => $Attendance->getStart1()
+                                    , 'end_1' => $Attendance->getEnd1()
+                                    );
+
+                                    if (isset($data['start_2'])) {
+                                        $Attendance
+                                            ->setStart2(date('Hi', strtotime($data['start_2'])))
+                                            ->setEnd2(date('Hi', strtotime($data['end_2'])));
+
+                                        $save_this_day += array(
+                                            'start_2' => $Attendance->getStart2()
+                                        , 'end_2' => $Attendance->getEnd2()
+                                        );
+
+                                    }
+
+                                    if (isset($data['start_3'])) {
+                                        $Attendance
+                                            ->setStart3(date('Hi', strtotime($data['start_3'])))
+                                            ->setEnd3(date('Hi', strtotime($data['end_3'])));
+
+                                        $save_this_day += array(
+                                            'start_3' => $Attendance->getStart3()
+                                        , 'end_3' => $Attendance->getEnd3()
+                                        );
+
+                                    }
+
+
+                                    if (isset($data[17])) {
+
+                                        $approved_ot = (float)$data[17];
+
+                                        if ($data[18] != '' && $approved_ot > 0) {
+                                            $Attendance->setOtApproved('yes')->setOtApprovedHours($approved_ot);
+                                            $Attendance->save();
+                                            $save_this_day['ot_approved'] = 'yes';
+                                            $save_this_day['ot_approved_hours'] = $approved_ot;
+                                            // preprint($data); preprint($Attendance->toArray(),1);
+                                        } else {
+                                            $Attendance->setOtApproved('no')->setOtApprovedHours(0);
+                                        }
+                                    }
+
+
+                                    $Attendance->save();
+
+                                    $save_this_day['id'] = $Attendance->getId();
+                                    $save_this_day['type'] = 'regular';
+                                    // $save_this_day['ot_approved'] = $data[18];
+
+                                    $this->_save_the_day($Attendance->getEmployeeId(), $Attendance->getGroupId(), array($data['date'] => $save_this_day));
+
+                                } else {
+                                    echo "<br />MISSING $employee_number:";
+                                    preprint($data);
+                                    $missing[$data[6]] = $data;
+                                    echo "End MISSING";
+                                }
+                            }
+
+                        } else { // First row
+                            // preprint($data);
+                            $csv_group_code = $data[3];
+                            $csv_date_start = date('Y-m-d', strtotime($data[1]));
+                            $csv_date_end = date('Y-m-d', strtotime($data[2]));
+                            /*
+                             echo "<br /> {$Group->getCode()}: $csv_group_code";
+                            echo "<br /> $date_start : " . $csv_date_start;
+                            echo "<br /> $date_end : " . $csv_date_end;
+                            */
+                            $errors = array();
+
+                            if ($Group->getCode() != $csv_group_code) {
+                                $errors[] = "Outlet codes do not match ({$Group->getCode()} : $csv_group_code)";
+                            }
+
+                            if ($date_start != $csv_date_start) {
+                                $errors[] = "Start dates do not match ($date_start} : $csv_date_start)";
+                            }
+
+                            if ($date_start != $csv_date_start) {
+                                $errors[] = "Start dates do not match ($date_end} : $csv_date_end)";
+                            }
+
+                            if (count($errors) > 0) {
+                                echo implode("<br />", $errors);
+                                die('<br />Click back to try again.');
+                            }
+
+                            // preprint($data,1);
+                        }
+
+                        $row++;
+
+                    }
+
+                    foreach ($missing as $value) {
+                        echo("Missing: {$value[1]}\t{$value[6]}\t{$value[4]}\t{$value[3]} \n");
+                    }
+
+                    fclose($handle);
+                } else {
+                    die('File fail.');
+                }
+            }
 
         }
 
@@ -836,12 +840,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         unset($select);
 
-        foreach ($employees as $evalue) {
-            // preprint($evalue->toArray());
-        }
-
         $employee_hours = array();
-
 
         foreach ($employees as $evalue) {
             $select = $AttendDB->select(true);
@@ -936,6 +935,137 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         $this->view->late_dtr = $this->getLateDtr();
 
+    }
+
+    protected function writeAttendance($row, $group_id, Messerve_Model_Eloquent_Employee $employee)
+    {
+        if (!$row[4]) {
+            return false;
+        }
+
+        $date_now = $row[2];
+
+        $start = $date_now . ' ' . $row[4];
+        $end = null;
+
+        foreach ([$row[5], $row[6], $row[7]] as $maybe_end) {
+            if ($maybe_end) {
+                $end = $date_now . ' ' . $maybe_end;
+            }
+        }
+
+        if (!$end) {
+            return false;
+        }
+
+        // TODO: End of year parsing
+        $start = Carbon\Carbon::createFromFormat('d-F h:i A', $start);
+        $end = Carbon\Carbon::createFromFormat('d-F h:i A', $end);
+        $date_now = Carbon\Carbon::createFromFormat('d-F', $date_now);
+
+        echo "START {$start->toTimeString()} END $end   <br>";
+
+
+        $attendance = $employee->attendance()->firstOrCreate([
+            'datetime_start' => $start->format('Y-m-d 00:00:00'),
+            'employee_id' => $employee->id
+        ]);
+
+        $attendance->employee_number = $employee->employee_number;
+        $attendance->group_id = $employee->$group_id;
+        $attendance->start_1 = $start->format('Hi');
+        $attendance->end_1 = $end->format('Hi');
+
+
+        $attendance->save();
+
+
+        $save_this_day = [
+            'start_1' => $attendance->start_1
+            , 'end_1' => $attendance->end_1
+            , 'id' => $attendance->id,
+            'type' => 'regular'
+        ];
+
+
+        $this->_save_the_day($employee->id, $group_id, [$date_now->toDateString() => $save_this_day]);
+
+
+    }
+
+    protected function readAaiBiometrics($filename)
+    {
+        $reader = new  \PhpOffice\PhpSpreadsheet\Reader\Xls();
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($filename);
+
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $group_id = $this->_request->getParam('group_id');
+
+        if(!($Group = Messerve_Model_Eloquent_Group::find($group_id))) {
+            throw new Exception('Cannot find group!');
+        }
+
+        $start_date = null;
+        $end_date = null;
+        $current_employee = null;
+
+        foreach ($sheet->toArray() as $row) {
+            array_map('trim', $row);
+
+            if (!$current_employee) {
+                if (strtolower($row[0]) === 'daily time record') {
+                    continue;
+                }
+
+                if (strtolower($row[0]) === 'start date') {
+                    $start_date = \Carbon\Carbon::parse($row[1]);
+                    continue;
+                }
+
+                if (strtolower($row[0]) === 'end date') {
+                    $end_date = \Carbon\Carbon::parse($row[1]);
+                    continue;
+                }
+
+                if (strtolower($row[0]) === 'employee no.') {
+                    continue;
+                }
+
+
+                if (!$row[2] && !$row[3]) {
+                    continue;
+                }
+            }
+
+
+            if ($employee = $this->rowIsEmployee($row)) {
+                if ($current_employee !== $employee) {
+                    $current_employee = $employee;
+                    preprint($employee->toArray());
+                }
+            }
+
+            $this->writeAttendance($row, $group_id, $current_employee);
+
+
+        }
+
+    }
+
+
+    protected function rowIsEmployee(array $row)
+    {
+        if (!is_numeric($row[0])) {
+            return false;
+        }
+
+        if (!$row[1]) {
+            return false;
+        }
+
+        return Messerve_Model_Eloquent_Employee::findByEmployeeNumber($row[0]);
     }
 
     protected function _getRates()

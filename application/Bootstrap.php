@@ -56,5 +56,25 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         Zend_Registry::getInstance()->queueAdapter = $queueAdapter;
 
     }
+
+    protected function _initEloquent()
+    {
+        $config = Zend_Registry::get('config');
+        $db_params = $config->resources->db->params;
+        $capsule = new Illuminate\Database\Capsule\Manager();
+
+        $capsule->addConnection([
+            'driver' => 'mysql',
+            'host' => $db_params->host,
+            'database' => $db_params->dbname,
+            'username' => $db_params->username,
+            'password' => $db_params->password,
+            'charset' => 'utf8',
+            'collation' => 'utf8_general_ci',
+        ]);
+
+        $capsule->setAsGlobal();
+        $capsule->bootEloquent();
+    }
 }
 

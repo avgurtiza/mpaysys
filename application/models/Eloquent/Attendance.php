@@ -9,8 +9,7 @@ class Messerve_Model_Eloquent_Attendance extends Eloquent
         'datetime_start',
     ];
 
-
-    protected $fillable = [];
+    protected $fillable = ['datetime_start', 'employee_id'];
 
     public function employee()
     {

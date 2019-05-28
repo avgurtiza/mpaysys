@@ -31,4 +31,8 @@ class Messerve_Model_Eloquent_Employee extends Eloquent
     public function getNameAttribute() {
         return $this->firstname . ' ' . $this->lastname;
     }
+
+    public static function findByEmployeeNumber($employee_number) {
+        return self::where('employee_number', $employee_number)->first();
+    }
 }
