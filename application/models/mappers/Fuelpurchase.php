@@ -42,6 +42,7 @@ class Messerve_Model_Mapper_Fuelpurchase extends Messerve_Model_Mapper_MapperAbs
             'fuel_cost' => $model->getFuelCost(),
             'fueloverage' => $model->getFueloverage(),
             'actualoverage' => $model->getActualoverage(),
+            'gascard_type' => $model->getGascardType(),
         );
 
         return $result;
@@ -197,7 +198,9 @@ class Messerve_Model_Mapper_Fuelpurchase extends Messerve_Model_Mapper_MapperAbs
                   ->setProduct($data['product'])
                   ->setFuelCost($data['fuel_cost'])
                   ->setFueloverage($data['fueloverage'])
-                  ->setActualoverage($data['actualoverage']);
+                  ->setActualoverage($data['actualoverage'])
+                  ->setGascardType($data['gascard_type'])
+            ;
         } elseif ($data instanceof Zend_Db_Table_Row_Abstract || $data instanceof stdClass) {
             $entry->setId($data->id)
                   ->setEmployeeId($data->employee_id)
@@ -208,7 +211,9 @@ class Messerve_Model_Mapper_Fuelpurchase extends Messerve_Model_Mapper_MapperAbs
                   ->setProduct($data->product)
                   ->setFuelCost($data->fuel_cost)
                   ->setFueloverage($data->fueloverage)
-                  ->setActualoverage($data->actualoverage);
+                  ->setActualoverage($data->actualoverage)
+                  ->setGascardType($data->gascard_type)
+            ;
         }
 
         $entry->setMapper($this);

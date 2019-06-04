@@ -91,6 +91,7 @@ class Messerve_Model_Fuelpurchase extends Messerve_Model_ModelAbstract
      */
     protected $_Actualoverage;
 
+    protected $_GascardType;
 
 
     /**
@@ -110,6 +111,7 @@ class Messerve_Model_Fuelpurchase extends Messerve_Model_ModelAbstract
             'fuel_cost'=>'FuelCost',
             'fueloverage'=>'Fueloverage',
             'actualoverage'=>'Actualoverage',
+            'gascard_type'=>'GascardType'
         ));
 
         $this->setParentList(array(
@@ -356,6 +358,16 @@ class Messerve_Model_Fuelpurchase extends Messerve_Model_ModelAbstract
         return $this->_Actualoverage;
     }
 
+    public function setGascardType($data)
+    {
+        $this->_GascardType = $data;
+        return $this;
+    }
+
+    public function getGascardType()
+    {
+        return $this->_GascardType;
+    }
     /**
      * Returns the mapper class for this model
      *
