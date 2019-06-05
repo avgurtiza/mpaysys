@@ -1635,8 +1635,11 @@ class Messervelib_Payroll
 
         $FuelMap = new Messerve_Model_Mapper_Fuelpurchase();
 
-        $fuel_purchases = $FuelMap->fetchList("invoice_date >= '{$date_start}' AND invoice_date <= '{$date_end} 23:59' AND employee_id = {$employee_id}"
-        );
+        $fuel_purchases = $FuelMap->fetchList("invoice_date >= '{$date_start}' 
+            AND invoice_date <= '{$date_end} 23:59' 
+            AND employee_id = {$employee_id}
+            AND gascard_type IS NOT NULL"
+        ); // Added 2019-06-05 to fix duplicate fuel records
 
         $fuel_purchased = 0;
         $fuel_consumption = 0;
