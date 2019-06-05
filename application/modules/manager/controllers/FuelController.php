@@ -155,18 +155,18 @@ class Manager_FuelController extends Zend_Controller_Action
                         continue;
                     }
 
-                    $data = array(
-                        'gascard' => $row[C_GASCARD_NO]
-                    , 'raw_invoice_date' => $invoice_date
-                    , 'statement_date' => $statement_date
-                    , 'invoice_date' => $invoice_date
-                    , 'product_quantity' => $row[C_PRODUCT_QUANTITY]
-                    , 'invoice_number' => $row[C_INVOICE_NUMBER]
-                    , 'station_name' => $row[C_STATION_NAME]
-                    , 'product' => $row[C_PRODUCT]
-                    , 'fuel_cost' => $row[C_FUEL_NET] + $row[C_VAT]
-                    , 'gascard_type' => $this->gascard_type
-                    );
+                    $data = [
+                        // 'gascard' => $row[C_GASCARD_NO]
+                        // , 'raw_invoice_date' => $invoice_date
+                        // 'statement_date' => $statement_date
+                        'invoice_date' => $invoice_date,
+                        'product_quantity' => $row[C_PRODUCT_QUANTITY],
+                        'invoice_number' => $row[C_INVOICE_NUMBER],
+                        'station_name' => $row[C_STATION_NAME],
+                        'product' => $row[C_PRODUCT],
+                        'fuel_cost' => $row[C_FUEL_NET] + $row[C_VAT],
+                        'gascard_type' => $this->gascard_type
+                    ];
 
                     if (in_array($row[C_GASCARD_NO], $gascard_no_user)) {
                         $orphans[] = $data;
@@ -311,10 +311,10 @@ class Manager_FuelController extends Zend_Controller_Action
                         $statement_date = $temp_statement_date->format('Y-m-d');
 
                         $data = array(
-                            'gascard' => $row[P_GASCARD_NO]
-                        , 'raw_invoice_date' => $raw_invoice_date
-                        , 'statement_date' => $statement_date
-                        , 'invoice_date' => $invoice_date
+                            //    'gascard' => $row[P_GASCARD_NO]
+                            // , 'raw_invoice_date' => $raw_invoice_date
+                            // , 'statement_date' => $statement_date
+                            'invoice_date' => $invoice_date
                         , 'product_quantity' => $row[P_PRODUCT_QUANTITY]
                         , 'invoice_number' => $row[P_INVOICE_NUMBER]
                         , 'station_name' => $row[P_STATION_NAME]
