@@ -165,7 +165,7 @@ class Manager_FuelController extends Zend_Controller_Action
                     , 'station_name' => $row[C_STATION_NAME]
                     , 'product' => $row[C_PRODUCT]
                     , 'fuel_cost' => $row[C_FUEL_NET] + $row[C_VAT]
-                    , 'gascardtype' => $this->gascard_type
+                    , 'gascard_type' => $this->gascard_type
                     );
 
                     if (in_array($row[C_GASCARD_NO], $gascard_no_user)) {
@@ -318,7 +318,7 @@ class Manager_FuelController extends Zend_Controller_Action
                         , 'station_name' => $row[P_STATION_NAME]
                         , 'product' => $row[P_PRODUCT]
                         , 'fuel_cost' => $row[P_FUEL_COST]
-                        , 'gascardtype' => $this->gascard_type
+                        , 'gascard_type' => $this->gascard_type
 
                         );
 
