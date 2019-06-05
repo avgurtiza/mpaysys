@@ -329,21 +329,22 @@ class Manager_FuelController extends Zend_Controller_Action
                             continue;
                         }
 
+
                         if (isset($gascard_employee[$row[P_GASCARD_NO]])) {
                             $Employee = $gascard_employee[$row[P_GASCARD_NO]];
                         } else {
-                            // Get employee by gascard
-                            // $EmployeeMap = new Messerve_Model_Mapper_Employee();
-                            // $Employee = $EmployeeMap->findOneByField('gascard', $row[P_GASCARD_NO]);
-                            $Employee = $this->getEmployeeByGascard($row[P_GASCARD_NO]);
-                            $gascard_employee[$row[P_GASCARD_NO]] = $Employee;
+                            $Employee = Messerve_Model_Eloquent_Employee::where('gascard2', $row[P_GASCARD_NO])->first();
+
+                            if ($Employee) {
+                                $gascard_employee[$row[P_GASCARD_NO]] = $Employee;
+                            }
                         }
 
-                        if ($Employee && $Employee->getId() > 0) {
 
-                            $data['employee_id'] = $Employee->getId();
+                        if ($Employee && $Employee->id > 0) {
+                            $data['employee_id'] = $Employee->id;
 
-                            $Fuel = $this->getFuelPurchase($invoice_date, $row[P_INVOICE_NUMBER], $Employee->getId(), $this->gascard_type);
+                            $Fuel = $this->getFuelPurchase($invoice_date, $row[P_INVOICE_NUMBER], $Employee->id, $this->gascard_type);
 
                             if ($Fuel->getId() > 0) {
                                 echo "Skipped existing fuel record: ";
@@ -352,17 +353,15 @@ class Manager_FuelController extends Zend_Controller_Action
                             }
 
                             Messerve_Model_Eloquent_Fuelpurchase::create($data);
-                            /*
-                            $Fuel
-                                ->setOptions($data)
-                                ->save();
-                            */
-                            $data['employee'] = $Employee->getFirstname() . ' ' . $Employee->getLastname() . ' ' . $Employee->getEmployeeNumber();
+
+
+                            $data['employee'] = $Employee->firstname . ' ' . $Employee->lastname . ' ' . $Employee->employee_number;
                             $saved[] = $data;
                         } else {
                             $gascard_no_user[] = $row[P_GASCARD_NO];
                             $orphans[] = $data;
                         }
+
 
                     }
                 }
