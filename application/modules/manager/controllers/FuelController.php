@@ -184,7 +184,7 @@ class Manager_FuelController extends Zend_Controller_Action
                     }
 
                     if ($Employee && $Employee->id > 0) {
-                        $data['employee_id'] = $Employee->getId();
+                        $data['employee_id'] = $Employee->id;
 
                         $Fuel = $this->getFuelPurchase($invoice_date, $row[C_INVOICE_NUMBER], $Employee->id, $this->gascard_type);
 
