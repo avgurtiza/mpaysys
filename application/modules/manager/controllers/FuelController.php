@@ -338,6 +338,9 @@ class Manager_FuelController extends Zend_Controller_Action
                         }
 
                         if ($Employee && $Employee->getId() > 0) {
+
+                            $data['employee_id'] = $Employee->getId();
+
                             $Fuel = $this->getFuelPurchase($invoice_date, $row[P_INVOICE_NUMBER], $Employee->getId(), $this->gascard_type);
 
                             if ($Fuel->getId() > 0) {
@@ -346,12 +349,12 @@ class Manager_FuelController extends Zend_Controller_Action
                                 continue;
                             }
 
-                            // TODO: Make eloquent
+                            Messerve_Model_Eloquent_Fuelpurchase::create($data);
+                            /*
                             $Fuel
                                 ->setOptions($data)
-                                ->setEmployeeId($Employee->getId())
                                 ->save();
-
+                            */
                             $data['employee'] = $Employee->getFirstname() . ' ' . $Employee->getLastname() . ' ' . $Employee->getEmployeeNumber();
                             $saved[] = $data;
                         } else {
