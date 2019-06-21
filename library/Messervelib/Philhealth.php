@@ -1,6 +1,9 @@
 <?php
-class Messervelib_Philhealth {
-    static public function resetDeductionsForCutoff($date_start, $employee_id) {
+
+class Messervelib_Philhealth
+{
+    static public function resetDeductionsForCutoff($date_start, $employee_id)
+    {
         $date_start = \Carbon\Carbon::parse($date_start);
 
         if ($date_start->day <= 15) { // First cutoff
@@ -18,8 +21,23 @@ class Messervelib_Philhealth {
 
     }
 
-    static public function getPhilhealthDeduction($basic_pay, $date_start, $employee_id, $group_id = 0)
+    static public function getPhilhealthDeductionByRiderRate(Messerve_Model_Eloquent_Employee $employee)
     {
+        $notes = '';
+        $group_rate = $employee->group->rate;
+
+        return [
+            'employee' => $group_rate->philhealth_employee / 2,
+            'employer' => $group_rate->philhealth_employeer / 2,
+            'basepay' => $group_rate->reg * 22,
+            'notes' => $notes
+        ];
+    }
+
+    static public function getPhilhealthDeduction($basic_pay, $date_start, $employee_id)
+    {
+        // Retired
+        throw new Exception("The payroll system tried to use old Philhealth calculation method.");
         $date_start = \Carbon\Carbon::parse($date_start);
 
         $minimum_monthly_deduction = 137.50; // TODO: config this.  Or make user-editable
@@ -54,19 +72,18 @@ class Messervelib_Philhealth {
 
                 foreach ($philhealth as $value) {
                     logger("-- found previous deduction (deduction/basic) {$value["philhealth"]} / {$value["philhealth_basic"]}");
-                    // $previous_philhealth += $value["philhealth"];
                     $previous_basic += $value["philhealth_basic"];
                 }
 
                 $monthly_pay = $basic_pay + $previous_basic; // TODO:  make sure you get ALL the basic pay for current cutoff
 
-                if($monthly_pay >= 14006.75) { // TODO: config these threshold
+                if ($monthly_pay >= 14006.75) { // TODO: config these threshold
                     logger("-- Monthly pay >= 537/day $monthly_pay");
                     $total_monthly_share = 192.59;
-                } elseif($monthly_pay >= 10433.33) {
+                } elseif ($monthly_pay >= 10433.33) {
                     logger("-- Monthly pay >= 400/day $monthly_pay");
                     $total_monthly_share = 143.46;
-                } elseif($monthly_pay >= 10329.00) {
+                } elseif ($monthly_pay >= 10329.00) {
                     logger("-- Monthly pay >= 396/day $monthly_pay");
                     $total_monthly_share = 142.02;
                 } else {

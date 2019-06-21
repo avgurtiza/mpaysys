@@ -12,4 +12,8 @@ class Messerve_Model_Eloquent_Client extends Eloquent
     {
         return $this->hasMany(Messerve_Model_Eloquent_Group::class, 'client_id', 'id');
     }
+
+    public function usesBiometrics() {
+        return $this->uses_biometrics == 1;
+    }
 }

@@ -18,6 +18,11 @@ class Messerve_Model_Eloquent_Employee extends Eloquent
         return $this->belongsTo(Messerve_Model_Eloquent_Rate::class, 'rate_id', 'id');
     }
 
+    public function basic_pay()
+    {
+        $rate = $this->rate->reg;
+    }
+
     public function attendance()
     {
         return $this->hasMany(Messerve_Model_Eloquent_Attendance::class, 'employee_id', 'id');

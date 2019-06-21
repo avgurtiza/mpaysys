@@ -528,7 +528,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $Group->find($group_id);
         $this->view->group = $Group;
 
-
         $Client = new Messerve_Model_Client();
         $Client->find($Group->getClientId());
         $this->view->client = $Client;
@@ -580,13 +579,15 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $this->view->date_start = $date_start;
         $this->view->date_end = $date_end;
 
-
         if ($this->_request->isPost()) {
 
             $filename = realpath($_FILES['file']['tmp_name']);
 
-            if ($Group->getClientId() == 14) {
-                $this->readAaiBiometrics($filename);
+            $ELoqGroup =  Messerve_Model_Eloquent_Group::find($group_id);
+            // if ($Group->getClientId() == 14) {
+
+            if ($ELoqGroup->client->usesBiometrics()) {
+                $this->readAaiBiometrics($filename, $ELoqGroup, $date_start);
             } else {
 
 
@@ -937,8 +938,14 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
     }
 
-    protected function writeAttendance($row, $group_id, Messerve_Model_Eloquent_Employee $employee)
+    protected function writeAttendance($row, Messerve_Model_Eloquent_Group $group, Messerve_Model_Eloquent_Employee $employee)
     {
+        $group_id = $group->id;
+
+        if($employee->group_id != $group_id) { // Write attendance only if rider belongs to group
+            return false;
+        }
+
         if (!$row[4]) {
             return false;
         }
@@ -965,20 +972,17 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         echo "START {$start->toTimeString()} END $end   <br>";
 
-
         $attendance = $employee->attendance()->firstOrCreate([
             'datetime_start' => $start->format('Y-m-d 00:00:00'),
             'employee_id' => $employee->id
         ]);
 
         $attendance->employee_number = $employee->employee_number;
-        $attendance->group_id = $employee->$group_id;
+        $attendance->group_id = $group_id;
         $attendance->start_1 = $start->format('Hi');
         $attendance->end_1 = $end->format('Hi');
 
-
         $attendance->save();
-
 
         $save_this_day = [
             'start_1' => $attendance->start_1
@@ -990,22 +994,15 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         $this->_save_the_day($employee->id, $group_id, [$date_now->toDateString() => $save_this_day]);
 
-
     }
 
-    protected function readAaiBiometrics($filename)
+    protected function readAaiBiometrics($filename, Messerve_Model_Eloquent_Group $group, $cutoff_start)
     {
         $reader = new  \PhpOffice\PhpSpreadsheet\Reader\Xls();
         $reader->setReadDataOnly(true);
         $spreadsheet = $reader->load($filename);
 
         $sheet = $spreadsheet->getActiveSheet();
-
-        $group_id = $this->_request->getParam('group_id');
-
-        if(!($Group = Messerve_Model_Eloquent_Group::find($group_id))) {
-            throw new Exception('Cannot find group!');
-        }
 
         $start_date = null;
         $end_date = null;
@@ -1040,6 +1037,14 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             }
 
 
+            $cutoff_start = \Carbon\Carbon::parse($cutoff_start);
+
+            if($start_date != $cutoff_start) {
+                throw new Exception("DTR period start does not match payroll cutoff being processed! {$start_date->toDateString()} <> {$cutoff_start->toDateString()}");
+            }
+
+            // TODO: Add start (and end) date checks.  Make sure it matches the cutoff period!
+
             if ($employee = $this->rowIsEmployee($row)) {
                 if ($current_employee !== $employee) {
                     $current_employee = $employee;
@@ -1047,7 +1052,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                 }
             }
 
-            $this->writeAttendance($row, $group_id, $current_employee);
+            $this->writeAttendance($row, $group, $current_employee);
 
 
         }
