@@ -21,14 +21,58 @@ class Messervelib_Philhealth
 
     }
 
-    static public function getPhilhealthDeductionByRiderRate(Messerve_Model_Eloquent_Employee $employee)
+
+    static public function getPhilhealthDeductionByRiderRate(Messerve_Model_Eloquent_Employee $employee, $date_start)
     {
         $notes = '';
         $group_rate = $employee->group->rate;
 
+        $date_start = \Carbon\Carbon::parse($date_start);
+
+        if ($date_start->day <= 15) { // First cutoff
+            return [
+                'employee' => $group_rate->philhealth_employee / 2,
+                'employer' => $group_rate->philhealth_employeer / 2,
+                'basepay' => $group_rate->reg * 22,
+                'notes' => $notes
+            ];
+        }
+
+        $previous_period = $date_start->day(1)->toDateString();
+
+        $payroll = Messerve_Model_Eloquent_PayrollTemp::where('period_covered', $previous_period)
+            ->where('employee_id', $employee->id)
+            ->get();
+
+        $total_monthly_ee_share = $group_rate->philhealth_employee;
+
+        if ($payroll->count() > 0) { // TODO: Fix this, maybe.
+
+            $previous_philhealth = 0;
+
+            foreach ($payroll as $row) {
+                logger("-- found previous philhealth deduction (deduction/basic) {$row->philhealth} / {$row->philhealth_basic}");
+                $previous_philhealth += $row->philhealth;
+            }
+
+            if($total_monthly_ee_share > $previous_philhealth) {
+                $employee_share = $total_monthly_ee_share - $previous_philhealth;
+            } else {
+                throw new Exception("Previous (first cut-off $previous_period) Philhealth deduction was greater than total monthly deduction for employee {$employee->name}.");
+            }
+
+        } else {
+            logger("--did not find previous deduction/s, setting to minimum deduction.");
+
+            $employee_share = $total_monthly_ee_share;
+        }
+
+        $employer_share = $employee_share;
+
+
         return [
-            'employee' => $group_rate->philhealth_employee / 2,
-            'employer' => $group_rate->philhealth_employeer / 2,
+            'employee' => $employee_share,
+            'employer' => $employer_share,
             'basepay' => $group_rate->reg * 22,
             'notes' => $notes
         ];
