@@ -254,123 +254,115 @@ class Manager_FuelController extends Zend_Controller_Action
 
             $upload->setDestination('/tmp');
 
-
             if (!$upload->receive()) {
-                $messages = $upload->getMessages();
-                die(implode("\n", $messages));
-            } else {
-                $filename = $upload->getFilename();
+                throw new Exception(implode("\n", $upload->getMessages()));
+            }
 
-                // echo $filename;
+            $filename = $upload->getFilename();
 
-                $file = new SplFileObject($filename);
-                $file->setFlags(SplFileObject::READ_CSV);
+            $file = new SplFileObject($filename);
+            $file->setFlags(SplFileObject::READ_CSV);
 
-                $saved = array();
-                $orphans = array();
-                $gascard_no_user = array();
-                $gascard_employee = array();
+            $saved = array();
+            $orphans = array();
+            $gascard_no_user = array();
+            $gascard_employee = array();
 
-                $i = 0;
+            $i = 0;
 
+            foreach ($file as $row) {
+                $i++;
+                array_map('trim', $row);
 
-                foreach ($file as $row) {
-                    array_map('trim', $row);
+                if (!isset($row[P_GASCARD_NO]) || !is_numeric($row[P_GASCARD_NO])) {
+                    continue;
+                }
 
-                    if (!isset($row[P_GASCARD_NO]) || !is_numeric($row[P_GASCARD_NO])) {
+                if (isset($row[P_GASCARD_NO]) && $row[P_GASCARD_NO] != '' && isset($row[P_INVOICE_NUMBER]) && $row[P_INVOICE_NUMBER] != '') {
+                    $raw_invoice_date = str_replace('/', '-', $row[P_INVOICE_DATE]);
+                    $temp_invoice_date = DateTime::createFromFormat('Y-m-d', $raw_invoice_date);
+
+                    if (!$temp_invoice_date) $temp_invoice_date = DateTime::createFromFormat('m-d-Y H:i', $raw_invoice_date);
+                    if (!$temp_invoice_date) $temp_invoice_date = DateTime::createFromFormat('m-d-y H:i A', $raw_invoice_date);
+
+                    if (!$temp_invoice_date) {
+                        throw new Exception('INVALID INVOICE DATE ' . $raw_invoice_date);
+                    }
+
+                    $invoice_date = $temp_invoice_date->format('Y-m-d');
+
+                    $raw_statement_date = str_replace('/', '-', $row[P_STATEMENT_DATE]);
+                    $raw_statement_date = str_replace("'", '', $raw_statement_date);
+                    $temp_statement_date = DateTime::createFromFormat('Y-m-d', $raw_statement_date);
+
+                    // if(!$temp_statement_date) $temp_statement_date = DateTime::createFromFormat('d-m-Y', $raw_statement_date);
+                    if (!$temp_statement_date) $temp_statement_date = DateTime::createFromFormat('m-d-Y', $raw_statement_date);
+
+                    if (!$temp_statement_date) {
+                        throw new Exception('INVALID STATEMENT DATE ' . $raw_statement_date);
+                    }
+
+                    $statement_date = $temp_statement_date->format('Y-m-d');
+
+                    $data = array(
+                        'invoice_date' => $invoice_date
+                    , 'product_quantity' => $row[P_PRODUCT_QUANTITY]
+                    , 'invoice_number' => $row[P_INVOICE_NUMBER]
+                    , 'station_name' => $row[P_STATION_NAME]
+                    , 'product' => $row[P_PRODUCT]
+                    , 'fuel_cost' => $row[P_FUEL_COST]
+                    , 'gascard_type' => $this->gascard_type
+
+                    );
+
+                    if (in_array($row[P_GASCARD_NO], $gascard_no_user)) {
+                        echo "{$row[P_GASCARD_NO]} has no employee record.  Skipping<br>";
+                        $orphans[] = $data;
                         continue;
                     }
 
-                    if (isset($row[P_GASCARD_NO]) && $row[P_GASCARD_NO] != '' && isset($row[P_INVOICE_NUMBER]) && $row[P_INVOICE_NUMBER] != '') {
-                        // if(trim($row[7]) == '') continue;
-                        // $invoice_date = date('Y-m-d h:i:s', strtotime($row[12]));
-                        $raw_invoice_date = str_replace('/', '-', $row[P_INVOICE_DATE]);
-                        $temp_invoice_date = DateTime::createFromFormat('Y-m-d', $raw_invoice_date);
 
-                        // if(!$temp_invoice_date) $temp_invoice_date = DateTime::createFromFormat('d-m-Y', $raw_invoice_date);
-                        if (!$temp_invoice_date) $temp_invoice_date = DateTime::createFromFormat('m-d-Y H:i', $raw_invoice_date);
-                        if (!$temp_invoice_date) $temp_invoice_date = DateTime::createFromFormat('m-d-y H:i A', $raw_invoice_date);
+                    if (isset($gascard_employee[$row[P_GASCARD_NO]])) {
+                        $Employee = $gascard_employee[$row[P_GASCARD_NO]];
+                    } else {
+                        $Employee = Messerve_Model_Eloquent_Employee::where($this->gascard_field, $row[P_GASCARD_NO])->first();
 
-                        if (!$temp_invoice_date) {
-                            die('INVALID INVOICE DATE ' . $raw_invoice_date);
+                        if ($Employee) {
+                            $gascard_employee[$row[P_GASCARD_NO]] = $Employee;
                         }
+                    }
 
-                        $invoice_date = $temp_invoice_date->format('Y-m-d');
 
-                        $raw_statement_date = str_replace('/', '-', $row[P_STATEMENT_DATE]);
-                        $raw_statement_date = str_replace("'", '', $raw_statement_date);
-                        $temp_statement_date = DateTime::createFromFormat('Y-m-d', $raw_statement_date);
+                    if ($Employee && $Employee->id > 0) {
+                        $data['employee_id'] = $Employee->id;
 
-                        // if(!$temp_statement_date) $temp_statement_date = DateTime::createFromFormat('d-m-Y', $raw_statement_date);
-                        if (!$temp_statement_date) $temp_statement_date = DateTime::createFromFormat('m-d-Y', $raw_statement_date);
+                        $Fuel = $this->getFuelPurchase($invoice_date, $row[P_INVOICE_NUMBER], $Employee->id, $this->gascard_type);
 
-                        if (!$temp_statement_date) {
-                            die('INVALID STATEMENT DATE ' . $raw_statement_date);
-                        }
-
-                        $statement_date = $temp_statement_date->format('Y-m-d');
-
-                        $data = array(
-                            //    'gascard' => $row[P_GASCARD_NO]
-                            // , 'raw_invoice_date' => $raw_invoice_date
-                            // , 'statement_date' => $statement_date
-                            'invoice_date' => $invoice_date
-                        , 'product_quantity' => $row[P_PRODUCT_QUANTITY]
-                        , 'invoice_number' => $row[P_INVOICE_NUMBER]
-                        , 'station_name' => $row[P_STATION_NAME]
-                        , 'product' => $row[P_PRODUCT]
-                        , 'fuel_cost' => $row[P_FUEL_COST]
-                        , 'gascard_type' => $this->gascard_type
-
-                        );
-
-                        if (in_array($row[P_GASCARD_NO], $gascard_no_user)) {
-                            $orphans[] = $data;
+                        if ($Fuel->getId() > 0) {
+                            echo "Skipped existing fuel record: ";
+                            preprint($Fuel->toArray());
                             continue;
                         }
 
-
-                        if (isset($gascard_employee[$row[P_GASCARD_NO]])) {
-                            $Employee = $gascard_employee[$row[P_GASCARD_NO]];
-                        } else {
-                            $Employee = Messerve_Model_Eloquent_Employee::where('gascard2', $row[P_GASCARD_NO])->first();
-
-                            if ($Employee) {
-                                $gascard_employee[$row[P_GASCARD_NO]] = $Employee;
-                            }
-                        }
+                        Messerve_Model_Eloquent_Fuelpurchase::create($data);
 
 
-                        if ($Employee && $Employee->id > 0) {
-                            $data['employee_id'] = $Employee->id;
-
-                            $Fuel = $this->getFuelPurchase($invoice_date, $row[P_INVOICE_NUMBER], $Employee->id, $this->gascard_type);
-
-                            if ($Fuel->getId() > 0) {
-                                echo "Skipped existing fuel record: ";
-                                preprint($Fuel->toArray());
-                                continue;
-                            }
-
-                            Messerve_Model_Eloquent_Fuelpurchase::create($data);
-
-
-                            $data['employee'] = $Employee->firstname . ' ' . $Employee->lastname . ' ' . $Employee->employee_number;
-                            $saved[] = $data;
-                        } else {
-                            $gascard_no_user[] = $row[P_GASCARD_NO];
-                            $orphans[] = $data;
-                        }
-
-
+                        $data['employee'] = $Employee->firstname . ' ' . $Employee->lastname . ' ' . $Employee->employee_number;
+                        $saved[] = $data;
+                    } else {
+                        $gascard_no_user[] = $row[P_GASCARD_NO];
+                        $orphans[] = $data;
                     }
+
+
                 }
-
-                $this->view->saved = $saved;
-                $this->view->orphans = $orphans;
-
-                echo "<h1>SAVED : " . count($saved) . "</h1>";
             }
+
+            $this->view->saved = $saved;
+            $this->view->orphans = $orphans;
+
+            echo "<h1>SAVED : " . count($saved) . "</h1>";
+
         }
     }
 
