@@ -3555,7 +3555,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $BopAttendance = Messerve_Model_Eloquent_BopAttendance::findByEmployeeAndDate($EmployeeEloq, $period_covered);
 
-                if($BopAttendance) {
+                if ($BopAttendance) {
                     $maintenance = $BopAttendance->maintenance_addition;
                 }
             }
@@ -3614,9 +3614,13 @@ class Payroll_IndexController extends Zend_Controller_Action
                 }
             }
 
+            if ($pvalue->getGroupId() != $Employee->getGroupId()) { // Payroll not for parent group?  Reset.
+                $bop_rental = 0;
+                $bop_maintenance = 0;
+            }
+
             $this_row += [
                 'BasicPay' => number_format($pvalue->getBasicPay(), 2)
-
 
                 , 'Incentives' => number_format(round($pvalue->getIncentives(), 2), 2)
                 , 'BOP maintenance' => $bop_maintenance
@@ -3690,9 +3694,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             $this_row['Misc deduction data'] = $misc_deduction_string;
 
             $this_row['Philhealth Basic'] = $pvalue->getPhilhealthBasic();
-
-            // preprint($this_row,1);
-
 
             $payroll_array[] = $this_row;
 
