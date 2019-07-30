@@ -3845,7 +3845,9 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $table_sss = (int)$result->employee;
 
-        $multiplier = .0363;
+        // $multiplier = .0363;
+
+        $multiplier = .04;
 
         $calculated_sss = $multiplier * $total_pay;
 
