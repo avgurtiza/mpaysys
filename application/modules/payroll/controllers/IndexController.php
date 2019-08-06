@@ -1009,22 +1009,10 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             }
 
-            $sss_deduction = $this->get_sss_deduction($total_pay);
-
             $prev_sss = 0;
             $prev_gross_pay = 0;
 
-            if ($sss_deduction[0] < $sss_deduction[1] && $sss_deduction[0] > 0) {
-                $value['deductions']['sss'] = $sss_deduction[0];
-            } else {
-                $value['deductions']['sss'] = $sss_deduction[1];
-            }
-
-            $sss_debug = "";
-
             if ($cutoff == 1) {
-                // Placeholder
-            } else {
                 $PayrollTemp = new Messerve_Model_PayrollTemp();
 
                 $prev_payroll_start = date("Y-m-01", $timestamp_start);
@@ -1056,6 +1044,16 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     $value['deductions']['sss'] = $sss_bal;
                 }
+            } else {
+                $sss_deduction = $this->get_sss_deduction($total_pay);
+
+                if ($sss_deduction[0] < $sss_deduction[1] && $sss_deduction[0] > 0) {
+                    $value['deductions']['sss'] = $sss_deduction[0];
+                } else {
+                    $value['deductions']['sss'] = $sss_deduction[1];
+                }
+
+                $sss_debug = "";
             }
 
             if ($group_id == $Employee->getGroupId()) { // Apply adjustments only on mother group payslip
