@@ -1025,7 +1025,14 @@ class Payroll_IndexController extends Zend_Controller_Action
                 );
 
                 if (count($sss_result) > 0) {
+
+                    $this_gross_pay = 0;
+                    $this_incentives = 0;
+
                     foreach ($sss_result as $srvalue) {
+                        $this_gross_pay +=  $srvalue["gross_pay"];
+                        $this_incentives +=  $srvalue["incentives"];
+
                         $prev_sss += $srvalue["sss"];
                         $prev_gross_pay = $srvalue["gross_pay"] - $srvalue["incentives"];
                     }
@@ -1040,7 +1047,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                     }
 
                     $sss_bal = $monthly_sss - $prev_sss;
-                    $sss_debug = "THIS PAY: $total_pay, PREV PAY: $prev_gross_pay (GP {$srvalue["gross_pay"]}, Incentives {$srvalue["incentives"]}), MONTHLY: $monthly_pay, PREV SSS: $prev_sss,  MONTHLY SSS: $monthly_sss,  SSS BAL: $sss_bal";
+                    $sss_debug = "THIS PAY: $total_pay, PREV PAY: $prev_gross_pay (GP $this_gross_pay}, Incentives $this_incentives), MONTHLY: $monthly_pay, PREV SSS: $prev_sss,  MONTHLY SSS: $monthly_sss,  SSS BAL: $sss_bal";
 
                     $value['deductions']['sss'] = $sss_bal;
                 }
