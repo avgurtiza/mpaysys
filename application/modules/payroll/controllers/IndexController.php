@@ -1015,7 +1015,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             if ($cutoff == 1) {
                 $PayrollTemp = new Messerve_Model_PayrollTemp();
 
-                $prev_payroll_start = date("Y-m-01", $timestamp_start);
+                $prev_payroll_start = date("Y-m-16", strtotime('last  month'));
 
                 $sss_result = $PayrollTemp->getMapper()->fetchListToArray(
                     array("period_covered >= '$prev_payroll_start'"
