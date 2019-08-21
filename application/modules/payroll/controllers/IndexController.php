@@ -1028,7 +1028,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                     foreach ($sss_result as $srvalue) {
                         $prev_sss += $srvalue["sss"];
-                        $prev_gross_pay += $srvalue["basic_pay"] + $srvalue["ecola"]
+                        $prev_gross_pay += $srvalue["basic_pay"] + $srvalue["ecola"];
                     }
 
                     $monthly_pay = $total_pay + $prev_gross_pay;
