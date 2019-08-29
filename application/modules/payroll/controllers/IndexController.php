@@ -655,13 +655,15 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $logo = Zend_Pdf_Image::imageWithPath(APPLICATION_PATH . '/../public/images/messerve.png');
 
-        $folder = realpath(APPLICATION_PATH . '/../public/export') . "/$date_start/$group_id/payslips/";
+
+        $parent = realpath(APPLICATION_PATH . '/../public/export') . "/$date_start/$group_id";
+        $folder = $parent . "/payslips/";
 
         // $folder = dirname(APPLICATION_PATH) . '/../public/export' . "/$date_start/$group_id/payslips/";
         $cmd = "mkdir -p $folder";
         shell_exec($cmd); // Create folder
 
-        $cmd = "chmod -R 777 $folder";
+        $cmd = "chmod -R 777 $parent";
         shell_exec($cmd); // Change permissions since queue runs this as user fixstop and will fail creation of
         // user-initiated client billing
         // TODO:  add www-data to fixstop group
