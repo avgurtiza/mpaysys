@@ -167,10 +167,27 @@ class Messervelib_Payroll
                     }
 
                     // If Good friday 2019 and not yet viable
-                    if(!$legal_unattended_viable
+                    if (!$legal_unattended_viable
                         && $date === '2019-04-19'
                     ) {
                         $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2019-04-17');
+                        $legal_unattended_viable = $legal_unattended_group > 0;
+                    }
+
+                    // If National Heroes day 2019 and not yet viable and is AAI
+                    if (!$legal_unattended_viable
+                        && $date === '2019-08-26'
+                        && in_array($Group->getClientId(), [
+                            14, // AAI
+                            19, // AAI Contractors
+                            20, // AAI Contractors - ODA
+                            21, // AAI - ODA
+                            25, // AAI Sidecar
+                            26 // AAI Sidecar - ODA
+                        ])
+
+                    ) {
+                        $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2019-08-24');
                         $legal_unattended_viable = $legal_unattended_group > 0;
                     }
 
@@ -1155,7 +1172,8 @@ class Messervelib_Payroll
         $this->_clean_up_holidays($Employee, $rate_date_start, $group_id);
     }
 
-    protected function groupWithAttendanceOnDay($employee_id, $date) {
+    protected function groupWithAttendanceOnDay($employee_id, $date)
+    {
         $attendance = (new Messerve_Model_Attendance())->getMapper()->findByField(
             array('employee_id', 'datetime_start')
             , array($employee_id, $date)
@@ -1171,6 +1189,7 @@ class Messervelib_Payroll
         return 0;
 
     }
+
     protected function _clean_up_holidays($Employee, $period_start, $group_id)
     {
         $AttendancePayroll = new Messerve_Model_Mapper_AttendancePayroll();
