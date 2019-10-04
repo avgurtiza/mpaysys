@@ -3712,8 +3712,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $period_covered = $this->_request->getParam('period_covered');
 
-        // header('Content-type: text/csv');
-        // header('Content-Disposition: attachment; filename="ETPS_export.csv"');
+        header('Content-type: text/csv');
+        header('Content-Disposition: attachment; filename="ETPS_export.csv"');
 
         $PayrollMap = new Messerve_Model_Mapper_PayrollTemp();
         $payroll = $PayrollMap->fetchList("period_covered = '{$period_covered}'",
@@ -3762,7 +3762,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $this_row = [
                     'Last Name' => $pvalue->getLastName()
                     , 'First Name' => $pvalue->getFirstName()
-                    , 'Middle Name' => $pvalue->getMiddleinitial()
+                    , 'Middle Name' => $pvalue->getMiddleName()
                     , 'Employee Account Number' => '073' . strtoupper($pvalue->getAccountNumber())
                     , 'Amount' => round($pvalue->getNetPay(), 2)
                 ];
