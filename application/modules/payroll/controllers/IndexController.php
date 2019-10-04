@@ -3750,7 +3750,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                     'empno' => $employee_number
                 , 'emplname' => $pvalue->getLastName()
                 , 'salary' => round($pvalue->getNetPay(), 2)
-                , 'actno' => strtoupper($pvalue->getAccountNumber())
+                , 'actno' => '073' . strtoupper($pvalue->getAccountNumber())
                 , 'empfname' => $pvalue->getFirstName()
                 , 'depbrcode' => '73'
                 );

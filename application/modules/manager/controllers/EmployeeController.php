@@ -93,8 +93,12 @@ class Manager_EmployeeController extends Zend_Controller_Action
 
                 $data = $form->getValues();
 
+                $now = \Carbon\Carbon::now()->toDateTimeString();
 
-                if ($form->getValue('id') == '') {
+                $data['updated_at'] = $now;
+
+                if ($form->getValue('id') == '') { // New record
+                    $data['created_at'] = $now;
                     $data['employee_number'] = 9000000 + rand(1111, 9999999); // TODO:  search for last id and add a number
                     $new_id = $Db->insert($data);
 

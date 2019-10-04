@@ -27,7 +27,7 @@ class Messerve_Model_Mapper_Employee extends Messerve_Model_Mapper_MapperAbstrac
      */
     public function toArray($model)
     {
-        if (! $model instanceof Messerve_Model_Employee) {
+        if (!$model instanceof Messerve_Model_Employee) {
             throw new Exception('Unable to create array: invalid model passed to mapper');
         }
 
@@ -57,6 +57,8 @@ class Messerve_Model_Mapper_Employee extends Messerve_Model_Mapper_MapperAbstrac
             'gascard' => $model->getGascard(),
             'gascard2' => $model->getGascard2(),
             'gascard3' => $model->getGascard3(),
+            'created_at' => $model->getCreatedAt(),
+            'updated_at' => $model->getUpdatedAt(),
         );
 
         return $result;
@@ -85,7 +87,7 @@ class Messerve_Model_Mapper_Employee extends Messerve_Model_Mapper_MapperAbstrac
      */
     public function delete($model)
     {
-        if (! $model instanceof Messerve_Model_Employee) {
+        if (!$model instanceof Messerve_Model_Employee) {
             throw new Exception('Unable to delete: invalid model passed to mapper');
         }
 
@@ -113,8 +115,9 @@ class Messerve_Model_Mapper_Employee extends Messerve_Model_Mapper_MapperAbstrac
      * @return boolean If the save action was successful
      */
     public function save(Messerve_Model_Employee $model,
-        $ignoreEmptyValues = true, $recursive = false, $useTransaction = true
-    ) {
+                         $ignoreEmptyValues = true, $recursive = false, $useTransaction = true
+    )
+    {
         $data = $model->toArray();
         if ($ignoreEmptyValues) {
             foreach ($data as $key => $value) {
@@ -143,11 +146,11 @@ class Messerve_Model_Mapper_Employee extends Messerve_Model_Mapper_MapperAbstrac
                 }
             } else {
                 $this->getDbTable()
-                     ->update($data,
-                              array(
-                                 'id = ?' => $primary_key
-                              )
-                );
+                    ->update($data,
+                        array(
+                            'id = ?' => $primary_key
+                        )
+                    );
             }
 
             if ($useTransaction && $success) {
@@ -204,56 +207,60 @@ class Messerve_Model_Mapper_Employee extends Messerve_Model_Mapper_MapperAbstrac
 
         if (is_array($data)) {
             $entry->setId($data['id'])
-                  ->setType($data['type'])
-                  ->setEmployeeNumber($data['employee_number'])
-                  ->setFirstname($data['firstname'])
-                  ->setLastname($data['lastname'])
-                  ->setMiddleinitial($data['middleinitial'])
-                  ->setAccountNumber($data['account_number'])
-                  ->setTin($data['tin'])
-                  ->setSss($data['sss'])
-                  ->setHdmf($data['hdmf'])
-                  ->setPhilhealth($data['philhealth'])
-                  ->setGroupId($data['group_id'])
-                  ->setRateId($data['rate_id'])
-                  ->setDateemployed($data['dateemployed'])
-                  ->setBikeRehabEnd($data['bike_rehab_end'])
-                  ->setBikeInsuranceRegEnd($data['bike_insurance_reg_end'])
-                  ->setSearch($data['search'])
-                  ->setBopId($data['bop_id'])
-                  ->setBopStart($data['bop_start'])
-                  ->setBopCurrentRiderStart($data['bop_current_rider_start'])
-                  ->setBopStartingbalance($data['bop_startingbalance'])
-                  ->setBopCurrentbalance($data['bop_currentbalance'])
-                  ->setGascard($data['gascard'])
-                  ->setGascard2($data['gascard2'])
-                  ->setGascard3($data['gascard3']);
+                ->setType($data['type'])
+                ->setEmployeeNumber($data['employee_number'])
+                ->setFirstname($data['firstname'])
+                ->setLastname($data['lastname'])
+                ->setMiddleinitial($data['middleinitial'])
+                ->setAccountNumber($data['account_number'])
+                ->setTin($data['tin'])
+                ->setSss($data['sss'])
+                ->setHdmf($data['hdmf'])
+                ->setPhilhealth($data['philhealth'])
+                ->setGroupId($data['group_id'])
+                ->setRateId($data['rate_id'])
+                ->setDateemployed($data['dateemployed'])
+                ->setBikeRehabEnd($data['bike_rehab_end'])
+                ->setBikeInsuranceRegEnd($data['bike_insurance_reg_end'])
+                ->setSearch($data['search'])
+                ->setBopId($data['bop_id'])
+                ->setBopStart($data['bop_start'])
+                ->setBopCurrentRiderStart($data['bop_current_rider_start'])
+                ->setBopStartingbalance($data['bop_startingbalance'])
+                ->setBopCurrentbalance($data['bop_currentbalance'])
+                ->setGascard($data['gascard'])
+                ->setGascard2($data['gascard2'])
+                ->setGascard3($data['gascard3'])
+                ->setCreatedAt($data['created_at'])
+                ->setUpdatedAt($data['updated_at']);
         } elseif ($data instanceof Zend_Db_Table_Row_Abstract || $data instanceof stdClass) {
             $entry->setId($data->id)
-                  ->setType($data->type)
-                  ->setEmployeeNumber($data->employee_number)
-                  ->setFirstname($data->firstname)
-                  ->setLastname($data->lastname)
-                  ->setMiddleinitial($data->middleinitial)
-                  ->setAccountNumber($data->account_number)
-                  ->setTin($data->tin)
-                  ->setSss($data->sss)
-                  ->setHdmf($data->hdmf)
-                  ->setPhilhealth($data->philhealth)
-                  ->setGroupId($data->group_id)
-                  ->setRateId($data->rate_id)
-                  ->setDateemployed($data->dateemployed)
-                  ->setBikeRehabEnd($data->bike_rehab_end)
-                  ->setBikeInsuranceRegEnd($data->bike_insurance_reg_end)
-                  ->setSearch($data->search)
-                  ->setBopId($data->bop_id)
-                  ->setBopStart($data->bop_start)
-                  ->setBopCurrentRiderStart($data->bop_current_rider_start)
-                  ->setBopStartingbalance($data->bop_startingbalance)
-                  ->setBopCurrentbalance($data->bop_currentbalance)
-                  ->setGascard($data->gascard)
-                  ->setGascard2($data->gascard2)
-                  ->setGascard3($data->gascard3);
+                ->setType($data->type)
+                ->setEmployeeNumber($data->employee_number)
+                ->setFirstname($data->firstname)
+                ->setLastname($data->lastname)
+                ->setMiddleinitial($data->middleinitial)
+                ->setAccountNumber($data->account_number)
+                ->setTin($data->tin)
+                ->setSss($data->sss)
+                ->setHdmf($data->hdmf)
+                ->setPhilhealth($data->philhealth)
+                ->setGroupId($data->group_id)
+                ->setRateId($data->rate_id)
+                ->setDateemployed($data->dateemployed)
+                ->setBikeRehabEnd($data->bike_rehab_end)
+                ->setBikeInsuranceRegEnd($data->bike_insurance_reg_end)
+                ->setSearch($data->search)
+                ->setBopId($data->bop_id)
+                ->setBopStart($data->bop_start)
+                ->setBopCurrentRiderStart($data->bop_current_rider_start)
+                ->setBopStartingbalance($data->bop_startingbalance)
+                ->setBopCurrentbalance($data->bop_currentbalance)
+                ->setGascard($data->gascard)
+                ->setGascard2($data->gascard2)
+                ->setGascard3($data->gascard3)
+                ->setCreatedAt($data->created_at)
+                ->setUpdatedAt($data->updated_at);
         }
 
         $entry->setMapper($this);

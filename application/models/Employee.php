@@ -12,7 +12,7 @@
 
 
 /**
- * 
+ *
  *
  * @package Messerve_Model
  * @subpackage Model
@@ -184,7 +184,8 @@ class Messerve_Model_Employee extends Messerve_Model_ModelAbstract
      */
     protected $_Gascard2;
     protected $_Gascard3;
-
+    protected $_CreatedAt;
+    protected $_UpdatedAt;
 
 
     /**
@@ -194,37 +195,35 @@ class Messerve_Model_Employee extends Messerve_Model_ModelAbstract
     {
         parent::init();
         $this->setColumnsList(array(
-            'id'=>'Id',
-            'type'=>'Type',
-            'employee_number'=>'EmployeeNumber',
-            'firstname'=>'Firstname',
-            'lastname'=>'Lastname',
-            'middleinitial'=>'Middleinitial',
-            'account_number'=>'AccountNumber',
-            'tin'=>'Tin',
-            'sss'=>'Sss',
-            'hdmf'=>'Hdmf',
-            'philhealth'=>'Philhealth',
-            'group_id'=>'GroupId',
-            'rate_id'=>'RateId',
-            'dateemployed'=>'Dateemployed',
-            'bike_rehab_end'=>'BikeRehabEnd',
-            'bike_insurance_reg_end'=>'BikeInsuranceRegEnd',
-            'search'=>'Search',
-            'bop_id'=>'BopId',
-            'bop_start'=>'BopStart',
-            'bop_startingbalance'=>'BopStartingbalance',
-            'bop_currentbalance'=>'BopCurrentbalance',
-            'gascard'=>'Gascard',
-            'gascard2'=>'Gascard2',
-            'gascard3'=>'Gascard3',
+            'id' => 'Id',
+            'type' => 'Type',
+            'employee_number' => 'EmployeeNumber',
+            'firstname' => 'Firstname',
+            'lastname' => 'Lastname',
+            'middleinitial' => 'Middleinitial',
+            'account_number' => 'AccountNumber',
+            'tin' => 'Tin',
+            'sss' => 'Sss',
+            'hdmf' => 'Hdmf',
+            'philhealth' => 'Philhealth',
+            'group_id' => 'GroupId',
+            'rate_id' => 'RateId',
+            'dateemployed' => 'Dateemployed',
+            'bike_rehab_end' => 'BikeRehabEnd',
+            'bike_insurance_reg_end' => 'BikeInsuranceRegEnd',
+            'search' => 'Search',
+            'bop_id' => 'BopId',
+            'bop_start' => 'BopStart',
+            'bop_startingbalance' => 'BopStartingbalance',
+            'bop_currentbalance' => 'BopCurrentbalance',
+            'gascard' => 'Gascard',
+            'gascard2' => 'Gascard2',
+            'gascard3' => 'Gascard3',
         ));
 
-        $this->setParentList(array(
-        ));
+        $this->setParentList(array());
 
-        $this->setDependentList(array(
-        ));
+        $this->setDependentList(array());
     }
 
     /**
@@ -777,6 +776,28 @@ class Messerve_Model_Employee extends Messerve_Model_ModelAbstract
         return $this->_Gascard3;
     }
 
+    public function setCreatedAt($data)
+    {
+        $this->_CreatedAt = $data;
+        return $this;
+    }
+
+    public function getCreatedAt()
+    {
+        return $this->_CreatedAt;
+    }
+
+    public function setUpdatedAt($data)
+    {
+        $this->_UpdatedAt = $data;
+        return $this;
+    }
+
+    public function getUpdatedAt()
+    {
+        return $this->_UpdatedAt;
+    }
+
     /**
      * Returns the mapper class for this model
      *
@@ -794,7 +815,7 @@ class Messerve_Model_Employee extends Messerve_Model_ModelAbstract
     /**
      * Deletes current row by deleting the row that matches the primary key
      *
-	 * @see Messerve_Model_Mapper_Employee::delete
+     * @see Messerve_Model_Mapper_Employee::delete
      * @return int|boolean Number of rows deleted or boolean if doing soft delete
      */
     public function deleteRowByPrimaryKey()
@@ -804,11 +825,11 @@ class Messerve_Model_Employee extends Messerve_Model_ModelAbstract
         }
 
         return $this->getMapper()
+            ->getDbTable()
+            ->delete('id = ' .
+                $this->getMapper()
                     ->getDbTable()
-                    ->delete('id = ' .
-                             $this->getMapper()
-                                  ->getDbTable()
-                                  ->getAdapter()
-                                  ->quote($this->getId()));
+                    ->getAdapter()
+                    ->quote($this->getId()));
     }
 }
