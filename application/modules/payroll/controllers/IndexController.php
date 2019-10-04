@@ -3716,7 +3716,8 @@ class Payroll_IndexController extends Zend_Controller_Action
         header('Content-Disposition: attachment; filename="ETPS_export.csv"');
 
         $PayrollMap = new Messerve_Model_Mapper_PayrollTemp();
-        $payroll = $PayrollMap->fetchList("period_covered = '{$period_covered}'", array("lastname", "firstname", "employee_number", "is_reliever DESC"));
+        $payroll = $PayrollMap->fetchList("period_covered = '{$period_covered}'",
+            array("lastname", "firstname", 'middleinitial', "employee_number", "is_reliever DESC"));
 
         $payroll_array = array();
 
