@@ -3717,7 +3717,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $PayrollMap = new Messerve_Model_Mapper_PayrollTemp();
         $payroll = $PayrollMap->fetchList("period_covered = '{$period_covered}'",
-            array("lastname", "firstname", 'middleinitial', "employee_number", "is_reliever DESC"));
+            array("lastname", "firstname", 'middlename', "employee_number", "is_reliever DESC"));
 
         $payroll_array = array();
 
