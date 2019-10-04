@@ -3746,7 +3746,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $payroll_array[$employee_number]['salary'] += round($pvalue->getNetPay(), 2);
             } else {
 
-                $this_row = array(
+                /*
+                 * $this_row = array(
                     'empno' => $employee_number
                 , 'emplname' => $pvalue->getLastName()
                 , 'salary' => round($pvalue->getNetPay(), 2)
@@ -3754,6 +3755,16 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , 'empfname' => $pvalue->getFirstName()
                 , 'depbrcode' => '73'
                 );
+                */
+
+
+                $this_row = [
+                    'Last Name' => $pvalue->getLastName()
+                    , 'First Name' => $pvalue->getFirstName()
+                    , 'Middle Name' => $pvalue->getMiddleinitial()
+                    , 'Employee Account Number' => '073' . strtoupper($pvalue->getAccountNumber())
+                    , 'Amount' => round($pvalue->getNetPay(), 2)
+                ];
 
                 $payroll_array[$employee_number] = $this_row;
             }
