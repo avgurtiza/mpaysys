@@ -3758,16 +3758,14 @@ class Payroll_IndexController extends Zend_Controller_Action
                 );
                 */
 
-
-                $this_row = [
+                $payroll_array[$employee_number] = [
                     'Last Name' => $pvalue->getLastName()
                     , 'First Name' => $pvalue->getFirstName()
                     , 'Middle Name' => $pvalue->getMiddleName()
                     , 'Employee Account Number' => '073' . strtoupper($pvalue->getAccountNumber())
                     , 'Amount' => round($pvalue->getNetPay(), 2)
+                    , '--' => '--'
                 ];
-
-                $payroll_array[$employee_number] = $this_row;
             }
         }
 
