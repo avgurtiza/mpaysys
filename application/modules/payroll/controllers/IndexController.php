@@ -3744,7 +3744,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $employee_number = $pvalue->getEmployeeNumber();
 
             if (isset($payroll_array[$employee_number])) {
-                $payroll_array[$employee_number]['salary'] += round($pvalue->getNetPay(), 2);
+                $payroll_array[$employee_number]['Amount'] += round($pvalue->getNetPay(), 2);
             } else {
 
                 /*
@@ -3764,7 +3764,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                     , 'Middle Name' => $pvalue->getMiddleName()
                     , 'Employee Account Number' => '073' . strtoupper($pvalue->getAccountNumber())
                     , 'Amount' => round($pvalue->getNetPay(), 2)
-                    , '--' => '--'
                 ];
             }
         }
