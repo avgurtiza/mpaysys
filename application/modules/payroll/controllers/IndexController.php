@@ -3712,8 +3712,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $period_covered = $this->_request->getParam('period_covered');
 
-        header('Content-type: text/csv');
-        header('Content-Disposition: attachment; filename="ETPS_export.csv"');
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment; filename="ETPS_export.xls"');
 
         $PayrollMap = new Messerve_Model_Mapper_PayrollTemp();
         $payroll = $PayrollMap->fetchList("period_covered = '{$period_covered}'",
@@ -3733,11 +3733,11 @@ class Payroll_IndexController extends Zend_Controller_Action
         foreach ($payroll as $pvalue) {
 
             $account_number = (int)$pvalue->getAccountNumber();
-            if (!$account_number > 0) continue;
+            if (!($account_number > 0)) continue;
 
             $employee_type = 'Regular';
 
-            if ($pvalue->getIsReliever() == 'yes') {
+            if ($pvalue->getIsReliever() === 'yes') {
                 $employee_type = 'Reliever';
             }
 
@@ -3762,7 +3762,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                     'Last Name' => $pvalue->getLastName()
                     , 'First Name' => $pvalue->getFirstName()
                     , 'Middle Name' => $pvalue->getMiddleName()
-                    , 'Employee Account Number' => '073' . strtoupper($pvalue->getAccountNumber())
+                    , 'Employee Account Number' => "073" . strtoupper($pvalue->getAccountNumber())
                     , 'Amount' => round($pvalue->getNetPay(), 2)
                 ];
             }
@@ -3776,7 +3776,17 @@ class Payroll_IndexController extends Zend_Controller_Action
             }
         }
 
-        $this->view->payroll = $payroll_array;
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $activesheet = $spreadsheet->getActiveSheet();
+
+        $activesheet->fromArray($payroll_array);
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xls($spreadsheet);
+        $writer->save('php://output');
+
+        // $this->view->payroll = $payroll_array;
     }
 
     public function thirteenthAction()
