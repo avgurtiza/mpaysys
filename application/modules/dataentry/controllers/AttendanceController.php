@@ -825,11 +825,13 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         }
 
         $select
+            ->columns(['employee_id'])
             ->where('group_id = ?', $group_id)
             ->where("datetime_start BETWEEN '{$date_start}' AND '{$date_end}'")
             ->group('employee_id');
 
         $relievers_result = $AttendDB->fetchAll($select);
+
 
         if (count($relievers_result) > 0) {
             foreach ($relievers_result as $rvalue) {
