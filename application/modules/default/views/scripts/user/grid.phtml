@@ -20,7 +20,7 @@
 	</table>
 </form>
 
-<a href="#" class="add-entry" data-reveal-id="utility-dialog">Add user</a>
+<a href="#" class="add-entry">Add user</a>
 
 
 <?php endif; ?>
@@ -59,10 +59,10 @@ $(function() {
 		$('#utility-dialog').html(iframe).dialog( { width: 580, height: 580, title: 'Edit user' } );
 	} );
 	
-	$('.add-entry').click(function(evt) {
+	$('.add-entry').live('click', function(evt) {
 		evt.preventDefault();
-		var iframe = '<iframe frameborder="0" class="modal-iframe" width="700" height="550" seamless="seamless" src="<?php echo $this->url(array('action'=>'add')); ?>"></iframe>';
-		$('#utility-dialog').html(iframe); // .dialog( { width: 580, height: 400, title: 'Add user' } );
+		var iframe = '<iframe frameborder="0" class="modal-iframe" width="700" height="550" src="<?php echo $this->url(array('action'=>'add')); ?>"></iframe>';
+		$('#utility-dialog').html(iframe).dialog( { width: 580, height: 580, title: 'Add usar' } );
 	} );
 } );
 //-->
