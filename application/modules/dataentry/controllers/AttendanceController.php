@@ -822,11 +822,15 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             $select->whereNotIn("employee_id", $permanents);
         }
 
-        $relievers_result = $select->where('group_id', $group_id)
+        $relievers_result = $select
+            ->where('group_id', $group_id)
             ->whereBetween('datetime_start', [$date_start, $date_end])
-            ->groupBy('employee_id')
-            ->get(['employee_id']);
-        
+            // ->groupBy('employee_id')
+            ->get(['employee_id'])
+        ;
+
+        // die($relievers_result->toSql());
+
         if (count($relievers_result) > 0) {
             foreach ($relievers_result as $rvalue) {
                 $Reliever = new Messerve_Model_Employee();
