@@ -228,16 +228,16 @@ class Payroll_IndexController extends Zend_Controller_Action
         $this->view->period_covered = $period_covered;
         $this->view->period_end = $period_end;
 
-        $PayrollTempDb = new Messerve_Model_DbTable_PayrollTemp();
 
-        $select = $PayrollTempDb->select();
-        $select->group(array('period_covered'))->order('period_covered DESC');
+        $all_periods = [];
 
-        $all_periods = array();
+        $periods = Messerve_Model_Eloquent_PayrollTemp::groupBy(['period_covered'])->get(['period_covered']);
 
-        foreach ($PayrollTempDb->fetchAll($select) as $period) {
+        foreach ($periods as $period) {
             $all_periods[] = $period->period_covered;
         }
+
+        // preprint($all_periods, true);
 
         $this->view->old_periods = $all_periods;
 
