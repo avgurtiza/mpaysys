@@ -826,7 +826,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             ->where('group_id', $group_id)
             ->whereBetween('datetime_start', [$date_start, $date_end])
             ->groupBy('employee_id')
-            ->get(['employee_id'])
+            ->get(['employee_id','id'])
         ;
 
         // die($relievers_result->toSql());
