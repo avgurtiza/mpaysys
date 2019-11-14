@@ -583,7 +583,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
             $filename = realpath($_FILES['file']['tmp_name']);
 
-            $ELoqGroup =  Messerve_Model_Eloquent_Group::find($group_id);
+            $ELoqGroup = Messerve_Model_Eloquent_Group::find($group_id);
             // if ($Group->getClientId() == 14) {
 
             if ($ELoqGroup->client->usesBiometrics()) {
@@ -810,29 +810,23 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $AttendDB = new Messerve_Model_DbTable_Attendance();
 
         // Search for relievers
-        $temp_employees = array();
+        $permanents = [];
 
         foreach ($employees as $evalue) {
-            $temp_employees[] = $evalue->getId();
+            $permanents[] = $evalue->getId();
         }
 
+        $select = Messerve_Model_Eloquent_Attendance::select();
 
-        $permanents = implode(',', $temp_employees);
-        $select = $AttendDB->select(true);
-
-        if (count($temp_employees) > 0) {
-            $select->where("employee_id NOT IN ({$permanents})");
+        if (count($permanents) > 0) {
+            $select->whereNotIn("employee_id", $permanents);
         }
 
-        $select
-            ->columns(['employee_id'])
-            ->where('group_id = ?', $group_id)
-            ->where("datetime_start BETWEEN '{$date_start}' AND '{$date_end}'")
-            ->group('employee_id');
-
-        $relievers_result = $AttendDB->fetchAll($select);
-
-
+        $relievers_result = $select->where('group_id', $group_id)
+            ->whereBetween('datetime_start', [$date_start, $date_end])
+            ->groupBy('employee_id')
+            ->get(['employee_id']);
+        
         if (count($relievers_result) > 0) {
             foreach ($relievers_result as $rvalue) {
                 $Reliever = new Messerve_Model_Employee();
@@ -944,7 +938,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
     {
         $group_id = $group->id;
 
-        if($employee->group_id != $group_id) { // Write attendance only if rider belongs to group
+        if ($employee->group_id != $group_id) { // Write attendance only if rider belongs to group
             return false;
         }
 
@@ -1041,7 +1035,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
             $cutoff_start = \Carbon\Carbon::parse($cutoff_start);
 
-            if($start_date != $cutoff_start) {
+            if ($start_date != $cutoff_start) {
                 throw new Exception("DTR period start does not match payroll cutoff being processed! {$start_date->toDateString()} <> {$cutoff_start->toDateString()}");
             }
 
