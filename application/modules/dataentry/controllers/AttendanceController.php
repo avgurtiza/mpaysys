@@ -844,7 +844,14 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         foreach ($employees as $evalue) {
             $select = $AttendDB->select();
             $select
-                ->columns(array('mysum' => 'ROUND(SUM(reg) + SUM(reg_nd) + SUM(reg_ot)	+ SUM(reg_nd_ot)	+ SUM(sun)	+ SUM(sun_nd)	+ SUM(sun_ot)	+ SUM(sun_nd_ot)	+ SUM(spec)	+ SUM(spec_nd)	+ SUM(spec_ot)	+ SUM(spec_nd_ot)	+ SUM(legal)	+ SUM(legal_nd)	+ SUM(legal_ot)	+ SUM(legal_nd_ot)	+ SUM(rest)	+ SUM(rest_nd)	+ SUM(rest_ot)	+ SUM(rest_nd_ot),2)'))
+                ->from(
+                    ['a'=>'attendance'],
+                    [
+                    'mysum' =>
+                        'ROUND(SUM(reg) + SUM(reg_nd) + SUM(reg_ot)	+ SUM(reg_nd_ot)	+ SUM(sun)	+ SUM(sun_nd)	
+                        + SUM(sun_ot)	+ SUM(sun_nd_ot)	+ SUM(spec)	+ SUM(spec_nd)	+ SUM(spec_ot)	+ SUM(spec_nd_ot)	
+                        + SUM(legal)	+ SUM(legal_nd)	+ SUM(legal_ot)	+ SUM(legal_nd_ot)	+ SUM(rest)	+ SUM(rest_nd)	
+                        + SUM(rest_ot)	+ SUM(rest_nd_ot),2)'])
                 ->where('employee_id = ?', $evalue->getId())
                 ->where('group_id = ?', $group_id)
                 ->where("datetime_start BETWEEN '{$date_start}' AND '{$date_end}'");
