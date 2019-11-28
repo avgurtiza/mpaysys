@@ -83,9 +83,14 @@ class Manager_EmployeeController extends Zend_Controller_Action
             $postvars = $this->_request->getPost();
 
 
+            if(!$postvars['bop_currentbalance'] || !($postvars['bop_currentbalance'] > 0)) {
+                $postvars['bop_currentbalance'] = 0;
+            }
+
+
             if ($form->isValid($postvars)) {
 
-                if (!$form->getValue('id') > 0) {
+                if (!($form->getValue('id') > 0)) {
                     $form->removeElement('id');
                 }
 
