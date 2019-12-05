@@ -120,7 +120,8 @@ while (1) {
 
         $index = realpath(dirname(APPLICATION_PATH) . '/public/index.php');
 
-        $command = sprintf('php7.1 -f %s index payroll %d %s %s %s', $index, $data['group_id'], $data['date_start'], $data['date_end'], $data['fuel_cost']);
+        $command = sprintf('/usr/bin/php -f %s index payroll %d %s %s %s', $index, $data['group_id'], $data['date_start'], $data['date_end'], $data['fuel_cost']);
+        // $command = sprintf('php7.1 -f %s index payroll %d %s %s %s', $index, $data['group_id'], $data['date_start'], $data['date_end'], $data['fuel_cost']);
         // $command = sprintf('php -f %s index payroll %d %s %s %s', $index, $data['group_id'], $data['date_start'], $data['date_end'], $data['fuel_cost']);
 
         $result = exec($command);
