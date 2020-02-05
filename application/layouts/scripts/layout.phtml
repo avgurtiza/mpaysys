@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="/css/foundation.css">
     <link rel="stylesheet" href="/css/foundation-icons.css"/>
 
-    <link href="/css/messerve.css?update=20171025A" type="text/css" rel="stylesheet"/>
+    <link href="/css/messerve.css?update=20200205A" type="text/css" rel="stylesheet"/>
     <link href="/css/smoothness/jquery-ui-1.9.0.custom.min.css" type="text/css" rel="stylesheet"/>
 
     <script src="/js/jquery-1.8.2.js"></script>
@@ -29,9 +29,6 @@ if (Zend_Controller_Front::getInstance()->getRequest()->getControllerName() != Z
             <?php // preprint($this->user_auth); ?>
 
             <?php echo $this->partial('partials/encoder.phtml'); ?>
-
-
-
 
             <?php if ($this->user_auth && $this->user_auth->type === 'admin'): ?>
                 <blockquote style="float: left">
@@ -52,12 +49,14 @@ if (Zend_Controller_Front::getInstance()->getRequest()->getControllerName() != Z
                         <dd><a href="/manager/fuel/oil-empire">Oil Empire</a></dd>
                     </dl>
                 </blockquote>
+
             <?php endif; ?>
 
-            <blockquote>
+            <blockquote style="float: left; clear: right;">
                 <dl class="hor-menu">
                     <?php if ($this->user_auth && $this->user_auth->type === 'admin'): ?>
                         <dd><a href="/payroll/index">Payroll</a></dd>
+                        <dd><a href="/payroll/index/accrual">Accrual</a></dd>
                         <dd><a href="/payroll/floating">Floating OT</a></dd>
                         <dd><a href="/payroll/index/pending">Pending payroll</a></dd>
                         <dd><a href="/payroll/index/dtr-anomaly">DTR Anomalies</a></dd>

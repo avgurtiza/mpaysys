@@ -1,6 +1,8 @@
 <?php
 error_reporting(E_ERROR || E_WARNING);
 
+ini_set('display_errors', 'On');
+
 if (!function_exists('preprint')) {
     function preprint($mixed, $exit_after = false)
     {

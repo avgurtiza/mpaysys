@@ -15,6 +15,13 @@ resources.db.params.username = "root"
 resources.db.params.password = "DbFixpass00"
 autoloadernamespaces.0 = "Zodeken_"
 
+queue.driverOptions.type = "PDO_MYSQL"
+queue.driverOptions.host = "127.0.0.1"
+queue.driverOptions.username = "messerve_prod"
+queue.driverOptions.password = "root"
+queue.driverOptions.dbname = "DbFixpass00"
+
+
 resources.layout.layoutPath = APPLICATION_PATH "/layouts/scripts/"
 resources.frontController.moduleDirectory = APPLICATION_PATH "/modules"
 

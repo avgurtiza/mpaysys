@@ -4316,5 +4316,9 @@ class Payroll_IndexController extends Zend_Controller_Action
     {
         $this->view->pending_payroll = Messerve_Model_Eloquent_PendingPayroll::orderBy('id', 'DESC')->get();
     }
+
+    public function accrualAction() {
+        $this->view->api_host = ($this->_config->get('messerve'))->api_host;
+    }
 }
 

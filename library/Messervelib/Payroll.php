@@ -1497,7 +1497,6 @@ class Messervelib_Payroll
 
     protected function _get_rate_today($date)
     {
-
         $employee_rate = false;
 
         if (isset($this->_employee_rates['schedule'])) {

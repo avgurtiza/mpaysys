@@ -42,19 +42,24 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         // action body
         $GroupMap = new Messerve_Model_Mapper_Group();
 
-        $groups = $GroupMap->fetchList("id > 0", array('client_id ASC', 'name ASC'));
+        $groups = $GroupMap->fetchList("id > 0 ", array('client_id ASC', 'name ASC'));
 
         $Client = new Messerve_Model_Mapper_Client();
 
         $clients = array();
 
-        foreach ($Client->fetchList('1', 'name ASC') as $cvalue) {
+        foreach ($Client->fetchList('is_active = 1', 'name ASC') as $cvalue) {
             $clients[$cvalue->getId()] = $cvalue->getName();
         }
 
         $groups_array = array();
 
         foreach ($groups as $gvalue) {
+
+            if(!array_key_exists($gvalue->getClientId(), $clients)) {
+                continue;
+            }
+
             $Employee = new Messerve_Model_DbTable_Employee();
 
             $employee_count = $Employee->countByQuery('group_id = ' . $gvalue->getId());
@@ -67,6 +72,8 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
 
         asort($groups_array);
+
+        // dd($groups_array);
 
         $form = new Messerve_Form_Attendance();
         $form->setAction('/dataentry/attendance/employees');
