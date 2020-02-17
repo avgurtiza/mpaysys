@@ -3637,11 +3637,15 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 , 'Gross pay' => number_format(round($pvalue->getGrossPay(), 2), 2)
 
+                , 'SSS EE' => number_format(round($pvalue->getSss() * -1, 2), 2)
+                , 'SSS ER' => number_format(round($pvalue->getSss() * -2, 2), 2)
+                , 'SSS EC' =>  ($pvalue->getGrossPay() >= 14750)  ? -30 : -10
 
-                , 'SSS' => number_format(round($pvalue->getSss() * -1, 2), 2)
-                , 'Philhealth' => number_format(round($pvalue->getPhilhealth() * -1, 2), 2)
-                , 'HDMF' => number_format(round($pvalue->getHdmf() * -1, 2), 2)
+                , 'Philhealth EE' => number_format(round($pvalue->getPhilhealth() * -1, 2), 2)
+                , 'Philhealth ER' => number_format(round($pvalue->getPhilhealth() * -1, 2), 2)
 
+                , 'HDMF EE' => number_format(round($pvalue->getHdmf() * -1, 2), 2)
+                , 'HDMF ER' => number_format(round($pvalue->getHdmf() * -1, 2), 2)
 
                 , 'SSS loan' => number_format(round($pvalue->getSSSLoan() * -1, 2), 2)
                 , 'HDMF loan' => number_format(round($pvalue->getHDMFLoan() * -1, 2), 2)

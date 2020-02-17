@@ -30,7 +30,7 @@ class Manager_ClientController extends Zend_Controller_Action
         // action body
         $ClientMap = new Messerve_Model_Mapper_Client();
         
-        $clients = $ClientMap->fetchList('1','name ASC');
+        $clients = $ClientMap->fetchList('is_active = 1', 'name ASC');
         
         $this->view->clients = $clients;
     }
