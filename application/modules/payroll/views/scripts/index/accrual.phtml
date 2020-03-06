@@ -1,7 +1,40 @@
 <h3>Accrual reports</h3>
-<dl>
-    <dd><a href="<?php echo $this->api_host ?>/api/accrual/silp" class="button">SILP month-to-date</a></dd>
-    <dd><a href="<?php echo $this->api_host ?>/api/accrual/silp?atd=true" class="button">SILP anniversary-to-date</a></dd>
-    <dd><a href="<?php echo $this->api_host ?>/api/accrual/thirteenth-month" class="button">13th month cutoff-to-date</a></dd>
-    <dd><a href="<?php echo $this->api_host ?>/api/accrual/thirteenth-month?atd=true" class="button">13th month Nov-to-date</a></dd>
-</dl>
+<blockquote>
+    <label>SILP</label>
+    <select class="dateForSilp">
+        <?php foreach ($this->silp_options as $key => $option): ?>
+            <option value="<?= $option ?>"><?php echo $key ?></option>
+        <?php endforeach; ?>
+    </select>
+    <button onclick="downloadSilp()" class="small radius">Download</button>
+
+    <!--<a href="<?php echo $this->api_host ?>/api/accrual/silp" class="button small radius">Month-to-date</a>
+    <a href="<?php echo $this->api_host ?>/api/accrual/silp?atd=true"
+       class="button small radius">Anniversary-to-date</a>-->
+</blockquote>
+
+<blockquote>
+    <label>13th-month</label>
+    <select class="dateFor13th">
+        <!-- thirteenth_month_options-->
+        <?php foreach ($this->thirteenth_month_options as $key => $option): ?>
+            <option value="<?= $option ?>"><?php echo $key ?></option>
+        <?php endforeach; ?>
+    </select>
+    <button onclick="download13()" class="small radius">Download</button>
+    <!--<a href="<?php echo $this->api_host ?>/api/accrual/thirteenth-month" class="button small radius">Cutoff-to-date</a>
+    <a href="<?php echo $this->api_host ?>/api/accrual/thirteenth-month?atd=true" class="button small radius">November-to-date</a>-->
+
+</blockquote>
+
+<script>
+    function downloadSilp() {
+        var date = $('.dateForSilp').val();
+        window.location.href = "<?php echo $this->api_host ?>/api/accrual/silp?date=" + $('.dateFor13th').val();
+    }
+
+    function download13() {
+        window.location.href = "<?php echo $this->api_host ?>/api/accrual/thirteenth-month?date=" + $('.dateFor13th').val();
+    }
+</script>
+

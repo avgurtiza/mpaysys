@@ -3615,10 +3615,14 @@ class Payroll_IndexController extends Zend_Controller_Action
                 }
             }
 
+            $sss_ec = ($pvalue->getGrossPay() >= 14750)  ? -30 : -10;
+
             if ($pvalue->getGroupId() != $Employee->getGroupId()) { // Payroll not for parent group?  Reset.
                 $bop_rental = 0;
                 $bop_maintenance = 0;
+                $sss_ec = 0;
             }
+
 
             $this_row += [
                 'BasicPay' => number_format($pvalue->getBasicPay(), 2)
@@ -3639,7 +3643,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 , 'SSS EE' => number_format(round($pvalue->getSss() * -1, 2), 2)
                 , 'SSS ER' => number_format(round($pvalue->getSss() * -2, 2), 2)
-                , 'SSS EC' =>  ($pvalue->getGrossPay() >= 14750)  ? -30 : -10
+                , 'SSS EC' => $sss_ec
 
                 , 'Philhealth EE' => number_format(round($pvalue->getPhilhealth() * -1, 2), 2)
                 , 'Philhealth ER' => number_format(round($pvalue->getPhilhealth() * -1, 2), 2)
@@ -3820,17 +3824,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             if (!($pre_jan + $post_jan) > 0) continue;
 
-            /*if($Group->getRateId() == '6') {
-                $Rate5 = new Messerve_Model_Rate();
-                $Rate5->find(5);
-                echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t{$pre_jan}\t{$Rate5->getReg()}\t{$post_jan}\t{$Rate->getReg()}";
-            } else {
-                echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t0\t0\t{$post_jan}\t{$Rate->getReg()}";
-            }*/
             echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t{$pre_jan}\t{$Rate->getReg()}\t{$post_jan}\t{$Rate->getReg()}";
-
-            // echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t0\t0\t{$post_jan}\t{$Rate->getReg()}";
-
         }
 
     }
@@ -4278,6 +4272,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             // Rename worksheet
             $Excel->getActiveSheet()->setTitle('Oh hai');
+            
             // Set active sheet index to the first sheet, so Excel opens this as the first sheet
             $Excel->setActiveSheetIndex(0);
 
@@ -4322,6 +4317,36 @@ class Payroll_IndexController extends Zend_Controller_Action
     }
 
     public function accrualAction() {
+
+        $two_months_ago = Carbon\Carbon::today()->subMonth(2);
+
+        $this->view->silp_options = [
+            'This month' => Carbon\Carbon::today()->format('Y-m'),
+            'Last month' => Carbon\Carbon::today()->subMonth(1)->format('Y-m'),
+            $two_months_ago->format('F Y') => $two_months_ago->format('Y-m'),
+            'Anniversary-to-date' => 'atd'
+        ];
+
+        $thirteenth_month_options = [];
+
+        $today = \Carbon\Carbon::today();
+
+        if ($today->day <= 15) {
+            $today->subMonth(1);
+            $thirteenth_month_options[$today->format('Y-m-16')] = $today->format('Y-m-16');
+        }
+
+        $thirteenth_month_options[$today->format('Y-m-01')] = $today->format('Y-m-01');
+
+        for($i=1; $i<=2; $i++) {
+            $today->subMonth(1);
+            $thirteenth_month_options[$today->format('Y-m-16')] = $today->format('Y-m-16');
+            $thirteenth_month_options[$today->format('Y-m-01')] = $today->format('Y-m-01');
+        }
+
+        $thirteenth_month_options['November-to-date'] = 'ntd';
+
+        $this->view->thirteenth_month_options = $thirteenth_month_options;
         $this->view->api_host = ($this->_config->get('messerve'))->api_host;
     }
 }
