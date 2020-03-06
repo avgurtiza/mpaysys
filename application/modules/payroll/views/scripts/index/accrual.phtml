@@ -29,8 +29,7 @@
 
 <script>
     function downloadSilp() {
-        var date = $('.dateForSilp').val();
-        window.location.href = "<?php echo $this->api_host ?>/api/accrual/silp?date=" + $('.dateFor13th').val();
+        window.location.href = "<?php echo $this->api_host ?>/api/accrual/silp?date=" + $('.dateForSilp').val();
     }
 
     function download13() {
