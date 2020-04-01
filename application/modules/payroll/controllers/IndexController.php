@@ -4344,7 +4344,11 @@ class Payroll_IndexController extends Zend_Controller_Action
             $thirteenth_month_options[$today->format('Y-m-01')] = $today->format('Y-m-01');
         }
 
-        $thirteenth_month_options['November-to-date'] = 'ntd';
+        $last_month = \Carbon\Carbon::today()->subMonth(1);
+        $thirteenth_month_options['November-to-' . $two_months_ago->format('M')] = 'nt:' . $two_months_ago->format('Y-m');
+        $thirteenth_month_options['November-to-' . $last_month->format('M')] = 'nt:' . $last_month->format('Y-m');
+        // $thirteenth_month_options['November-to-date'] = 'nt:' . \Carbon\Carbon::today()->format('Y-m');
+        $thirteenth_month_options['November-to-date)'] = 'ntd';
 
         $this->view->thirteenth_month_options = $thirteenth_month_options;
         $this->view->api_host = ($this->_config->get('messerve'))->api_host;
