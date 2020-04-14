@@ -1,4 +1,5 @@
 <?php
+
 use Messerve_Model_Eloquent_FloatingAttendance as Floating;
 
 class Messervelib_Payroll
@@ -50,10 +51,9 @@ class Messervelib_Payroll
             }
 
             $holiday_today = false;
-            $holiday_tomorrow = false;
+            $holiday_tomorrow = false; // TODO check this, might be deprecated.
 
             $holidays = $this->_fetch_holidays($group_id, $date);
-
 
             if ($holidays) {
                 if ($holidays['today']) $holiday_today = $holidays['today'];
@@ -64,11 +64,22 @@ class Messervelib_Payroll
 
             $today_d = date('d', strtotime($date));
 
+            $unix_date = strtotime($date);
+
+            if (!isset($rate_date_start)) {
+                /*
+                $rate_date_start is used to set the pay period.  Pay periods start at either  the 1st or the 16th and
+                the lines after this block set the proper one.  Defaulting to the first period of month so code editors
+                won't complain of it being unset.
+                */
+                $rate_date_start = date('Y-m-01', $unix_date);
+                $rate_date_end = date('Y-m-15', $unix_date);
+            }
+
             if ($today_d == '1' || $today_d == '16') {
                 $first_day = $Attendance;
 
                 // Day 1 or 16? process deductions
-                $unix_date = strtotime($date);
 
                 if (date('d', $unix_date) == '1') {
                     $cutoff = '1';
@@ -87,14 +98,11 @@ class Messervelib_Payroll
                 // RESET! Delete all employee deductions for this payroll period
                 $DeductAttendMap->getDbTable()->delete('attendance_id = ' . $attendance['id']);
 
-
                 // Is this the employee's home group? If it is, process deductions and BOP
                 if ($Employee->getGroupId() == $group_id) {
                     $this->_process_deductions($attendance['id'], $employee_id, $cutoff);
                     $BOP = $this->_process_bop($attendance['id'], $Employee, $cutoff, $date);
                 }
-
-
             }
 
             $reset = [
@@ -135,69 +143,61 @@ class Messervelib_Payroll
             // Determine employee and client rates for today and tomorrow
             $rates_today = $this->_get_rate_today($date);
 
-            $date_tommorow = date('Y-m-d 00:00:00', strtotime('+1 day', strtotime($date)));
+            $date_tomorrow = date('Y-m-d 00:00:00', strtotime('+1 day', strtotime($date)));
 
-            $rates_tomorrow = $this->_get_rate_today($date_tommorow);
+            $rates_tomorrow = $this->_get_rate_today($date_tomorrow);
 
-            if (!($attendance['start_1'] > 0)) { // Skipping records with no start_1 times
+            $stacked_holiday_multiplier = 1; // For stacked holidays
+
+            if ($date === '2020-04-09') { // Maundy Thursday + National Heroes day 2020
+                $stacked_holiday_multiplier = 3; // Defaulting to triple pay, assuming that rider rendered duty today
+            }
+
+            if (!($attendance['start_1'] > 0)) { // Work on records with no start_1 times (no duty day)
                 // TODO:  Mod to accommodate 12MN start dates
 
                 $legal_unattended_viable = false;
 
                 if ($holiday_today && $holiday_today->getType() === 'legal') { // Unattended legal holiday
 
-                    // Has attendance yesterday
-                    $date_yesterday = date('Y-m-d 00:00:00', strtotime('-1 day', strtotime($date)));
+                    // If Maundy Thursday + National Heroes' day 2020 (stacked legal holidays)
+                    if ($date === '2020-04-09') {
+                        $stacked_holiday_multiplier = 2;
 
-                    $AttendanceY = new Messerve_Model_Attendance();
-                    $AttendanceY = $AttendanceY->getMapper()->findByField(
-                        array('employee_id', 'datetime_start')
-                        , array($employee_id, $date_yesterday)
-                    );
+                        // Has duty start of EcQ 2020 in any group, we're billing this on that group's client
+                        $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-16');
 
-                    $legal_unattended_group = 0; // Init.  This will be the group that will be billed for Legal UA
-
-                    foreach ($AttendanceY as $avalue) {
-                        if ($avalue->getStart1() > 0) {
+                        if ($legal_unattended_group > 0) {
                             $legal_unattended_viable = true;
-                            // Day before attendance gets priority for billing group
-                            $legal_unattended_group = $avalue->getGroupId();
-                            break;
+                        }
+
+                    } else { // Not MTH+NHD 2020
+
+                        // Had attendance yesterday
+                        $date_yesterday = date('Y-m-d 00:00:00', strtotime('-1 day', strtotime($date)));
+
+                        $AttendanceY = (new Messerve_Model_Attendance())->getMapper()->findByField(
+                            array('employee_id', 'datetime_start')
+                            , array($employee_id, $date_yesterday)
+                        );
+
+                        $legal_unattended_group = 0; // Init.  This will be the group that will be billed for Legal UA
+
+                        foreach ($AttendanceY as $avalue) {
+                            if ($avalue->getStart1() > 0) {
+                                $legal_unattended_viable = true;
+                                // Day before attendance gets priority for billing group
+                                $legal_unattended_group = $avalue->getGroupId();
+                                break;
+                            }
                         }
                     }
 
-                    // If Good friday 2019 and not yet viable
-                    if (!$legal_unattended_viable
-                        && $date === '2019-04-19'
-                    ) {
-                        $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2019-04-17');
-                        $legal_unattended_viable = $legal_unattended_group > 0;
-                    }
-
-                    // If National Heroes day 2019 and not yet viable and is AAI
-                    if (!$legal_unattended_viable
-                        && $date === '2019-08-26'
-                        && in_array($Group->getClientId(), [
-                            14, // AAI
-                            19, // AAI Contractors
-                            20, // AAI Contractors - ODA
-                            21, // AAI - ODA
-                            25, // AAI Sidecar
-                            26 // AAI Sidecar - ODA
-                        ])
-
-                    ) {
-                        $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2019-08-24');
-                        $legal_unattended_viable = $legal_unattended_group > 0;
-                    }
-
-                    // Check if there is actual legal holiday attendance for other outlets
-                    $AttendanceN = new Messerve_Model_Attendance();
-                    $AttendanceN = $AttendanceN->getMapper()->findByField(
+                    // Check if there is legal holiday attendance on other groups
+                    $AttendanceN = (new Messerve_Model_Attendance())->getMapper()->findByField(
                         array('employee_id', 'datetime_start'),
                         array($employee_id, $date)
                     );
-
 
                     foreach ($AttendanceN as $avalue) {
                         if ($avalue->getStart1() > 0) {
@@ -235,16 +235,20 @@ class Messervelib_Payroll
                         ->setNdOtPay(0)
                         ->setDateProcessed(date("Y-m-d H:i:s"));
 
-
                     if ($legal_unattended_viable && $legal_unattended_group == $group_id) {
                         // TODO:  Moon prism power clean up.
                         // Apply legal unattended pay
+
                         $PayrollToday
                             ->setRateData(json_encode($rates_today))
                             ->setGroupId($legal_unattended_group)
                             ->setHolidayType("Legal unattended")
                             ->setRegHours($this->_max_regular_hours)
-                            ->setRegPay($this->_max_regular_hours * $rates_today['employee']['rate']['legal_unattend']);
+                            ->setRegPay(
+                                $this->_max_regular_hours *
+                                $rates_today['employee']['rate']['legal_unattend'] *
+                                $stacked_holiday_multiplier
+                            );
 
                         if ($group_id != $legal_unattended_group) {
                             $time_array['legal_unattend'] = 0;
@@ -256,13 +260,9 @@ class Messervelib_Payroll
                         $time_array['legal_unattend'] = 0;
                     }
 
-
-                    if ($employee_id > 0 && $attendance["id"] > 0) { // TODO: Fix hacky hack
+                    if ($employee_id > 0 && $attendance['id'] > 0) { // TODO: Fix hacky hack
                         $PayrollToday->save();
                     }
-
-                    // die('CCC');
-
 
                     $Attendance
                         ->setGroupId($group_id)
@@ -333,14 +333,10 @@ class Messervelib_Payroll
                         ->setNdOtPay(0)
                         ->setDateProcessed(date("Y-m-d H:i:s"))
                         ->save();
-
-
                 }
-                // Done processing unattended legal holiday, move to next day
 
-                continue;
+                continue; // Today has no attendance and I'm done processing unattended legal holiday. Move to the next day.
             }
-
 
             $midnight = strtotime($date . ' + 1 day');
             $night_diff_start = strtotime($date . 'T' . $this->_init_night_diff_start);
@@ -362,11 +358,11 @@ class Messervelib_Payroll
             $start_2 = isset($attendance['start_2']) && $attendance['start_2'] != '' ? strtotime($date . ' T' . str_pad($attendance['start_2'], 4, 0, STR_PAD_LEFT)) : 0;
             $end_2 = isset($attendance['end_2']) && $attendance['end_2'] != '' ? strtotime($date . ' T' . str_pad($attendance['end_2'], 4, 0, STR_PAD_LEFT)) : 0;
 
-            if ($end_1 > $start_2) {
+            if ($end_1 > $start_2) { // First shift crossed midnight, assuming the rest of the attendance is on the second day
                 $date = date('Y-m-d', strtotime('+1 day', strtotime($date)));
-                $start_2 = isset($attendance['start_2']) && $attendance['start_2'] != '' ? strtotime($date . ' T' . str_pad($attendance['start_2'], 4, 0, STR_PAD_LEFT)) : 0;
+                $start_2 = strtotime($date . ' T' . str_pad($attendance['start_2'], 4, 0, STR_PAD_LEFT));
                 $end_2 = isset($attendance['end_2']) && $attendance['end_2'] != '' ? strtotime($date . ' T' . str_pad($attendance['end_2'], 4, 0, STR_PAD_LEFT)) : 0;
-            } elseif ($end_2 < $start_2) {
+            } elseif ($end_2 < $start_2) { // Second shift crossed midnight
                 $date = date('Y-m-d', strtotime('+1 day', strtotime($date)));
                 $end_2 = isset($attendance['end_2']) && $attendance['end_2'] != '' ? strtotime($date . ' T' . str_pad($attendance['end_2'], 4, 0, STR_PAD_LEFT)) : 0;
             }
@@ -374,11 +370,11 @@ class Messervelib_Payroll
             $start_3 = isset($attendance['start_3']) && $attendance['start_3'] != '' ? strtotime($date . ' T' . str_pad($attendance['start_3'], 4, 0, STR_PAD_LEFT)) : 0;
             $end_3 = isset($attendance['end_3']) && $attendance['end_3'] != '' ? strtotime($date . ' T' . str_pad($attendance['end_3'], 4, 0, STR_PAD_LEFT)) : 0;
 
-            if ($end_1 > $start_2) {
+            if ($end_1 > $start_2) { // First shift crossed midnight, assuming the rest of the attendance is on the second day
                 $date = date('Y-m-d', strtotime('+1 day', strtotime($date)));
-                $start_3 = isset($attendance['start_3']) && $attendance['start_3'] != '' ? strtotime($date . ' T' . str_pad($attendance['start_3'], 4, 0, STR_PAD_LEFT)) : 0;
+                $start_3 = strtotime($date . ' T' . str_pad($attendance['start_3'], 4, 0, STR_PAD_LEFT));
                 $end_3 = isset($attendance['end_3']) && $attendance['end_3'] != '' ? strtotime($date . ' T' . str_pad($attendance['end_3'], 4, 0, STR_PAD_LEFT)) : 0;
-            } elseif ($end_3 < $start_3) {
+            } elseif ($end_3 < $start_3) { // Third shift crossed midnight
                 $date = date('Y-m-d', strtotime('+1 day', strtotime($date)));
                 $end_3 = isset($attendance['end_3']) && $attendance['end_3'] != '' ? strtotime($date . ' T' . str_pad($attendance['end_3'], 4, 0, STR_PAD_LEFT)) : 0;
             }
@@ -426,15 +422,12 @@ class Messervelib_Payroll
             }
 
             if (isset($attendance['extended_shift']) && $attendance['extended_shift'] === 'yes') {
-
                 $ot_duration = $work_duration - $this->_max_regular_hours;
                 $has_extended_shift = true;
-                //// echo "Extended sheep $ot_duration <br>";
             }
 
             if (!$ot_approved && !$has_extended_shift && $work_duration > $this->_max_regular_hours) {
                 $work_duration = $this->_max_regular_hours;
-                //// echo __LINE__ . " OVER: " . $work_duration . '<br>';
                 $ot_duration = 0;
             }
 
@@ -515,13 +508,13 @@ class Messervelib_Payroll
                                 //// echo "<br>{$Attendance->id} $ot_start_period : $i  Doing T OTBAL $ot_balance<br>";
 
                                 if (($time_array[$i]['tomorrow'] - $ot_balance) >= 0) {
-                                    //// echo "Can split reg and ot {$time_array[$i]['tomorrow']}<br>";
+                                    // Can split reg and ot;
 
                                     $tomorrow += bcsub($time_array[$i]['tomorrow'], $ot_balance, 2);
                                     $tomorrow_ot += $ot_balance;
                                     $ot_balance = 0;
                                 } elseif ($ot_balance > 0) {
-                                    //// echo "Can't split reg and ot {$time_array[$i]['tomorrow']}<br>";
+                                    // Can't split reg and ot
 
                                     $ot_balance -= $time_array[$i]['tomorrow'];
                                     $tomorrow_ot += $time_array[$i]['tomorrow'];
@@ -535,20 +528,20 @@ class Messervelib_Payroll
 
                         if (isset($time_array[$i]['tomorrow_nd']) && $time_array[$i]['tomorrow_nd'] > 0) {
                             if ($ot_start_period <= $i) {
-                                // echo "<br>{$Attendance->id} $ot_start_period : $i  Doing TND OTBAL $ot_balance<br>";
+                                // Doing TND OTBAL
                                 if (($time_array[$i]['tomorrow_nd'] - $ot_balance) > 0) {
 
                                     $tomorrow_nd += bcsub($time_array[$i]['tomorrow_nd'], $ot_balance, 2);
                                     $tomorrow_nd_ot += $ot_balance;
 
-                                    // echo "Can split reg and ot {$time_array[$i]['tomorrow_nd']} BAL $ot_balance ND: $tomorrow_nd  NDOT: $tomorrow_nd_ot<br>";
+                                    //  Can split reg and ot
                                     $ot_balance = 0;
 
                                 } elseif ($ot_balance > 0) {
                                     $ot_balance -= $time_array[$i]['tomorrow_nd'];
                                     $tomorrow_nd_ot += $time_array[$i]['tomorrow_nd'];
 
-                                    // echo "Can't split reg and ot TND {$time_array[$i]['tomorrow_nd']}  BAL {$ot_balance} NDOT {$tomorrow_nd_ot}<br>";
+                                    // Can't split reg and ot TND
                                 }
                             } else {
                                 $tomorrow_nd += $time_array[$i]['tomorrow_nd'];
@@ -560,10 +553,10 @@ class Messervelib_Payroll
                         if (isset($time_array[$i]['today_nd']) && $time_array[$i]['today_nd'] > 0) {
 
                             if ($ot_start_period <= $i) {
-                                // echo "<br>{$Attendance->id}  $ot_start_period : $i  Doing ND OTBAL $ot_balance<br>";
+                                // Doing ND OTBAL ;
 
                                 if (($time_array[$i]['today_nd'] - $ot_balance) >= 0) {
-                                    // echo "Can split reg and ot {$time_array[$i]['today_nd']}<br>";
+                                    // Can split reg and ot
 
                                     $nd += bcsub($time_array[$i]['today_nd'], $ot_balance, 2);
 
@@ -629,7 +622,6 @@ class Messervelib_Payroll
                                 $nd += $reg_balance;
                                 $reg_balance = 0;
                             }
-
 
                             if (isset($time_array[$i]['today'])) {
                                 if (($reg_balance - $time_array[$i]['today']) >= 0) {
@@ -1001,13 +993,20 @@ class Messervelib_Payroll
                         $PayrollToday
                             ->setRegHours($options['today'] + $options['tomorrow'])
                             ->setOtHours($options['today_ot'] + $options['tomorrow_ot'])
-                            ->setRegPay(($options['today'] + $options['tomorrow']) * $rates_today['employee']['rate'][$pay_rate_prefix])
-                            ->setOtPay(($options['today_ot'] + $options['tomorrow_ot']) * $rates_today['employee']['rate'][$pay_rate_prefix . "_ot"])
-                            ->setNdPay(($options['today_nd'] + $options['tomorrow_nd']) * $rates_today['employee']['rate'][$pay_rate_prefix . "_nd"])
-                            ->setNdOtPay(($options['today_nd_ot'] + $options['tomorrow_nd_ot']) * $rates_today['employee']['rate'][$pay_rate_prefix . "_nd_ot"])
-                            ->setNdHours($options['today_nd'] + $options['tomorrow_nd'])
-                            ->setNdOtHours($options['today_nd_ot'] + $options['tomorrow_nd_ot']);
-
+                            ->setRegPay(($options['today'] + $options['tomorrow'])
+                                * $rates_today['employee']['rate'][$pay_rate_prefix]
+                                * $stacked_holiday_multiplier)
+                            ->setOtPay(($options['today_ot'] + $options['tomorrow_ot'])
+                                * $rates_today['employee']['rate'][$pay_rate_prefix . "_ot"]
+                                * $stacked_holiday_multiplier)
+                            ->setNdPay(($options['today_nd'] + $options['tomorrow_nd'])
+                                * $rates_today['employee']['rate'][$pay_rate_prefix . "_nd"]
+                                * $stacked_holiday_multiplier)
+                            ->setNdOtPay(($options['today_nd_ot'] + $options['tomorrow_nd_ot'])
+                                * $rates_today['employee']['rate'][$pay_rate_prefix . "_nd_ot"]
+                                * $stacked_holiday_multiplier)
+                            ->setNdHours($options['today_nd'] + $options['tomorrow_nd'] * $stacked_holiday_multiplier)
+                            ->setNdOtHours($options['today_nd_ot'] + $options['tomorrow_nd_ot'] * $stacked_holiday_multiplier);
                     } else {
                         $PayrollToday
                             ->setRegHours($options['today'])

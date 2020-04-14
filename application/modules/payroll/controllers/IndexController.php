@@ -2273,9 +2273,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $dates[$current_date] = $Attendance;
 
                 $current_date = \Carbon\Carbon::parse($current_date)->addDay()->toDateString();
-                // $current_date = date('Y-m-d', strtotime('+1 day', strtotime($current_date))); // Advance date
-
-                // if ($i == 1) $first_id = $Attendance->getId();
 
                 $attendance_array = $Attendance->toArray();
 
@@ -2501,33 +2498,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $total_legal_nd += $attendance_array['legal_nd'];
 
                 $total_legal_unattend += $attendance_array['legal_unattend'];
-
-
-                /*if ($Attendance->getOtApproved() == 'yes') {
-                    $today_reg_ot += $attendance_array['reg_ot'];
-                    $today_reg_nd_ot += $attendance_array['reg_nd_ot'];
-
-                    $today_rest_ot += $attendance_array['rest_ot'];
-                    $today_rest_nd_ot += $attendance_array['rest_nd_ot'];
-
-                    $today_sun_ot += $attendance_array['sun_ot'] + $attendance_array['spec_ot'];
-                    $today_sun_nd_ot = +$attendance_array['sun_nd_ot'] + $attendance_array['spec_nd_ot'];
-
-                    $today_legal_ot += $attendance_array['legal_ot'];
-                    $today_legal_nd_ot += $attendance_array['legal_nd_ot'];
-
-                    $total_reg_ot += $today_reg_ot;
-                    $total_reg_nd_ot += $today_reg_nd_ot;
-
-                    $total_rest_ot += $today_rest_ot;
-                    $total_rest_nd_ot += $today_rest_nd_ot;
-
-                    $total_sun_ot += $today_sun_ot;
-                    $total_sun_nd_ot += $today_sun_nd_ot;
-
-                    $total_legal_ot += $today_legal_ot;
-                    $total_legal_nd_ot += $today_legal_nd_ot;
-                }*/
 
                 $total_hours = array_sum($all_hours);
                 $total_total_hours += round($total_hours, 2);
