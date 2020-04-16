@@ -162,16 +162,35 @@ class Messervelib_Payroll
 
                     // If Maundy Thursday + National Heroes' day 2020 (stacked legal holidays)
                     if ($date === '2020-04-09') {
-                        $stacked_holiday_multiplier = 2;
+                        $stacked_holiday_multiplier = 2; // Double pay for two un-worked legal holidays
 
                         // Has duty start of EcQ 2020 in any group, we're billing this on that group's client
                         $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-16');
+
+                        if (!$legal_unattended_group > 0) { // No duty on the 16th?  Let's try the 15th
+                            $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-15');
+                        }
 
                         if ($legal_unattended_group > 0) {
                             $legal_unattended_viable = true;
                         }
 
-                    } else { // Not MTH+NHD 2020
+                    } // If GF 2020
+                    elseif ($date === '2020-04-10') {
+                        $stacked_holiday_multiplier = 2;
+
+                        // Has duty start of EcQ 2020 in any group, we're billing this on that group's client
+                        $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-16');
+
+                        if (!$legal_unattended_group > 0) { // No duty on the 16th?  Let's try the 15th
+                            $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-15');
+                        }
+
+                        if ($legal_unattended_group > 0) {
+                            $legal_unattended_viable = true;
+                        }
+
+                    } else { // Not MTH+NHD or GF 2020
 
                         // Had attendance yesterday
                         $date_yesterday = date('Y-m-d 00:00:00', strtotime('-1 day', strtotime($date)));
