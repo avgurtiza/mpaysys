@@ -200,7 +200,7 @@ class Messervelib_Payroll
                             && $Employee->eloquent()->restDays()->where('date', '2020-03-16')->first()) { // No duty on the Mar 16th?  Let's check if it's rest day
                             $legal_unattended_group = $Employee->getGroupId();
                         }
-                        
+
                         if ($legal_unattended_group > 0) {
                             $legal_unattended_viable = true;
                         }
