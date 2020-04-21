@@ -35,6 +35,7 @@
         <?php $is_dirty = false; ?>
         <?php foreach ($this->dates as $dkey => $dvalue) :
             $approved_ot_hours = 0;
+
             if ($dvalue->ot_approved === 'yes') {
                 $hours = floor($dvalue->getOtApprovedHours());
                 $minutes = round(($dvalue->getOtApprovedHours() - $hours) * 60, 2);
@@ -54,20 +55,29 @@
                 }
             }
 
+            if ($this->rest_days->contains($dkey)) {
+                $extended_css .= ' rest-day';
+            }
+
             ?>
-            <tr class="<?=$extended_css ?> <?=$extended_warn_css?>">
+            <tr class="<?= $extended_css ?> <?= $extended_warn_css ?>">
                 <td colspan="9"><b>Extended shift pending approval</b></td>
             </tr>
             <tr class="hours <?php if (isset($this->holidays[$dkey])) {
                 echo $this->holidays[$dkey]->getType();
             } ?> <?= $extended_css ?>" id="row-<?php echo $dvalue->id; ?>">
                 <td valign="top">
+                        <span class="notice-me rest-day-label">Rest day</span>
 
                     <?php echo $dkey; ?> <br/>
+
                     <em><?php echo $dvalue->id; ?></em>
                     <input type="hidden" name="<?php echo $dkey; ?>[id]" value="<?php echo $dvalue->id; ?>"/>
                     <input type="button" value="Delete" class="reset-day" attendanceid="<?php echo $dvalue->id; ?>"/>
-
+                    <br>
+                    <button class="button tiny day-is-rest-day" data-attendance-id="<?php echo $dvalue->id; ?>">Set as
+                        rest day
+                    </button>
                 </td>
                 <td valign="top"><input type="text" class="miltime in" name="<?php echo $dkey; ?>[start_1]"
                                         value="<?php echo $dvalue->start_1; ?>"/>
@@ -122,10 +132,10 @@
                            <?php if ($dvalue->extended_shift == 'yes'): ?>checked="checked"<?php endif; ?> /> Extended
                     shift<br/>
                     <?php if ($this->user_auth && $this->user_auth->type == 'admin'): ?>
-                    <input type="checkbox" value="yes" class="check-approve-extend"
-                           name="<?php echo $dkey; ?>[approved_extended_shift]"
-                           <?php if ($dvalue->approved_extended_shift == 'yes'): ?>checked="checked"<?php endif; ?> />
-                    Approved Extended <br/>
+                        <input type="checkbox" value="yes" class="check-approve-extend"
+                               name="<?php echo $dkey; ?>[approved_extended_shift]"
+                               <?php if ($dvalue->approved_extended_shift == 'yes'): ?>checked="checked"<?php endif; ?> />
+                        Approved Extended <br/>
                     <?php endif; ?>
 
 
@@ -307,7 +317,7 @@
         $('.check-extend').on('change', function () {
             var sibling_approved = $(this).siblings('.check-approve-extend');
 
-            if(!$(this).is(':checked')) {
+            if (!$(this).is(':checked')) {
                 sibling_approved.prop('checked', false).prop('disabled', true);
             } else {
                 sibling_approved.prop('disabled', false);
@@ -317,21 +327,36 @@
         $('.reset-day').click(function (evt) {
             if (!confirm('Are you sure you want to delete this attendance entry?')) {
                 return false;
-            } else {
-                evt.preventDefault();
-                var this_button = $(this);
-                var attendance_id = this_button.attr('attendanceid');
-
-                this_button.val('Wait...');
-
-                $.post('/dataentry/attendance/resetday', {'attendance_id': attendance_id}, function (data) {
-                    $('#row-' + attendance_id + ' .hours-breakdown').empty();
-                    $('#row-' + attendance_id + ' input[type=text]').val(0);
-                    console.log(data);
-                    this_button.remove();
-                });
-
             }
+            evt.preventDefault();
+            var this_button = $(this);
+            var attendance_id = this_button.attr('attendanceid');
+
+            this_button.val('Wait...');
+
+            $.post('/dataentry/attendance/resetday', {'attendance_id': attendance_id}, function (data) {
+                $('#row-' + attendance_id + ' .hours-breakdown').empty();
+                $('#row-' + attendance_id + ' input[type=text]').val(0);
+                console.log(data);
+                this_button.remove();
+            });
+        });
+
+        $('.day-is-rest-day').click(function (evt) {
+            evt.preventDefault();
+
+            let this_button = $(this);
+
+            $.post('/dataentry/attendance/toggle-rest-day', {
+                'attendance_id': this_button.data('attendance-id')
+            }, function (data) {
+
+                if (data !== null && data.id) {
+                    this_button.parents('tr:first').addClass('rest-day');
+                } else {
+                    this_button.parents('tr:first').removeClass('rest-day');
+                }
+            }, 'json');
         });
 
         $('.attendance-grid td').click(function () {

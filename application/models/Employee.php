@@ -832,4 +832,14 @@ class Messerve_Model_Employee extends Messerve_Model_ModelAbstract
                     ->getAdapter()
                     ->quote($this->getId()));
     }
+
+    /**
+     * Returns eloquent Model
+     *
+     * @return Messerve_Model_Eloquent_Employee
+     */
+
+    public function eloquent() {
+        return Messerve_Model_Eloquent_Employee::find($this->getId());
+    }
 }

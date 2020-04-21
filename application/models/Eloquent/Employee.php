@@ -59,4 +59,12 @@ class Messerve_Model_Eloquent_Employee extends Eloquent
     public function hasBop() {
         return $this->bop_id > 0;
     }
+
+    public function restDays() {
+        return $this->hasMany(Messerve_Model_Eloquent_RestDay::class, 'employee_id', 'id');
+    }
+
+    public function restDaysByRange(DateTime $from, DateTime $to) {
+        return $this->restDays()->whereBetween('date', [$from, $to]);
+    }
 }

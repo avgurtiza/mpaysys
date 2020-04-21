@@ -56,7 +56,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         foreach ($groups as $gvalue) {
 
-            if(!array_key_exists($gvalue->getClientId(), $clients)) {
+            if (!array_key_exists($gvalue->getClientId(), $clients)) {
                 continue;
             }
 
@@ -833,8 +833,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             ->where('group_id', $group_id)
             ->whereBetween('datetime_start', [$date_start, $date_end])
             ->groupBy('employee_id')
-            ->get()
-        ;
+            ->get();
 
         if (count($relievers_result) > 0) {
             foreach ($relievers_result as $rvalue) {
@@ -852,10 +851,10 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             $select = $AttendDB->select();
             $select
                 ->from(
-                    ['a'=>'attendance'],
+                    ['a' => 'attendance'],
                     [
-                    'mysum' =>
-                        'ROUND(SUM(reg) + SUM(reg_nd) + SUM(reg_ot)	+ SUM(reg_nd_ot)	+ SUM(sun)	+ SUM(sun_nd)	
+                        'mysum' =>
+                            'ROUND(SUM(reg) + SUM(reg_nd) + SUM(reg_ot)	+ SUM(reg_nd_ot)	+ SUM(sun)	+ SUM(sun_nd)	
                         + SUM(sun_ot)	+ SUM(sun_nd_ot)	+ SUM(spec)	+ SUM(spec_nd)	+ SUM(spec_ot)	+ SUM(spec_nd_ot)	
                         + SUM(legal)	+ SUM(legal_nd)	+ SUM(legal_ot)	+ SUM(legal_nd_ot)	+ SUM(rest)	+ SUM(rest_nd)	
                         + SUM(rest_ot)	+ SUM(rest_nd_ot),2)'])
@@ -1110,8 +1109,10 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $this->view->group_id = $group_id;
 
 
-        $Employee = new Messerve_Model_Employee();
-        $Employee->find($employee_id);
+        $Employee = (new Messerve_Model_Employee())->find($employee_id);
+        // $Employee = new Messerve_Model_Employee();
+        // $Employee->find($employee_id);
+
         $this->view->employee = $Employee;
 
 
@@ -1124,8 +1125,14 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $date_end = $this->_request->getParam('date_end');
         $this->view->date_end = $date_end;
 
+
         $date1 = new DateTime($date_start); //inclusive
         $date2 = new DateTime($date_end); //exclusive
+
+        $EloquentEmployee = Messerve_Model_Eloquent_Employee::find($employee_id);
+
+        $this->view->rest_days = $EloquentEmployee->restDaysByRange($date1, $date2)->get()->pluck('date');
+
         $diff = $date2->diff($date1);
         $period_size = intval($diff->format("%a")) + 1;
 
@@ -1136,8 +1143,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $dates = array();
 
         $AttendanceMap = new Messerve_Model_Mapper_Attendance();
-
-        // $Db = $AttendanceMap->getDbTable()->getAdapter();
 
         $first_day_id = 0;
 
@@ -1182,7 +1187,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             if ($i == 1) $first_day_id = $Attendance->getId();
 
         }
-
 
         $this->view->dates = $dates;
         $this->view->period_size = $period_size;
@@ -1337,6 +1341,41 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                     ->setDatetimeStart($datetime_start)->save();
             }
         }
+    }
+    public function toggleRestDayAction()
+    { // AJAX
+        $this->_helper->layout()->disableLayout();
+        $this->_helper->viewRenderer->setNoRender(true);
+        $attendance_id = (int)$this->_request->getParam('attendance_id');
+
+        $Attendance = Messerve_Model_Eloquent_Attendance::find($attendance_id);
+
+        if(!$Attendance) {
+            $this->getResponse()->setHttpResponseCode(404);
+            return;
+        }
+
+        $date = \Carbon\Carbon::parse($Attendance->datetime_start);
+
+
+        $Employee = $Attendance->employee;
+
+        $rest_day = $Employee->restDays()->where('date', $date->toDateString());
+
+        if($rest_day->count()) {
+            $rest_day->delete();
+        } else {
+            $rest_day = Messerve_Model_Eloquent_RestDay::create([
+                'employee_id' => $Employee->id,
+                'date' => $date->toDateString()
+            ]);
+
+            $this->_helper->json($rest_day);
+            return  json_encode($rest_day->toArray());
+        }
+
+
+        return ;
     }
 
     public function resetdayAction()

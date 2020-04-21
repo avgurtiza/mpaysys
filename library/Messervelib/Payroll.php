@@ -167,8 +167,13 @@ class Messervelib_Payroll
                         // Has duty start of EcQ 2020 in any group, we're billing this on that group's client
                         $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-16');
 
-                        if (!$legal_unattended_group > 0) { // No duty on the 16th?  Let's try the 15th
-                            $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-15');
+                        if (!$legal_unattended_group > 0
+                            && $Employee->eloquent()->restDays()->where('date', '2020-03-16')->first()) { // No duty on the 16th?  Let's check if it's rest day
+                            $legal_unattended_group = $Employee->getGroupId();
+                        }
+
+                        if (!$legal_unattended_group > 0) { // Nothing, yet?  Let's try Apr 8
+                            $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-04-08');  // Bill to mother group
                         }
 
                         if ($legal_unattended_group > 0) {
@@ -177,13 +182,22 @@ class Messervelib_Payroll
 
                     } // If GF 2020
                     elseif ($date === '2020-04-10') {
-                        $stacked_holiday_multiplier = 2;
+                        $stacked_holiday_multiplier = 1;
 
                         // Has duty start of EcQ 2020 in any group, we're billing this on that group's client
                         $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-16');
 
                         if (!$legal_unattended_group > 0) { // No duty on the 16th?  Let's try the 15th
                             $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-15');
+                        }
+
+                        if (!$legal_unattended_group > 0
+                            && $Employee->eloquent()->restDays()->where('date', '2020-03-16')->first()) { // No duty on the Mar 16th or Apr 8?  Let's check if it's rest day
+                            $legal_unattended_group = $Employee->getGroupId();
+                        }
+
+                        if (!$legal_unattended_group > 0) { // Nothing, yet?  Let's try Apr 8
+                            $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-04-08');  // Bill to mother group
                         }
 
                         if ($legal_unattended_group > 0) {

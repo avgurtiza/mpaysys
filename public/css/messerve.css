@@ -290,3 +290,23 @@ th { color: #fff !important; }
 .dtr .approved_extended { background-color: greenyellow; }
 .dtr tr.hidden { display: none; }
 
+tr.rest-day {
+	background-color: aquamarine !important;
+}
+
+.rest-day-label {
+	display: none;
+}
+.rest-day .rest-day-label {
+	display: inline;
+	font-size: 1.2em;
+	font-weight: bolder;
+}
+
+.dtr td {
+	position: relative;
+}
+.dtr .bottom {
+	position: absolute;
+	bottom: 0;
+}
