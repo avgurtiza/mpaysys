@@ -655,7 +655,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $logo = Zend_Pdf_Image::imageWithPath(APPLICATION_PATH . '/../public/images/messerve.png');
 
-
         $parent = realpath(APPLICATION_PATH . '/../public/export') . "/$date_start/$group_id";
         $folder = $parent . "/payslips/";
 
@@ -675,10 +674,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $bop_acknowledgement = [];
 
-
         foreach ($this->_employee_payroll as $value) {
-
-
+            $current_employee = Messerve_Model_Eloquent_Employee::find($value['attendance']->employee_id);
             $page = new Zend_Pdf_Page(612, 396);
 
             $pageHeight = $page->getHeight();
@@ -875,7 +872,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             foreach ($employee_pay as $pkey => $pvalue) {
                 $ecola = 0;
                 $sss = 0;
-
 
                 foreach ($pvalue as $rkey => $rvalue) {
 
@@ -1258,7 +1254,10 @@ class Payroll_IndexController extends Zend_Controller_Action
             $PayrollTemp->getMapper()->getDbTable()
                 ->delete("group_id = " . $Group->getId() . " AND period_covered = '$date_start' AND employee_id = " . $Employee->getId());
 
-            if (!($total_pay > 0)) continue;
+            if (!($total_pay > 0)) {
+                logger(sprintf('Total pay for %s is 0, skipping!', $EmployeeEloq->name));
+                continue;
+            }
 
             $dim_y = 136;
             $dim_y -= 8;

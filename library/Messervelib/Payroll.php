@@ -149,16 +149,17 @@ class Messervelib_Payroll
 
             $stacked_holiday_multiplier = 1; // For stacked holidays
 
-            if ($date === '2020-04-09') { // Maundy Thursday + National Heroes day 2020
-                $stacked_holiday_multiplier = 3; // Defaulting to triple pay, assuming that rider rendered duty today
-            }
+
+
+            $EloquentEmployee = $Employee->eloquent();
 
             if (!($attendance['start_1'] > 0)) { // Work on records with no start_1 times (no duty day)
                 // TODO:  Mod to accommodate 12MN start dates
 
-                $legal_unattended_viable = false;
 
                 if ($holiday_today && $holiday_today->getType() === 'legal') { // Unattended legal holiday
+                    $legal_unattended_viable = false;
+                    $legal_unattended_group = 0;
 
                     // If Maundy Thursday + National Heroes' day 2020 (stacked legal holidays)
                     if ($date === '2020-04-09') {
@@ -167,19 +168,29 @@ class Messervelib_Payroll
                         // Normal unworked legal holiday reference (yesterday's duty)
                         $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-04-08');
 
-                        if (!$legal_unattended_group > 0) { // Nothing, yet? Let's try March 16, right before ECQ
-                            $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-16');
+                        if (!($legal_unattended_group > 0)) { // Nothing, yet? Let's try March 16, right before ECQ
+                            if($this->groupWithAttendanceOnDay($employee_id, '2020-03-16')) {
+                                $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
+                                logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 16", $EloquentEmployee->name, $date, $legal_unattended_group));
+                            }
                         }
 
-                        if (!$legal_unattended_group > 0
-                            && $Employee->eloquent()->restDays()->where('date', '2020-03-16')->first()) { // No duty on the 16th?  Let's check if it's a rest day
+                        if (!($legal_unattended_group > 0)
+                            && $EloquentEmployee->restDays()->where('date', '2020-03-16')->first()) { // No duty on the 16th?  Let's check if it's a rest day
 
                             // It the 16th was a rest day, let's check if they had duty on the 15th to finally qualify
-                            $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-15');
+                            if($this->groupWithAttendanceOnDay($employee_id, '2020-03-15')) {
+                                $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
+                                logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 15 and restday on Mar 16", $EloquentEmployee->name, $date, $legal_unattended_group));
+
+                            }
                         }
 
                         if ($legal_unattended_group > 0) {
                             $legal_unattended_viable = true;
+                            logger(sprintf("%s qualified for %s on group  %s", $EloquentEmployee->name, $date, $legal_unattended_group));
+                        } else {
+                            logger(sprintf("%s did not qualify for %s", $EloquentEmployee->name, $date));
                         }
 
                     } // If GF 2020
@@ -189,19 +200,30 @@ class Messervelib_Payroll
                         // Almost-normal; not yesterday but on the 8th
                         $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-04-08');
 
-                        if (!$legal_unattended_group > 0) { // Nothing, yet? Let's try March 16, right before ECQ
-                            $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-16');
+                        if (!($legal_unattended_group > 0)) { // Nothing, yet? Let's try March 16, right before ECQ
+                            if($this->groupWithAttendanceOnDay($employee_id, '2020-03-16')) {
+                                $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
+                                logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 16", $EloquentEmployee->name, $date, $legal_unattended_group));
+                            }
                         }
 
-                        if (!$legal_unattended_group > 0
-                            && $Employee->eloquent()->restDays()->where('date', '2020-03-16')->first()) { // No duty on the 16th?  Let's check if it's a rest day
+                        if (!($legal_unattended_group > 0)
+                            && $EloquentEmployee->restDays()->where('date', '2020-03-16')->first()) { // No duty on the 16th?  Let's check if it's a rest day
 
                             // It the 16th was a rest day, let's check if they had duty on the 15th to finally qualify
-                            $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-15');
+                            if($this->groupWithAttendanceOnDay($employee_id, '2020-03-15')) {
+                                $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
+                                logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 15 and restday on Mar 16", $EloquentEmployee->name, $date, $legal_unattended_group));
+
+                            }
                         }
+
 
                         if ($legal_unattended_group > 0) {
                             $legal_unattended_viable = true;
+                            logger(sprintf("%s qualified for %s on group  %s", $EloquentEmployee->name, $date, $legal_unattended_group));
+                        } else {
+                            logger(sprintf("%s did not qualify for %s", $EloquentEmployee->name, $date));
                         }
 
                     } else { // Not MTH+NHD or GF 2020
@@ -235,6 +257,7 @@ class Messervelib_Payroll
                     foreach ($AttendanceN as $avalue) {
                         if ($avalue->getStart1() > 0) {
                             // Employee has legal holiday attendance, no longer qualified for unattended legal holiday pay
+                            logger(sprintf('%s not LU viable, has attendance: %s', $EloquentEmployee->name, json_encode($avalue->toArray())) );
                             $legal_unattended_viable = false;
                             break;
                         }
@@ -268,7 +291,9 @@ class Messervelib_Payroll
                         ->setNdOtPay(0)
                         ->setDateProcessed(date("Y-m-d H:i:s"));
 
-                    if ($legal_unattended_viable && $legal_unattended_group == $group_id) {
+                    if ($legal_unattended_viable /* && $legal_unattended_group == $group_id */) {
+
+                        logger(sprintf('Wrinting payroll record for %s on %s', $EloquentEmployee->name, $date));
                         // TODO:  Moon prism power clean up.
                         // Apply legal unattended pay
 
@@ -283,11 +308,13 @@ class Messervelib_Payroll
                                 $stacked_holiday_multiplier
                             );
 
-                        if ($group_id != $legal_unattended_group) {
+                        $time_array['legal_unattend'] = $this->_max_regular_hours;
+
+                       /* if ($group_id != $legal_unattended_group) {
                             $time_array['legal_unattend'] = 0;
                         } else {
                             $time_array['legal_unattend'] = $this->_max_regular_hours;
-                        }
+                        }*/
                         // }
                     } else {
                         $time_array['legal_unattend'] = 0;
@@ -1023,6 +1050,11 @@ class Messervelib_Payroll
                         ->setDateProcessed(date("Y-m-d H:i:s"));
 
                     if ($holiday_today) {
+                        if ($new_date_today === '2020-04-09') { // Maundy Thursday + National Heroes day 2020
+                            $stacked_holiday_multiplier = 3; // Defaulting to triple pay, assuming that rider rendered duty today
+                            $pay_rate_prefix = 'reg';
+                        }
+
                         $PayrollToday
                             ->setRegHours($options['today'] + $options['tomorrow'])
                             ->setOtHours($options['today_ot'] + $options['tomorrow_ot'])
@@ -1126,21 +1158,13 @@ class Messervelib_Payroll
 
                     $PayrollTomorrow->save();
                 }
-
-
-                if ($Attendance->getId() == 677325) {
-                    preprint($PayrollToday->toArray());
-                    preprint($PayrollTomorrow->toArray());
-                }
-
             }
-
         }
 
-        logger("Doing things for: {$Employee->getFirstname()} {$Employee->getLastname()}");
+        logger("Doing final things for {$EloquentEmployee->name}");
 
         if (!($cutoff_total_duration > 0)) {
-            logger("No cutoff total duration, resetting! : {$Employee->getFirstname()} {$Employee->getLastname()}");
+            logger("{$EloquentEmployee->name} has no cutoff total duration, resetting and not doing fuel! : ");
 
             $reset = array('today' => 0, 'today_nd' => 0, 'today_ot' => 0, 'today_nd_ot' => 0, 'tomorrow_nd_ot' => 0
             , 'reg' => 0, 'reg_nd' => 0, 'reg_ot' => 0, 'reg_nd_ot' => 0
@@ -1149,7 +1173,7 @@ class Messervelib_Payroll
             , 'rest' => 0, 'rest_nd' => 0, 'rest_ot' => 0, 'rest_nd_ot' => 0);
 
         } else {
-            logger("Has cutoff total duration, doing stuff! : {$Employee->getFirstname()} {$Employee->getLastname()}");
+            logger("Has cutoff total duration, doing stuff! : {$EloquentEmployee->name}");
 
             if ($cutoff === '2') {
                 logger('Cut-off is 2.');
@@ -1713,7 +1737,6 @@ class Messervelib_Payroll
             AND attendance_id > 0
         ");
 
-
         $payroll = array();
 
         foreach ($payroll_raw as $pvalue) { // TODO:  Construct array properly
@@ -1726,7 +1749,6 @@ class Messervelib_Payroll
                 @$payroll[$pvalue->getRateId()][$pvalue->getHolidayType()]['reg']['hours'] += $pvalue->getRegHours();
                 @$payroll[$pvalue->getRateId()][$pvalue->getHolidayType()]['reg']['pay'] += $pvalue->getRegPay();
             }
-
 
             if ($pvalue->getOtHours() > 0) {
                 @$payroll[$pvalue->getRateId()][$pvalue->getHolidayType()]['ot']['hours'] += $pvalue->getOtHours();
