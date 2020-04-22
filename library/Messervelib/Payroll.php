@@ -154,7 +154,7 @@ class Messervelib_Payroll
 
             if (!($attendance['start_1'] > 0)) { // Work on records with no start_1 times (no duty day)
                 // TODO:  Mod to accommodate 12MN start dates
-                
+
                 if ($holiday_today && $holiday_today->getType() === 'legal') { // Unattended legal holiday
                     $legal_unattended_viable = false;
                     $legal_unattended_group = 0;
@@ -281,14 +281,14 @@ class Messervelib_Payroll
                     );
 
                     $PayrollToday
-                        // ->setAttendanceId($attendance["id"])
-                        // ->setEmployeeId($employee_id)
-                        // ->setGroupId($Attendance->getGroupId())
-                        // ->setEmployee($Employee->getFirstname() . " " . $Employee->getLastname())
+                        ->setAttendanceId($attendance["id"])
+                        ->setEmployeeId($employee_id)
+                        ->setGroupId($Attendance->getGroupId())
+                        ->setEmployee($Employee->getFirstname() . " " . $Employee->getLastname())
                         ->setRateId($rates_today['employee']['rate']['id'])
                         ->setClientRateId($rates_today['client']['rate']['id'])
                         ->setHolidayType("")
-                        // ->setDate($date)
+                        ->setDate($date)
                         ->setPeriodStart($rate_date_start)
                         ->setRegHours(0)
                         ->setRegPay(0)
