@@ -157,8 +157,6 @@ class Messervelib_Payroll
 
                 if ($holiday_today && $holiday_today->getType() === 'legal') { // Unattended legal holiday
                     $legal_unattended_viable = false;
-                    $legal_unattended_group = 0;
-
 
                     // If Maundy Thursday + National Heroes' day 2020 (stacked legal holidays)
                     if ($date === '2020-04-09') {
@@ -194,7 +192,8 @@ class Messervelib_Payroll
 
                         if ($legal_unattended_group > 0) {
                             $legal_unattended_viable = true;
-                            $legal_unattended_group = $group_id; // !!!!!!! This resets the group to this loops group!
+                            $legal_unattended_group = $EloquentEmployee->group_id; // !!!!!!! This resets the group to the parent group!
+
                             logger(sprintf("%s qualified for %s on group  %s", $EloquentEmployee->name, $date, $legal_unattended_group));
                         } else {
                             logger(sprintf("%s did not qualify for %s", $EloquentEmployee->name, $date));
@@ -233,7 +232,8 @@ class Messervelib_Payroll
 
                         if ($legal_unattended_group > 0) {
                             $legal_unattended_viable = true;
-                            $legal_unattended_group = $group_id; // !!!!!!! This resets the group to this loops group!
+
+                            $legal_unattended_group = $EloquentEmployee->group_id; // !!!!!!! This resets the group to the parent group!
 
                             logger(sprintf("%s qualified for %s on group  %s", $EloquentEmployee->name, $date, $legal_unattended_group));
                         } else {
