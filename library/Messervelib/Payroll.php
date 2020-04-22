@@ -176,20 +176,19 @@ class Messervelib_Payroll
                         }
 
 
+                        if (!($legal_unattended_group > 0)) {
+                            if ($EloquentEmployee->restDays()->where('date', '2020-03-16')->first()) { // No duty on the 16th?  Let's check if it's a rest day
+                                logger(sprintf("Found rest day on the 16th for %s", $EloquentEmployee->name));
+                                // It the 16th was a rest day, let's check if they had duty on the 15th to finally qualify
+                                if ($attendance_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-15')) {
+                                    $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
+                                    // $legal_unattended_group = $attendance_group;
+                                    logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 15 and restday on Mar 16", $EloquentEmployee->name, $date, $legal_unattended_group));
 
-
-                        if (!($legal_unattended_group > 0)
-                            && $EloquentEmployee->restDays()->where('date', '2020-03-16')->first()) { // No duty on the 16th?  Let's check if it's a rest day
-                            logger(sprintf("Found rest day on the 16th for %s", $EloquentEmployee->name));
-                            // It the 16th was a rest day, let's check if they had duty on the 15th to finally qualify
-                            if ($attendance_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-15')) {
-                                $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
-                                // $legal_unattended_group = $attendance_group;
-                                logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 15 and restday on Mar 16", $EloquentEmployee->name, $date, $legal_unattended_group));
-
+                                }
+                            } else {
+                                logger(sprintf("No rest day on the 16th for %s", $EloquentEmployee->name));
                             }
-                        } else {
-                            logger(sprintf("No rest day on the 16th for %s", $EloquentEmployee->name));
                         }
 
 
@@ -215,15 +214,18 @@ class Messervelib_Payroll
                             }
                         }
 
-                        if (!($legal_unattended_group > 0)
-                            && $EloquentEmployee->restDays()->where('date', '2020-03-16')->first()) { // No duty on the 16th?  Let's check if it's a rest day
+                        if (!($legal_unattended_group > 0)) {
+                            if ($EloquentEmployee->restDays()->where('date', '2020-03-16')->first()) { // No duty on the 16th?  Let's check if it's a rest day
+                                logger(sprintf("Found rest day on the 16th for %s", $EloquentEmployee->name));
+                                // It the 16th was a rest day, let's check if they had duty on the 15th to finally qualify
+                                if ($attendance_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-15')) {
+                                    $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
+                                    // $legal_unattended_group = $attendance_group;
+                                    logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 15 and restday on Mar 16", $EloquentEmployee->name, $date, $legal_unattended_group));
 
-                            // It the 16th was a rest day, let's check if they had duty on the 15th to finally qualify
-                            if ($attendance_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-15')) {
-                                $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
-                                // $legal_unattended_group = $attendance_group;
-                                logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 15 and restday on Mar 16", $EloquentEmployee->name, $date, $legal_unattended_group));
-
+                                }
+                            } else {
+                                logger(sprintf("No rest day on the 16th for %s", $EloquentEmployee->name));
                             }
                         }
 
@@ -324,7 +326,7 @@ class Messervelib_Payroll
                                 'nd_pay' => 0,
                                 'nd_ot_hours' => 0,
                                 'nd_ot_pay' => 0,
-                                'date_processed'=>\Carbon\Carbon::now()->toDateTimeString()
+                                'date_processed' => \Carbon\Carbon::now()->toDateTimeString()
                             ]);
                         }
 
