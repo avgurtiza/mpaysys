@@ -285,6 +285,7 @@ class Messervelib_Payroll
                         , $PayrollToday
                     );
 
+
                     $PayrollToday
                         ->setAttendanceId($attendance["id"])
                         ->setEmployeeId($employee_id)
@@ -305,11 +306,11 @@ class Messervelib_Payroll
                         ->setNdOtPay(0)
                         ->setDateProcessed(date("Y-m-d H:i:s"));
 
-                    if ($legal_unattended_viable  && $legal_unattended_group == $group_id ) {
+                    if ($legal_unattended_viable) {
 
                         // Look for attendance on this day on other groups and reset it
                         $PayrollEloquent = Messerve_Model_Eloquent_AttendancePayroll::where('date', $Attendance->getId())
-                            ->where('group_id', '<>', $Attendance->getId())
+                            ->where('group_id', '<>', $legal_unattended_group)
                             ->where('employee_id', $employee_id)
                             ->get();
 
@@ -332,6 +333,9 @@ class Messervelib_Payroll
                                 'date_processed' => \Carbon\Carbon::now()->toDateTimeString()
                             ]);
                         }
+                    }
+
+                    if ($legal_unattended_viable && $legal_unattended_group == $group_id) {
 
                         logger(sprintf('Wrinting payroll record for %s on %s', $EloquentEmployee->name, $date));
                         // TODO:  Moon prism power clean up.
@@ -352,10 +356,10 @@ class Messervelib_Payroll
 
                         // TODO evaluate this, not needed
                         if ($group_id != $legal_unattended_group) {
-                             $time_array['legal_unattend'] = 0;
-                         } else {
-                             $time_array['legal_unattend'] = $this->_max_regular_hours;
-                         }
+                            $time_array['legal_unattend'] = 0;
+                        } else {
+                            $time_array['legal_unattend'] = $this->_max_regular_hours;
+                        }
 
                         // }
                     } else {
