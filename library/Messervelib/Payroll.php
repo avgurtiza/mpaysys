@@ -305,7 +305,7 @@ class Messervelib_Payroll
                         ->setNdOtPay(0)
                         ->setDateProcessed(date("Y-m-d H:i:s"));
 
-                    if ($legal_unattended_viable /* && $legal_unattended_group == $group_id */) {
+                    if ($legal_unattended_viable  && $legal_unattended_group == $group_id ) {
 
                         // Look for attendance on this day on other groups and reset it
                         $PayrollEloquent = Messerve_Model_Eloquent_AttendancePayroll::where('date', $Attendance->getId())
@@ -350,11 +350,13 @@ class Messervelib_Payroll
 
                         $time_array['legal_unattend'] = $this->_max_regular_hours;
 
-                        /* if ($group_id != $legal_unattended_group) {
+                        // TODO evaluate this, not needed
+                        if ($group_id != $legal_unattended_group) {
                              $time_array['legal_unattend'] = 0;
                          } else {
                              $time_array['legal_unattend'] = $this->_max_regular_hours;
-                         }*/
+                         }
+
                         // }
                     } else {
                         $time_array['legal_unattend'] = 0;
