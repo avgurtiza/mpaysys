@@ -150,16 +150,15 @@ class Messervelib_Payroll
             $stacked_holiday_multiplier = 1; // For stacked holidays
 
 
-
             $EloquentEmployee = $Employee->eloquent();
 
             if (!($attendance['start_1'] > 0)) { // Work on records with no start_1 times (no duty day)
                 // TODO:  Mod to accommodate 12MN start dates
-
-
+                
                 if ($holiday_today && $holiday_today->getType() === 'legal') { // Unattended legal holiday
                     $legal_unattended_viable = false;
                     $legal_unattended_group = 0;
+
 
                     // If Maundy Thursday + National Heroes' day 2020 (stacked legal holidays)
                     if ($date === '2020-04-09') {
@@ -169,22 +168,30 @@ class Messervelib_Payroll
                         $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-04-08');
 
                         if (!($legal_unattended_group > 0)) { // Nothing, yet? Let's try March 16, right before ECQ
-                            if($this->groupWithAttendanceOnDay($employee_id, '2020-03-16')) {
-                                $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
+                            if ($attendance_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-16')) {
+                                // $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
+                                $legal_unattended_group = $attendance_group;
                                 logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 16", $EloquentEmployee->name, $date, $legal_unattended_group));
                             }
                         }
 
+
+
+
                         if (!($legal_unattended_group > 0)
                             && $EloquentEmployee->restDays()->where('date', '2020-03-16')->first()) { // No duty on the 16th?  Let's check if it's a rest day
-
+                            logger(sprintf("Found rest day on the 16th for %s", $EloquentEmployee->name));
                             // It the 16th was a rest day, let's check if they had duty on the 15th to finally qualify
-                            if($this->groupWithAttendanceOnDay($employee_id, '2020-03-15')) {
-                                $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
+                            if ($attendance_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-15')) {
+                                // $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
+                                $legal_unattended_group = $attendance_group;
                                 logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 15 and restday on Mar 16", $EloquentEmployee->name, $date, $legal_unattended_group));
 
                             }
+                        } else {
+                            logger(sprintf("No rest day on the 16th for %s", $EloquentEmployee->name));
                         }
+
 
                         if ($legal_unattended_group > 0) {
                             $legal_unattended_viable = true;
@@ -201,8 +208,9 @@ class Messervelib_Payroll
                         $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-04-08');
 
                         if (!($legal_unattended_group > 0)) { // Nothing, yet? Let's try March 16, right before ECQ
-                            if($this->groupWithAttendanceOnDay($employee_id, '2020-03-16')) {
-                                $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
+                            if ($attendance_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-16')) {
+                                // $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
+                                $legal_unattended_group = $attendance_group;
                                 logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 16", $EloquentEmployee->name, $date, $legal_unattended_group));
                             }
                         }
@@ -211,8 +219,9 @@ class Messervelib_Payroll
                             && $EloquentEmployee->restDays()->where('date', '2020-03-16')->first()) { // No duty on the 16th?  Let's check if it's a rest day
 
                             // It the 16th was a rest day, let's check if they had duty on the 15th to finally qualify
-                            if($this->groupWithAttendanceOnDay($employee_id, '2020-03-15')) {
-                                $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
+                            if ($attendance_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-15')) {
+                                // $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
+                                $legal_unattended_group = $attendance_group;
                                 logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 15 and restday on Mar 16", $EloquentEmployee->name, $date, $legal_unattended_group));
 
                             }
@@ -257,7 +266,7 @@ class Messervelib_Payroll
                     foreach ($AttendanceN as $avalue) {
                         if ($avalue->getStart1() > 0) {
                             // Employee has legal holiday attendance, no longer qualified for unattended legal holiday pay
-                            logger(sprintf('%s not LU viable, has attendance: %s', $EloquentEmployee->name, json_encode($avalue->toArray())) );
+                            logger(sprintf('%s not LU viable, has attendance: %s', $EloquentEmployee->name, json_encode($avalue->toArray())));
                             $legal_unattended_viable = false;
                             break;
                         }
@@ -272,14 +281,14 @@ class Messervelib_Payroll
                     );
 
                     $PayrollToday
-                        ->setAttendanceId($attendance["id"])
-                        ->setEmployeeId($employee_id)
-                        ->setGroupId($Attendance->getGroupId())
-                        ->setEmployee($Employee->getFirstname() . " " . $Employee->getLastname())
+                        // ->setAttendanceId($attendance["id"])
+                        // ->setEmployeeId($employee_id)
+                        // ->setGroupId($Attendance->getGroupId())
+                        // ->setEmployee($Employee->getFirstname() . " " . $Employee->getLastname())
                         ->setRateId($rates_today['employee']['rate']['id'])
                         ->setClientRateId($rates_today['client']['rate']['id'])
                         ->setHolidayType("")
-                        ->setDate($date)
+                        // ->setDate($date)
                         ->setPeriodStart($rate_date_start)
                         ->setRegHours(0)
                         ->setRegPay(0)
@@ -292,6 +301,32 @@ class Messervelib_Payroll
                         ->setDateProcessed(date("Y-m-d H:i:s"));
 
                     if ($legal_unattended_viable /* && $legal_unattended_group == $group_id */) {
+
+                        // Look for attendance on this day on other groups and reset it
+                        $PayrollEloquent = Messerve_Model_Eloquent_AttendancePayroll::where('date', $Attendance->getId())
+                            ->where('group_id', '<>', $Attendance->getId())
+                            ->where('employee_id', $employee_id)
+                            ->get();
+
+                        if (count($PayrollEloquent) > 0) {
+                            logger("Found payroll records for this day on other groups.  Resetting it now...");
+                            $PayrollEloquent->update([
+                                'rate_id' => $rates_today['employee']['rate']['id'],
+                                'client_rate_id' => $rates_today['client']['rate']['id'],
+                                'holiday_type' => '',
+                                'period_start' => $rate_date_start,
+
+                                'reg_hours' => 0,
+                                'reg_pay' => 0,
+                                'ot_hours' => 0,
+                                'ot_pay' => 0,
+                                'nd_hours' => 0,
+                                'nd_pay' => 0,
+                                'nd_ot_hours' => 0,
+                                'nd_ot_pay' => 0,
+                                'date_processed'=>\Carbon\Carbon::now()->toDateTimeString()
+                            ]);
+                        }
 
                         logger(sprintf('Wrinting payroll record for %s on %s', $EloquentEmployee->name, $date));
                         // TODO:  Moon prism power clean up.
@@ -310,11 +345,11 @@ class Messervelib_Payroll
 
                         $time_array['legal_unattend'] = $this->_max_regular_hours;
 
-                       /* if ($group_id != $legal_unattended_group) {
-                            $time_array['legal_unattend'] = 0;
-                        } else {
-                            $time_array['legal_unattend'] = $this->_max_regular_hours;
-                        }*/
+                        /* if ($group_id != $legal_unattended_group) {
+                             $time_array['legal_unattend'] = 0;
+                         } else {
+                             $time_array['legal_unattend'] = $this->_max_regular_hours;
+                         }*/
                         // }
                     } else {
                         $time_array['legal_unattend'] = 0;
