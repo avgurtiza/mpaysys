@@ -3497,14 +3497,15 @@ class Payroll_IndexController extends Zend_Controller_Action
                 'ot' => ['hours' => 0, 'pay' => 0],
                 'nd' => ['hours' => 0, 'pay' => 0],
                 'nd_ot' => ['hours' => 0, 'pay' => 0],
-                'unattend' => ['hours' => 0, 'pay' => 0],
+                // 'unattend' => ['hours' => 0, 'pay' => 0],
             ],
-
+            'Legal unattended' => [
+                'reg' => ['hours' => 0, 'pay' => 0]
+            ],
         ];
 
 
         foreach ($payroll as $pvalue) {
-
             $employee_type = 'Regular';
 
             if ($pvalue->getIsReliever() === 'yes') {
@@ -3570,7 +3571,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $hours_meta = json_decode($pvalue->getPayrollMeta(), true);
 
-
             foreach ($hours_struct as $type => $pay) {
                 foreach ($pay as $title => $breakdown) {
 
@@ -3584,13 +3584,14 @@ class Payroll_IndexController extends Zend_Controller_Action
                 }
             }
 
-            $sss_ec = ($pvalue->getGrossPay() >= 14750)  ? -30 : -10;
+            $sss_ec = ($pvalue->getGrossPay() >= 14750) ? -30 : -10;
 
             if ($pvalue->getGroupId() != $Employee->getGroupId()) { // Payroll not for parent group?  Reset.
                 $bop_rental = 0;
                 $bop_maintenance = 0;
                 $sss_ec = 0;
             }
+
 
 
             $this_row += [
@@ -3676,7 +3677,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $payroll_array[] = $this_row;
 
         }
-
+        
         header('Content-type: text/csv');
         header('Content-Disposition: attachment; filename="Payroll_report-' . $period_covered . '.csv"');
 
@@ -4241,7 +4242,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             // Rename worksheet
             $Excel->getActiveSheet()->setTitle('Oh hai');
-            
+
             // Set active sheet index to the first sheet, so Excel opens this as the first sheet
             $Excel->setActiveSheetIndex(0);
 
@@ -4285,7 +4286,8 @@ class Payroll_IndexController extends Zend_Controller_Action
         $this->view->pending_payroll = Messerve_Model_Eloquent_PendingPayroll::orderBy('id', 'DESC')->get();
     }
 
-    public function accrualAction() {
+    public function accrualAction()
+    {
 
         $two_months_ago = Carbon\Carbon::today()->subMonth(2);
 
@@ -4307,7 +4309,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $thirteenth_month_options[$today->format('Y-m-01')] = $today->format('Y-m-01');
 
-        for($i=1; $i<=2; $i++) {
+        for ($i = 1; $i <= 2; $i++) {
             $today->subMonth(1);
             $thirteenth_month_options[$today->format('Y-m-16')] = $today->format('Y-m-16');
             $thirteenth_month_options[$today->format('Y-m-01')] = $today->format('Y-m-01');
