@@ -2074,7 +2074,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $billing_header = [];
 
         foreach (array_keys($total_hours) as $label) {
-            $billing_header[] = $label;
+            $billing_header[] = $label . '_hours';
             $billing_header[] = $label . '_rate';
             $billing_header[] = $label . '_amount';
         }
@@ -2087,7 +2087,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $temp_bill = [];
 
         foreach ($total_hours as  $holiday_type=>$hours) {
-            $temp_bill[$holiday_type] = number_format($hours,2);
+            $temp_bill[$holiday_type . '_hours'] = number_format($hours,2);
             $temp_bill[$holiday_type . '_rate'] = $client_rate->$holiday_type;
             $temp_bill[$holiday_type . '_amount'] =  number_format($client_rate->$holiday_type * $hours,2);
         }
