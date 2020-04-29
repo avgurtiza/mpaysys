@@ -2011,24 +2011,33 @@ class Payroll_IndexController extends Zend_Controller_Action
         $page->setFont($pdf_font, $size)->drawText($text, $position_x, $position_y, 'UTF8');
     }
 
-    protected function summaryToXls(array $payroll, $filename = 'Summary_export')
+    protected function summaryToXls(array $payroll, Messerve_Model_Eloquent_Group $group, $filename = 'Summary_export')
     {
+
+        $client_rate = $group->clientRate;
+
+        $client = $group->client;
 
         $days_data = [];
         $total_data = [];
+
+
+        // reg	reg_ot	reg_nd	reg_nd_ot	spec	spec_ot	spec_nd	spec_nd_ot	rest	rest_ot	rest_nd	rest_nd_ot	legal	legal_ot	legal_nd	legal_nd_ot	legal_unattend
 
         foreach ($payroll as $date => $day_row) {
             foreach ($day_row as $employee_id => $hours) {
                 // $data[$employee_number][$date] = $hours;
                 $Employee = EmployeeEloq::find($employee_id);
                 $total_data[$employee_id][] = $hours;
-                $days_data[$employee_id]['employee_number'] = "'" . $Employee->employee_number;
+                $days_data[$employee_id]['employee_number'] = $Employee->employee_number;
                 $days_data[$employee_id]['employee_name'] = $Employee->name;
                 $days_data[$employee_id][$date] = array_sum($hours);
             }
         }
 
         $total_collection = collect($total_data);
+
+        $total_hours = []; // Holds summed rider duty hours per holiday type
 
         foreach ($days_data as $employee_id => &$row) {
             $row['total_hours'] = 0; // Init for position
@@ -2037,36 +2046,58 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $total_row = [];
 
-            $total_row['reg'] = $collection->pluck('reg')->sum() ?? 0;
-            $total_row['reg_ot'] = $collection->pluck('reg_ot')->sum() ?? 0;
-            $total_row['reg_nd'] = $collection->pluck('reg_nd')->sum() ?? 0;
-            $total_row['reg_nd_ot'] = $collection->pluck('reg_nd_ot')->sum() ?? 0;
+            foreach (['reg', 'spec', 'rest', 'legal'] as $holiday_type) {
+                $total_row[$holiday_type] = $collection->pluck($holiday_type)->sum() ?? 0;
+                $total_row[$holiday_type . '_ot'] = $collection->pluck($holiday_type . '_ot')->sum() ?? 0;
+                $total_row[$holiday_type . '_nd'] = $collection->pluck($holiday_type . '_nd')->sum() ?? 0;
+                $total_row[$holiday_type . '_nd_ot'] = $collection->pluck($holiday_type . '_nd_ot')->sum() ?? 0;
 
-            $total_row['spec'] = $collection->pluck('spec')->sum() ?? 0;
-            $total_row['spec_ot'] = $collection->pluck('spec_ot')->sum() ?? 0;
-            $total_row['spec_nd'] = $collection->pluck('spec_nd')->sum() ?? 0;
-            $total_row['spec_nd_ot'] = $collection->pluck('spec_nd_ot')->sum() ?? 0;
-
-            $total_row['rest'] = $collection->pluck('rest')->sum() ?? 0;
-            $total_row['rest_ot'] = $collection->pluck('rest_ot')->sum() ?? 0;
-            $total_row['rest_nd'] = $collection->pluck('rest_nd')->sum() ?? 0;
-            $total_row['rest_nd_ot'] = $collection->pluck('rest_nd_ot')->sum() ?? 0;
-
-            $total_row['legal'] = $collection->pluck('legal')->sum() ?? 0;
-            $total_row['legal_ot'] = $collection->pluck('legal_ot')->sum() ?? 0;
-            $total_row['legal_nd'] = $collection->pluck('legal_nd')->sum() ?? 0;
-            $total_row['legal_nd_ot'] = $collection->pluck('legal_nd_ot')->sum() ?? 0;
+                $total_hours[$holiday_type] += $total_row[$holiday_type];
+                $total_hours[$holiday_type . '_ot'] += $total_row[$holiday_type . '_ot'];
+                $total_hours[$holiday_type . '_nd'] += $total_row[$holiday_type . '_nd'];
+                $total_hours[$holiday_type . '_nd_ot'] += $total_row[$holiday_type . '_nd_ot'];
+            }
 
             $total_row['legal_unattend'] = $collection->pluck('legal_unattend')->sum() ?? 0;
-            $row['total_hours'] = array_sum($total_row);
-            $row += $total_row;
+            $total_hours['legal_unattend'] += $total_row['legal_unattend'];
 
+            $row['total_hours'] = array_sum($total_row);
+
+            $row += $total_row;
         }
+
 
         $header = [array_keys(collect($days_data)->first())];
 
+        $client_billing = [];
 
-        $this->renderXls($header + $days_data, $filename);
+        $billing_header = [];
+
+        foreach (array_keys($total_hours) as $label) {
+            $billing_header[] = $label;
+            $billing_header[] = $label . '_rate';
+            $billing_header[] = $label . '_amount';
+        }
+
+
+        $client_billing[] = $billing_header;
+
+        // preprint($total_hours, true);
+
+        $temp_bill = [];
+
+        foreach ($total_hours as  $holiday_type=>$hours) {
+            $temp_bill[$holiday_type] = number_format($hours,2);
+            $temp_bill[$holiday_type . '_rate'] = $client_rate->$holiday_type;
+            $temp_bill[$holiday_type . '_amount'] =  number_format($client_rate->$holiday_type * $hours,2);
+        }
+
+        $client_billing[] = $temp_bill;
+
+        $all_data = array_merge([['DTR ',  $group->client->name,  $group->name]], $header, $days_data, [[''],['Client billing']],$client_billing);
+
+        // preprint($all_data, true);
+        $this->renderXls($all_data, $filename);
     }
 
     private function renderXls(array $array, $filename = null)
@@ -2579,7 +2610,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
                 $split_bill_hours[\Carbon\Carbon::parse($Attendance->getDatetimeStart())->toDateString()][$Attendance->getEmployeeId()] = [
-                // $split_bill_hours[\Carbon\Carbon::parse($Attendance->getDatetimeStart())->toDateString()][$Attendance->getEmployeeNumber()] = [
+                    // $split_bill_hours[\Carbon\Carbon::parse($Attendance->getDatetimeStart())->toDateString()][$Attendance->getEmployeeNumber()] = [
                     // $split_bill_hours[$EloqAttendance->datetime_start->toDateString()][] = [
                     'reg' => $today_reg
                     , 'reg_ot' => $today_reg_ot
@@ -2987,8 +3018,12 @@ class Payroll_IndexController extends Zend_Controller_Action
             $this->_helper->viewRenderer->setNoRender(true);
             $this->_helper->layout->disableLayout();
 
-            $this->summaryToXls($split_bill_hours, sprintf('Summary_export_%s_%s_%s_%s_%s',
-                    $this->_client->getName(), $Group->getName(), $group_id, $date_start, $this->_last_date));
+            $this->summaryToXls(
+                $split_bill_hours,
+                (Messerve_Model_Eloquent_Group::find($group_id)),
+                sprintf('Summary_export_%s_%s_%s_%s_%s',
+                    $this->_client->getName(), $Group->getName(), $group_id, $date_start, $this->_last_date)
+            );
             return;
         }
 

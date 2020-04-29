@@ -18,6 +18,11 @@ class Messerve_Model_Eloquent_Group extends Eloquent
         return $this->belongsTo(Messerve_Model_Eloquent_Client::class, 'client_id', 'id');
     }
 
+    public function clientRate()
+    {
+        return $this->hasOne(Messerve_Model_Eloquent_ClientRate::class, 'id', 'rate_client_id');
+    }
+
     public function getFullNameAttribute() {
         return $this->client->name . ' - ' . $this->name;
     }
