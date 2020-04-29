@@ -1108,13 +1108,9 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $group_id = (int)$this->_request->getParam('group_id');
         $this->view->group_id = $group_id;
 
-
         $Employee = (new Messerve_Model_Employee())->find($employee_id);
-        // $Employee = new Messerve_Model_Employee();
-        // $Employee->find($employee_id);
 
         $this->view->employee = $Employee;
-
 
         $pay_period = $this->_request->getParam('pay_period');
         $this->view->pay_period = $pay_period;
@@ -1124,7 +1120,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         $date_end = $this->_request->getParam('date_end');
         $this->view->date_end = $date_end;
-
 
         $date1 = new DateTime($date_start); //inclusive
         $date2 = new DateTime($date_end); //exclusive

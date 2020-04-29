@@ -119,7 +119,9 @@ class Messervelib_Payroll
             $Attendance
                 ->setGroupId($group_id)
                 ->setOptions($reset)
-                ->setEmployeeId($employee_id);
+                ->setEmployeeId($employee_id)
+                ->setEmployeeNumber($Employee->getEmployeeNumber())
+            ;
 
 
             if (isset($attendance['ot_approved']) && $attendance['ot_approved'] === 'yes') {

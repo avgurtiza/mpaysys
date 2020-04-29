@@ -3,6 +3,8 @@
 use Messerve_Model_Eloquent_FloatingAttendance as Floating;
 use Messerve_Model_Eloquent_Employee as EmployeeEloq;
 use Messervelib_Philhealth as Philhealth;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
 
 class Payroll_IndexController extends Zend_Controller_Action
 {
@@ -2009,11 +2011,87 @@ class Payroll_IndexController extends Zend_Controller_Action
         $page->setFont($pdf_font, $size)->drawText($text, $position_x, $position_y, 'UTF8');
     }
 
+    protected function summaryToXls(array $payroll, $filename = 'Summary_export')
+    {
+
+        $days_data = [];
+        $total_data = [];
+
+        foreach ($payroll as $date => $day_row) {
+            foreach ($day_row as $employee_id => $hours) {
+                // $data[$employee_number][$date] = $hours;
+                $Employee = EmployeeEloq::find($employee_id);
+                $total_data[$employee_id][] = $hours;
+                $days_data[$employee_id]['employee_number'] = "'" . $Employee->employee_number;
+                $days_data[$employee_id]['employee_name'] = $Employee->name;
+                $days_data[$employee_id][$date] = array_sum($hours);
+            }
+        }
+
+        $total_collection = collect($total_data);
+
+        foreach ($days_data as $employee_id => &$row) {
+            $row['total_hours'] = 0; // Init for position
+
+            $collection = collect($total_collection[$employee_id]);
+
+            $total_row = [];
+
+            $total_row['reg'] = $collection->pluck('reg')->sum() ?? 0;
+            $total_row['reg_ot'] = $collection->pluck('reg_ot')->sum() ?? 0;
+            $total_row['reg_nd'] = $collection->pluck('reg_nd')->sum() ?? 0;
+            $total_row['reg_nd_ot'] = $collection->pluck('reg_nd_ot')->sum() ?? 0;
+
+            $total_row['spec'] = $collection->pluck('spec')->sum() ?? 0;
+            $total_row['spec_ot'] = $collection->pluck('spec_ot')->sum() ?? 0;
+            $total_row['spec_nd'] = $collection->pluck('spec_nd')->sum() ?? 0;
+            $total_row['spec_nd_ot'] = $collection->pluck('spec_nd_ot')->sum() ?? 0;
+
+            $total_row['rest'] = $collection->pluck('rest')->sum() ?? 0;
+            $total_row['rest_ot'] = $collection->pluck('rest_ot')->sum() ?? 0;
+            $total_row['rest_nd'] = $collection->pluck('rest_nd')->sum() ?? 0;
+            $total_row['rest_nd_ot'] = $collection->pluck('rest_nd_ot')->sum() ?? 0;
+
+            $total_row['legal'] = $collection->pluck('legal')->sum() ?? 0;
+            $total_row['legal_ot'] = $collection->pluck('legal_ot')->sum() ?? 0;
+            $total_row['legal_nd'] = $collection->pluck('legal_nd')->sum() ?? 0;
+            $total_row['legal_nd_ot'] = $collection->pluck('legal_nd_ot')->sum() ?? 0;
+
+            $total_row['legal_unattend'] = $collection->pluck('legal_unattend')->sum() ?? 0;
+            $row['total_hours'] = array_sum($total_row);
+            $row += $total_row;
+
+        }
+
+        $header = [array_keys(collect($days_data)->first())];
+
+
+        $this->renderXls($header + $days_data, $filename);
+    }
+
+    private function renderXls(array $array, $filename = null)
+    {
+        header('Content-Type: application/vnd.ms-excel');
+        header(sprintf('Content-Disposition: attachment; filename="%s.xls"', $filename));
+
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $activesheet = $spreadsheet->getActiveSheet();
+
+        $activesheet->fromArray($array);
+
+        $writer = new Xls($spreadsheet);
+        $writer->save('php://output');
+    }
+
+    protected function billingToXls(array $payroll)
+    {
+
+    }
 
     public function summaryreportAction()
     {
-
-
         function round_this($in, $digits = 2)
         {
             if (is_numeric($in)) {
@@ -2027,12 +2105,14 @@ class Payroll_IndexController extends Zend_Controller_Action
         $date_start = $this->_request->getParam('date_start');
         $date_end = $this->_request->getParam('date_end');
         $standalone = $this->getParam('standalone');
+        $csv_only = $this->getParam('csv');
 
 
-        if ($standalone != '' && $standalone == 'true') {
+        if (($standalone != '' && $standalone == 'true') || ($csv_only != '' && $csv_only == 'true')) {
             $this->_last_date = date('Y-m-d-Hi');
             $this->_compute();
         } // TODO:  Simplify and streamline.  Just fetch the group members and their payroll
+
 
         $this->view->payroll = $this->_employee_payroll;
 
@@ -2153,6 +2233,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $split_bill_hours = [];
 
+        $csv_data = [];
 
         foreach ($this->_employee_payroll as $value) {
 
@@ -2257,16 +2338,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 if (!$Attendance) {
                     throw new Exception("Failed to find attendance record for: $employee_id, $current_date, $group_id");
-                    /*
-                    $Attendance = new Messerve_Model_Attendance();
-
-                    $Attendance->setEmployeeId($employee_id)
-                        ->setDatetimeStart($current_date)
-                        ->setGroupId($group_id)
-                        ->save();
-
-                    $Attendance->find($Attendance->getId()); // Get the whole model
-                    */
                 }
 
                 $dates[$current_date] = $Attendance;
@@ -2501,13 +2572,14 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $total_hours = array_sum($all_hours);
                 $total_total_hours += round($total_hours, 2);
 
-                $employee_attendance_text[] = round($total_hours, 2);
+                $employee_attendance_text[$current_date] = round($total_hours, 2);
 
                 // $EloqAttendance = Messerve_Model_Eloquent_Attendance::find($Attendance->getId());
                 // $EloqAttendancePay = $EloqAttendance->attendancePayroll->first(); // TODO: move to model, maybe?
 
 
-                $split_bill_hours[\Carbon\Carbon::parse($Attendance->getDatetimeStart())->toDateString()][$Attendance->getEmployeeNumber()] = [
+                $split_bill_hours[\Carbon\Carbon::parse($Attendance->getDatetimeStart())->toDateString()][$Attendance->getEmployeeId()] = [
+                // $split_bill_hours[\Carbon\Carbon::parse($Attendance->getDatetimeStart())->toDateString()][$Attendance->getEmployeeNumber()] = [
                     // $split_bill_hours[$EloqAttendance->datetime_start->toDateString()][] = [
                     'reg' => $today_reg
                     , 'reg_ot' => $today_reg_ot
@@ -2526,6 +2598,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                     , 'legal_nd' => $today_legal_nd
                     , 'legal_nd_ot' => $today_legal_nd_ot
                     , 'legal_unattend' => $today_legal_unattend
+                    // , 'employee'=> EmployeeEloq::findByEmployeeNumber($Attendance->getEmployeeNumber())
                 ];
 
             }
@@ -2739,6 +2812,10 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $page->setFont($font, 8)->drawText('Leg UA ' . round_this($total_legal_unattend, 2), $dim_x + $now_x, $dim_y, 'UTF8');
 
                 $dim_y -= 20;
+
+                $csv_data[$value['attendance']->id] = [
+                    'employee_number' => $value['attendance']->employee_number,
+                ];
             }
 
             $employee_count++;
@@ -2902,6 +2979,18 @@ class Payroll_IndexController extends Zend_Controller_Action
         $Group->find($group_id);
 
         $filename = $folder . "Summary_{$this->_client->getName()}_{$Group->getName()}_{$group_id}_{$date_start}_{$this->_last_date}.pdf";
+
+
+        if ($csv_only) {
+            // preprint($split_bill_hours, true);
+
+            $this->_helper->viewRenderer->setNoRender(true);
+            $this->_helper->layout->disableLayout();
+
+            $this->summaryToXls($split_bill_hours, sprintf('Summary_export_%s_%s_%s_%s_%s',
+                    $this->_client->getName(), $Group->getName(), $group_id, $date_start, $this->_last_date));
+            return;
+        }
 
         $pdf->save($filename);
 
@@ -3593,7 +3682,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             }
 
 
-
             $this_row += [
                 'BasicPay' => number_format($pvalue->getBasicPay(), 2)
 
@@ -3677,7 +3765,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $payroll_array[] = $this_row;
 
         }
-        
+
         header('Content-type: text/csv');
         header('Content-Disposition: attachment; filename="Payroll_report-' . $period_covered . '.csv"');
 
@@ -3754,14 +3842,14 @@ class Payroll_IndexController extends Zend_Controller_Action
             }
         }
 
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new Spreadsheet();
         $spreadsheet->setActiveSheetIndex(0);
 
         $activesheet = $spreadsheet->getActiveSheet();
 
         $activesheet->fromArray($payroll_array);
 
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xls($spreadsheet);
+        $writer = new Xls($spreadsheet);
         $writer->save('php://output');
 
         // $this->view->payroll = $payroll_array;
