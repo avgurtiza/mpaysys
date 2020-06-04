@@ -76,7 +76,7 @@ set_include_path(implode(PATH_SEPARATOR, array(
 
 
 if (!function_exists('logger')) {
-    function logger($message)
+    function logger($message, $priority = 'info')
     {
         $logger = new Zend_Log();
         $logpath = APPLICATION_PATH . '/../logs';
@@ -91,11 +91,25 @@ if (!function_exists('logger')) {
             touch($logfile);
         }
 
+        switch ($priority) {
+            case 'notice':
+                $priority = Zend_Log::NOTICE;
+                break;
+            case 'warn':
+                $priority = Zend_Log::WARN;
+                break;
+            case 'info':
+            default:
+                $priority = Zend_Log::INFO;
+                break;
+        }
+
         $writer = new Zend_Log_Writer_Stream($logfile);
+
 
         $logger->addWriter($writer);
 
-        $logger->log($message, Zend_Log::INFO);
+        $logger->log($message, $priority);
     }
 }
 

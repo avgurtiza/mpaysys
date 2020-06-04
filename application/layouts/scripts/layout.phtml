@@ -27,8 +27,6 @@ if (Zend_Controller_Front::getInstance()->getRequest()->getControllerName() != Z
 <div id="main" class="yui3-g">
     <div class="yui3-u-1">
         <div class="yui3-u-1" id="content">
-            <?php // preprint($this->user_auth); ?>
-
             <?php echo $this->partial('partials/encoder.phtml'); ?>
 
             <?php if ($this->user_auth && $this->user_auth->type === 'admin'): ?>

@@ -120,8 +120,7 @@ class Messervelib_Payroll
                 ->setGroupId($group_id)
                 ->setOptions($reset)
                 ->setEmployeeId($employee_id)
-                ->setEmployeeNumber($Employee->getEmployeeNumber())
-            ;
+                ->setEmployeeNumber($Employee->getEmployeeNumber());
 
 
             if (isset($attendance['ot_approved']) && $attendance['ot_approved'] === 'yes') {
@@ -1785,12 +1784,29 @@ class Messervelib_Payroll
             AND attendance_id > 0
         ");
 
-        $payroll = array();
+        $Employee = Messerve_Model_Eloquent_Employee::find($employee_id);
+
+        $rate_meta = ['employee' => ['rate' => $Employee->group->rate->toArray()]]; //$Employee->group;
+
+        $payroll = [];
 
         foreach ($payroll_raw as $pvalue) { // TODO:  Construct array properly
 
+            if (!isset($payroll[$pvalue->getRateId()])) {
+                $payroll[$pvalue->getRateId()] = [];
+            }
             if ($pvalue->getRateData() != '') {
-                @$payroll[$pvalue->getRateId()]['meta'] = json_decode($pvalue->getRateData());
+                $payroll[$pvalue->getRateId()]['meta'] = json_decode($pvalue->getRateData());
+            } else {
+
+                if (!isset($payroll[$pvalue->getRateId()]['meta'])) {
+                    logger(sprintf("Did not find rate metadata from AttendancePayroll record for %s (%s).  Defaulted to group rate for %s",
+                        $Employee->name, $Employee->id, $Employee->group->full_name
+                    ), 'warn');
+
+                    $payroll[$pvalue->getRateId()]['meta'] = json_decode(json_encode($rate_meta));
+                }
+
             }
 
             if ($pvalue->getRegHours() > 0) {

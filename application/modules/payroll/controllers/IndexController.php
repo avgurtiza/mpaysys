@@ -239,8 +239,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             $all_periods[] = $period->period_covered;
         }
 
-        // preprint($all_periods, true);
-
         $this->view->old_periods = $all_periods;
 
         $messerve_config = $this->_config->get('messerve');
@@ -562,8 +560,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             'rate' => $group_rate
         ];
 
-        // preprint($date_splits);
-
         $ecola = [];
 
         foreach ($date_splits as $date_split) {
@@ -592,8 +588,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 'legal' => $ecola_legal,
             ];
         }
-
-        // preprint($ecola, true);
 
         return $ecola;
     }
@@ -660,7 +654,6 @@ class Payroll_IndexController extends Zend_Controller_Action
         $parent = realpath(APPLICATION_PATH . '/../public/export') . "/$date_start/$group_id";
         $folder = $parent . "/payslips/";
 
-        // $folder = dirname(APPLICATION_PATH) . '/../public/export' . "/$date_start/$group_id/payslips/";
         $cmd = "mkdir -p $folder";
         shell_exec($cmd); // Create folder
 
@@ -817,7 +810,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $page->setFont($bold, 8)->drawText($Employee->getEmployeeNumber(), $dim_x + 250, $dim_y, 'UTF8');
 
             $reliever_text = $group_id == $Employee->getGroupId() ? '' : ' (Reliever)';
-            $page->setFont($bold, 8)->drawText($Client->getName() . '-' . $Group->getName() . $reliever_text, $dim_x + 340, $dim_y, 'UTF-8');
+            $page->setFont($bold, 8)->drawText($Client->getName() . '-' . $Group->getName() . $reliever_text, $dim_x + 340, $dim_y);
 
             $rec_copy_data['riders'][$Employee->getId()] = array(
                 'employee_number' => $Employee->getEmployeeNumber()
@@ -880,6 +873,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                     if ($rkey === "meta") {
                         $pay_rate_id = $rvalue->employee->rate->id;
 
+                        // preprint($rvalue, true);
                         $payroll_meta['rate_data'] = json_encode($rvalue);
 
                         $pay_rate = 8 * $rvalue->employee->rate->reg;
@@ -2082,8 +2076,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $client_billing[] = $billing_header;
 
-        // preprint($total_hours, true);
-
         $temp_bill = [];
 
         foreach ($total_hours as  $holiday_type=>$hours) {
@@ -2096,7 +2088,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $all_data = array_merge([['DTR ',  $group->client->name,  $group->name]], $header, $days_data, [[''],['Client billing']],$client_billing);
 
-        // preprint($all_data, true);
         $this->renderXls($all_data, $filename);
     }
 
@@ -3013,8 +3004,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
         if ($csv_only) {
-            // preprint($split_bill_hours, true);
-
             $this->_helper->viewRenderer->setNoRender(true);
             $this->_helper->layout->disableLayout();
 
@@ -3054,14 +3043,10 @@ class Payroll_IndexController extends Zend_Controller_Action
 
     protected function arrayToCSV($data)
     {
-        // preprint($data, 1);
-
         $rows = [];
 
         $i = 0;
         foreach ($data as $key => $row) {
-
-            // preprint($row,1);
             if ($i === 0) {
                 $rows += [array_keys(array_shift($row))];
             }
@@ -3909,8 +3894,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             $Group->find($evalue->getGroupId());
             $Rate = new Messerve_Model_Rate();
             $Rate->find($Group->getRateId());
-
-            // preprint($Rate->toArray(),1);
 
             $pre_jan = $this->_get_work_duration($evalue->getId(), 0, $last_year . '-11-16', $last_year . '-12-31 23:59');
             $post_jan = $this->_get_work_duration($evalue->getId(), 0, $this_year . '-01-01', $this_year . '-11-15 23:59');
