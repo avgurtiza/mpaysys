@@ -1785,8 +1785,13 @@ class Messervelib_Payroll
         ");
 
         $Employee = Messerve_Model_Eloquent_Employee::find($employee_id);
+        $Group = Messerve_Model_Eloquent_Group::find($group_id);
 
-        $rate_meta = ['employee' => ['rate' => $Employee->group->rate->toArray()]]; //$Employee->group;
+        $rate_meta = [];
+
+        if ($Group && $Group->rate) {
+            $rate_meta = ['employee' => ['rate' => $Group->rate->toArray()]]; 
+        }
 
         $payroll = [];
 
@@ -1801,7 +1806,7 @@ class Messervelib_Payroll
 
                 if (!isset($payroll[$pvalue->getRateId()]['meta'])) {
                     logger(sprintf("Did not find rate metadata from AttendancePayroll record for %s (%s).  Defaulted to group rate for %s",
-                        $Employee->name, $Employee->id, $Employee->group->full_name
+                        $Employee->name, $Employee->id, $Group->full_name
                     ), 'warn');
 
                     $payroll[$pvalue->getRateId()]['meta'] = json_decode(json_encode($rate_meta));
