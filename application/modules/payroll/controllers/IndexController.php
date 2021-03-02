@@ -1208,7 +1208,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                             }
                         }
 
-                        if (stripos($sdvalue['type'], 'loan')) {
+                        if (stripos($sdvalue['type'], 'loan') || stripos($sdvalue['type'],'calamity')) {
                             $page->setFont($font, 8)->drawText(ucwords(str_replace('_', ' ', $sdvalue['type'])), $dim_x + 380, $dim_y);
                             $page->setFont($mono, 8)->drawText(str_pad(number_format($sdvalue['amount'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
 
