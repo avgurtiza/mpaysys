@@ -136,20 +136,12 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             $break_duration = 0;
 
             if ($end_1 > 0 && $start_1 > 0) {
-                /* echo "<br />Break start: " . date('Y-m-d Hi', $end_1);
-                 echo "<br />Break end: " . date('Y-m-d Hi', $start_2); */
                 $break_duration = ($start_2 - $end_1) / 3600;
             }
 
             $midnight = strtotime($this->_request->getPost('datetime_start') . ' + 1 day');
             $night_diff_start = strtotime($this->_request->getPost('datetime_start') . 'T' . $this->_night_diff_start);
 
-            /* echo "<br />Weekday: " . date('D', $start_1);
-             echo "<br />Midnight: " . date('Y-m-d Hi', $midnight);
-            echo "<br />Midnight Weekday: " . date('D', $midnight);
-            echo "<br />Night: " . date('Y-m-d Hi', $night_diff_start);
-            echo "<br />Start: " . date('Y-m-d Hi', $start_1);
-            echo "<br />End: " . date('Y-m-d Hi', $end_2);*/
 
             $weekday = date('D', $start_1);
             $weekday_midnight = date('D', $midnight);
@@ -233,8 +225,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
             if ($form->isValid($postvars)) {
 
-                // preprint($time_array);
-
                 $attendance_array = $this->_request->getPost();
 
                 if ($weekday === 'Sun') {
@@ -256,14 +246,11 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
                 }
 
-                // preprint($attendance_array);
-
                 if (!($form->getValue('id') > 0)) {
                     $form->removeElement('id');
                 }
 
                 $Attendance
-                    // ->setOptions($form->getValues())
                     ->setOptions($attendance_array)
                     ->save();
 
