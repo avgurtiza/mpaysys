@@ -30,7 +30,10 @@ class Messervelib_Payroll
         if (!($legal_unattended_group > 0)) {
             // No duty on the holiday?  Let's check if it's a rest day
             /** @var $EloquentEmployee Messerve_Model_Eloquent_Employee */
-            if ($EloquentEmployee->restDays()->where('date', $restday_date)->first()) {
+
+            if ($attendance_group = $this->groupWithAttendanceOnDay($EloquentEmployee->id, $restday_date)) { // Has duty on the restday date
+                logger(sprintf("%s qualified for %s on group %s because of duty on %s (rest day date)", $EloquentEmployee->name, $holiday_date, $legal_unattended_group, $restday_date));
+            } elseif ($EloquentEmployee->restDays()->where('date', $restday_date)->first()) { // Has restday on the restday date
                 logger(sprintf("Found rest day on %s for %s", $restday_date, $EloquentEmployee->name));
 
                 $before_restday = (Carbon::parse($restday_date))->subDay(1)->toDateString();
@@ -39,7 +42,7 @@ class Messervelib_Payroll
                 if ($attendance_group = $this->groupWithAttendanceOnDay($EloquentEmployee->id, $before_restday)) {
                     $legal_unattended_group = $attendance_group;
 
-                    logger(sprintf("%s qualified for %s on group  %s because of duty on %s and restday on %s", $EloquentEmployee->name, $holiday_date, $legal_unattended_group, $before_restday, $restday_date));
+                    logger(sprintf("%s qualified for %s on group  %s because of duty on %s and rest day on %s", $EloquentEmployee->name, $holiday_date, $legal_unattended_group, $before_restday, $restday_date));
                 }
             } else {
                 logger(sprintf("No rest day on the %s for %s; not viable for unattended legal holiday pay.", $restday_date, $EloquentEmployee->name));
