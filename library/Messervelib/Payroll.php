@@ -45,7 +45,7 @@ class Messervelib_Payroll
                 if ($attendance_group = $this->groupWithAttendanceOnDay($EloquentEmployee->id, $before_restday)) {
                     $legal_unattended_group = $attendance_group;
 
-                    logger(sprintf("%s qualified for %s on group  %s because of duty on %s and rest day on %s", $EloquentEmployee->name, $holiday_date, $legal_unattended_group, $before_restday, $restday_date));
+                    logger(sprintf("%s qualified for legal unattended for %s because of duty in group  %s on %s and rest day on %s", $EloquentEmployee->name, $holiday_date, $legal_unattended_group, $before_restday, $restday_date));
                 }
             } else {
                 logger(sprintf("No rest day on the %s for %s; not viable for unattended legal holiday pay.", $restday_date, $EloquentEmployee->name));
@@ -56,7 +56,7 @@ class Messervelib_Payroll
             $legal_unattended_viable = true;
             $legal_unattended_group = $EloquentEmployee->group_id; // !!!!!!! This resets the group to the parent group!
 
-            logger(sprintf("%s qualified for %s on group  %s", $EloquentEmployee->name, $holiday_date, $legal_unattended_group));
+            logger(sprintf("%s qualified for legal unattended %s, setting to group  %s", $EloquentEmployee->name, $holiday_date, $legal_unattended_group));
         } else {
             logger(sprintf("%s did not qualify for %s", $EloquentEmployee->name, $holiday_date));
         }
@@ -338,13 +338,19 @@ class Messervelib_Payroll
 
                     if ($legal_unattended_viable) {
 
-                        // Look for attendance on this day on other groups and reset it
+                        /*
                         $PayrollEloquent = Messerve_Model_Eloquent_AttendancePayroll::where('date', $date)
                             ->where('group_id', '<>', $legal_unattended_group)
                             ->where('employee_id', $employee_id);
+                        */
+
+                        // Look for attendance on this day on non-mother groups and reset it
+                        $PayrollEloquent = Messerve_Model_Eloquent_AttendancePayroll::where('date', $date)
+                            ->where('group_id', '<>', $group_id)
+                            ->where('employee_id', $employee_id);
 
                         if ($PayrollEloquent->count() > 0) {
-                            logger("Found payroll records for this day on other groups.  Resetting it now...");
+                            logger("Found payroll records for $date on non-mother groups.  Resetting it now...");
 
                             $PayrollEloquent->update([
                                 'rate_id' => $rates_today['employee']['rate']['id'],
@@ -378,23 +384,15 @@ class Messervelib_Payroll
                                     $this->_max_regular_hours *
                                     $rates_today['employee']['rate']['legal_unattend'] *
                                     $stacked_holiday_multiplier
-                                );
+                                ); // TODO move to its own class or method
 
                             $time_array['legal_unattend'] = $this->_max_regular_hours;
-
-                            // TODO evaluate this, not needed
-                            if ($group_id != $legal_unattended_group) {
-                                $time_array['legal_unattend'] = 0;
-                            } else {
-                                $time_array['legal_unattend'] = $this->_max_regular_hours;
-                            }
-
-                            // }
                         } else {
                             $time_array['legal_unattend'] = 0;
                         }
-                    }
 
+                        logger(sprintf('Done dealing with legal holidays for %s on %s', $EloquentEmployee->name, $date));
+                    }
 
                     if ($employee_id > 0 && $attendance['id'] > 0) { // TODO: Fix hacky hack
                         $PayrollToday->save();
