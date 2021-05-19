@@ -1,5 +1,6 @@
 <?php
 
+use Carbon\Carbon;
 use Messerve_Model_Eloquent_FloatingAttendance as Floating;
 
 class Messervelib_Payroll
@@ -21,6 +22,44 @@ class Messervelib_Payroll
         $this->_config = Zend_Registry::get('config');
     }
 
+    private function legalHolidayViability($EloquentEmployee, $holiday_date, $restday_date) {
+        $legal_unattended_group = $this->groupWithAttendanceOnDay($EloquentEmployee->id, $holiday_date);
+
+        $legal_unattended_viable = false;
+
+        if (!($legal_unattended_group > 0)) {
+            // No duty on the holiday?  Let's check if it's a rest day
+            /** @var $EloquentEmployee Messerve_Model_Eloquent_Employee */
+            if ($EloquentEmployee->restDays()->where('date', $restday_date)->first()) {
+                logger(sprintf("Found rest day on %s for %s", $restday_date, $EloquentEmployee->name));
+
+                $before_restday = (Carbon::parse($restday_date))->subDay(1)->toDateString();
+
+                // Let's check if they had duty on the day before the rest day to finally qualify
+                if ($attendance_group = $this->groupWithAttendanceOnDay($EloquentEmployee->id, $before_restday)) {
+                    $legal_unattended_group = $attendance_group;
+
+                    logger(sprintf("%s qualified for %s on group  %s because of duty on %s and restday on %s", $EloquentEmployee->name, $holiday_date, $legal_unattended_group, $before_restday, $restday_date));
+                }
+            } else {
+                logger(sprintf("No rest day on the %s for %s; not viable for unattended legal holiday pay.", $restday_date, $EloquentEmployee->name));
+            }
+        }
+
+        if ($legal_unattended_group > 0) {
+            $legal_unattended_viable = true;
+            $legal_unattended_group = $EloquentEmployee->group_id; // !!!!!!! This resets the group to the parent group!
+
+            logger(sprintf("%s qualified for %s on group  %s", $EloquentEmployee->name, $holiday_date, $legal_unattended_group));
+        } else {
+            logger(sprintf("%s did not qualify for %s", $EloquentEmployee->name, $holiday_date));
+        }
+
+        return (object) [
+            'legal_unattended_viable' => $legal_unattended_viable,
+            'legal_unattended_group' => $legal_unattended_group,
+        ];
+    }
     public function save_the_day($employee_id, $group_id, $data)
     {
 
@@ -159,7 +198,16 @@ class Messervelib_Payroll
                 if ($holiday_today && $holiday_today->getType() === 'legal') { // Unattended legal holiday
                     $legal_unattended_viable = false;
 
-                    if ($date === '2021-04-01' || $date === '2021-04-02') { // If MTH or GF 2021
+                    if ($date === '2021-05-01') { // If Labor day 2021
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-04-30');
+                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+
+                    } elseif ( $date === '2021-05-13') { // If Eid'l Fitr 2021
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-05-12');
+                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+
+                    } elseif ($date === '2021-04-01' || $date === '2021-04-02') { // If MTH or GF 2021
                         $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2021-03-31');
 
                         if (!($legal_unattended_group > 0)) {
@@ -173,7 +221,7 @@ class Messervelib_Payroll
 
                                 }
                             } else {
-                                logger(sprintf("No rest day on the 16th for %s; not viable for unattended legal holiday pay.", $EloquentEmployee->name));
+                                logger(sprintf("No rest day on the 31st for %s; not viable for unattended legal holiday pay.", $EloquentEmployee->name));
                             }
                         }
 
@@ -214,89 +262,6 @@ class Messervelib_Payroll
                         } else {
                             logger(sprintf("%s did not qualify for %s", $EloquentEmployee->name, $date));
                         }
-
-                        /*
-                        } elseif ($date === '2020-04-09') { // If Maundy Thursday + National Heroes' day 2020 (stacked legal holidays)
-                            $stacked_holiday_multiplier = 2; // Double pay for two un-worked legal holidays
-
-                            // Normal unworked legal holiday reference (yesterday's duty)
-                            $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-04-08');
-
-                            if (!($legal_unattended_group > 0)) { // Nothing, yet? Let's try March 16, right before ECQ
-                                if ($attendance_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-16')) {
-                                    // $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
-                                    $legal_unattended_group = $attendance_group;
-                                    logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 16.  Setting group now to %s", $EloquentEmployee->name, $date, $legal_unattended_group));
-                                }
-                            }
-
-
-                            if (!($legal_unattended_group > 0)) {
-                                if ($EloquentEmployee->restDays()->where('date', '2020-03-16')->first()) { // No duty on the 16th?  Let's check if it's a rest day
-                                    logger(sprintf("Found rest day on the 16th for %s", $EloquentEmployee->name));
-                                    // It the 16th was a rest day, let's check if they had duty on the 15th to finally qualify
-                                    if ($attendance_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-15')) {
-                                        // $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
-                                        $legal_unattended_group = $attendance_group;
-                                        logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 15 and restday on Mar 16", $EloquentEmployee->name, $date, $legal_unattended_group));
-
-                                    }
-                                } else {
-                                    logger(sprintf("No rest day on the 16th for %s", $EloquentEmployee->name));
-                                }
-                            }
-
-
-                            if ($legal_unattended_group > 0) {
-                                $legal_unattended_viable = true;
-                                $legal_unattended_group = $EloquentEmployee->group_id; // !!!!!!! This resets the group to the parent group!
-
-                                logger(sprintf("%s qualified for %s on group  %s", $EloquentEmployee->name, $date, $legal_unattended_group));
-                            } else {
-                                logger(sprintf("%s did not qualify for %s", $EloquentEmployee->name, $date));
-                            }
-
-                        } elseif ($date === '2020-04-10') { // If GF 2020
-                            $stacked_holiday_multiplier = 1;
-
-                            // Almost-normal; not yesterday but on the 8th
-                            $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2020-04-08');
-
-                            if (!($legal_unattended_group > 0)) { // Nothing, yet? Let's try March 16, right before ECQ
-                                if ($attendance_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-16')) {
-                                    // $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
-                                    $legal_unattended_group = $attendance_group;
-                                    logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 16", $EloquentEmployee->name, $date, $legal_unattended_group));
-                                }
-                            }
-
-                            if (!($legal_unattended_group > 0)) {
-                                if ($EloquentEmployee->restDays()->where('date', '2020-03-16')->first()) { // No duty on the 16th?  Let's check if it's a rest day
-                                    logger(sprintf("Found rest day on the 16th for %s", $EloquentEmployee->name));
-                                    // It the 16th was a rest day, let's check if they had duty on the 15th to finally qualify
-                                    if ($attendance_group = $this->groupWithAttendanceOnDay($employee_id, '2020-03-15')) {
-                                        // $legal_unattended_group = $group_id; // Because they may not have dutied on that group on this cut-off
-                                        $legal_unattended_group = $attendance_group;
-                                        logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 15 and restday on Mar 16", $EloquentEmployee->name, $date, $legal_unattended_group));
-
-                                    }
-                                } else {
-                                    logger(sprintf("No rest day on the 16th for %s", $EloquentEmployee->name));
-                                }
-                            }
-
-
-                            if ($legal_unattended_group > 0) {
-                                $legal_unattended_viable = true;
-
-                                $legal_unattended_group = $EloquentEmployee->group_id; // !!!!!!! This resets the group to the parent group!
-
-                                logger(sprintf("%s qualified for %s on group  %s", $EloquentEmployee->name, $date, $legal_unattended_group));
-                            } else {
-                                logger(sprintf("%s did not qualify for %s", $EloquentEmployee->name, $date));
-                            }
-
-                        */
                     } else {
 
                         // Had attendance yesterday
