@@ -32,6 +32,8 @@ class Messervelib_Payroll
             /** @var $EloquentEmployee Messerve_Model_Eloquent_Employee */
 
             if ($attendance_group = $this->groupWithAttendanceOnDay($EloquentEmployee->id, $restday_date)) { // Has duty on the restday date
+                $legal_unattended_group = $attendance_group;
+
                 logger(sprintf("%s qualified for %s on group %s because of duty on %s (rest day date)", $EloquentEmployee->name, $holiday_date, $legal_unattended_group, $restday_date));
             } elseif ($EloquentEmployee->restDays()->where('date', $restday_date)->first()) { // Has restday on the restday date
                 logger(sprintf("Found rest day on %s for %s", $restday_date, $EloquentEmployee->name));
