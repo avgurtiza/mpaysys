@@ -74,6 +74,8 @@ class Messervelib_Payroll
 
         $Employee->find($employee_id);
 
+        $EloquentEmployee = $Employee->eloquent();
+
         $Group = new Messerve_Model_Group();
         $Group->find($group_id);
 
@@ -197,7 +199,7 @@ class Messervelib_Payroll
             $stacked_holiday_multiplier = 1; // For stacked holidays
 
 
-            $EloquentEmployee = $Employee->eloquent();
+            // $EloquentEmployee = $Employee->eloquent();
 
             if (!($attendance['start_1'] > 0)) { // Work on records with no start_1 times (no duty day)
                 // TODO Mod to accommodate 12MN start dates
