@@ -22,7 +22,8 @@ class Messervelib_Payroll
         $this->_config = Zend_Registry::get('config');
     }
 
-    private function legalHolidayViability($EloquentEmployee, $holiday_date, $restday_date) {
+    private function legalHolidayViability($EloquentEmployee, $holiday_date, $restday_date)
+    {
         $legal_unattended_group = $this->groupWithAttendanceOnDay($EloquentEmployee->id, $holiday_date);
 
         $legal_unattended_viable = false;
@@ -60,11 +61,12 @@ class Messervelib_Payroll
             logger(sprintf("%s did not qualify for %s", $EloquentEmployee->name, $holiday_date));
         }
 
-        return (object) [
+        return (object)[
             'legal_unattended_viable' => $legal_unattended_viable,
             'legal_unattended_group' => $legal_unattended_group,
         ];
     }
+
     public function save_the_day($employee_id, $group_id, $data)
     {
 
@@ -208,9 +210,10 @@ class Messervelib_Payroll
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
                         $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
 
-                    } elseif ( $date === '2021-05-13') { // If Eid'l Fitr 2021
+                    } elseif ($date === '2021-05-13') { // If Eid'l Fitr 2021
                         $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-05-12');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
 
                     } elseif ($date === '2021-04-01' || $date === '2021-04-02') { // If MTH or GF 2021
                         $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2021-03-31');
@@ -306,6 +309,7 @@ class Messervelib_Payroll
 
                     $PayrollToday = new Messerve_Model_AttendancePayroll();
 
+                    // TODO replace with eloquent firstOrCreate
                     $PayrollToday->getMapper()->findOneByField(
                         array("attendance_id", "date", "group_id", "employee_id")
                         , array($Attendance->getId(), $date, $legal_unattended_group, $employee_id)
@@ -335,13 +339,13 @@ class Messervelib_Payroll
                     if ($legal_unattended_viable) {
 
                         // Look for attendance on this day on other groups and reset it
-                        $PayrollEloquent = Messerve_Model_Eloquent_AttendancePayroll::where('date', $Attendance->getId())
+                        $PayrollEloquent = Messerve_Model_Eloquent_AttendancePayroll::where('date', $date)
                             ->where('group_id', '<>', $legal_unattended_group)
-                            ->where('employee_id', $employee_id)
-                            ->get();
+                            ->where('employee_id', $employee_id);
 
-                        if (count($PayrollEloquent) > 0) {
+                        if ($PayrollEloquent->count() > 0) {
                             logger("Found payroll records for this day on other groups.  Resetting it now...");
+
                             $PayrollEloquent->update([
                                 'rate_id' => $rates_today['employee']['rate']['id'],
                                 'client_rate_id' => $rates_today['client']['rate']['id'],
@@ -359,38 +363,38 @@ class Messervelib_Payroll
                                 'date_processed' => \Carbon\Carbon::now()->toDateTimeString()
                             ]);
                         }
-                    }
 
-                    if ($legal_unattended_viable && $legal_unattended_group == $group_id) {
+                        if ($legal_unattended_group == $group_id) {
+                            logger(sprintf('Writing payroll record for %s on %s', $EloquentEmployee->name, $date));
+                            // TODO:  Moon prism power clean up.
+                            // Apply legal unattended pay
 
-                        logger(sprintf('Wrinting payroll record for %s on %s', $EloquentEmployee->name, $date));
-                        // TODO:  Moon prism power clean up.
-                        // Apply legal unattended pay
+                            $PayrollToday
+                                ->setRateData(json_encode($rates_today))
+                                ->setGroupId($legal_unattended_group)
+                                ->setHolidayType("Legal unattended")
+                                ->setRegHours($this->_max_regular_hours)
+                                ->setRegPay(
+                                    $this->_max_regular_hours *
+                                    $rates_today['employee']['rate']['legal_unattend'] *
+                                    $stacked_holiday_multiplier
+                                );
 
-                        $PayrollToday
-                            ->setRateData(json_encode($rates_today))
-                            ->setGroupId($legal_unattended_group)
-                            ->setHolidayType("Legal unattended")
-                            ->setRegHours($this->_max_regular_hours)
-                            ->setRegPay(
-                                $this->_max_regular_hours *
-                                $rates_today['employee']['rate']['legal_unattend'] *
-                                $stacked_holiday_multiplier
-                            );
-
-                        $time_array['legal_unattend'] = $this->_max_regular_hours;
-
-                        // TODO evaluate this, not needed
-                        if ($group_id != $legal_unattended_group) {
-                            $time_array['legal_unattend'] = 0;
-                        } else {
                             $time_array['legal_unattend'] = $this->_max_regular_hours;
-                        }
 
-                        // }
-                    } else {
-                        $time_array['legal_unattend'] = 0;
+                            // TODO evaluate this, not needed
+                            if ($group_id != $legal_unattended_group) {
+                                $time_array['legal_unattend'] = 0;
+                            } else {
+                                $time_array['legal_unattend'] = $this->_max_regular_hours;
+                            }
+
+                            // }
+                        } else {
+                            $time_array['legal_unattend'] = 0;
+                        }
                     }
+
 
                     if ($employee_id > 0 && $attendance['id'] > 0) { // TODO: Fix hacky hack
                         $PayrollToday->save();
