@@ -54,7 +54,8 @@ class Messervelib_Payroll
 
         if ($legal_unattended_group > 0) {
             $legal_unattended_viable = true;
-            $legal_unattended_group = $EloquentEmployee->group_id; // !!!!!!! This resets the group to the parent group!
+            // $legal_unattended_group = $EloquentEmployee->group_id; // !!!!!!! This resets the group to the parent group!
+            // Disabled as per Sally's instructions -- Slide 2021-05-20
 
             logger(sprintf("%s qualified for legal unattended %s, setting to group  %s", $EloquentEmployee->name, $holiday_date, $legal_unattended_group));
         } else {
