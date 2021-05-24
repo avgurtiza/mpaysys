@@ -6,7 +6,7 @@
         <select name="group-switch" id="group-switch">
             <?php foreach ($this->groups_array as $gvalue): ?>
                 <?php if ($gvalue["employee_count"] > 0 || $gvalue["group_id"] == $this->group->getId()) :?>
-                <option value="<?php echo $gvalue['group_id']; ?>"><?php echo $gvalue['client_name']; ?><?php echo $gvalue['group_name']; ?></option>
+                <option value="<?php echo $gvalue['group_id']; ?>"><?php echo $gvalue['client_name']; ?>&nbsp;&nbsp;<?php echo $gvalue['group_name']; ?></option>
                 <?php endif; ?>
             <?php endforeach; ?>
         </select>
