@@ -538,15 +538,15 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
                 $employee_count = $Employee->countByQuery('group_id = ' . $gvalue->getId());
 
-                if ($employee_count > 0) {
+                // if ($employee_count > 0) {
                     $groups_array[] = array(
                         'client_id' => $cvalue->getId()
-                    , 'client_name' => $cvalue->getName()
-                    , 'group_id' => $gvalue->getId()
-                    , 'group_name' => $gvalue->getName()
+                        , 'client_name' => $cvalue->getName()
+                        , 'group_id' => $gvalue->getId()
+                        , 'group_name' => $gvalue->getName()
+                        , 'employee_count' => $employee_count
                     );
-                }
-
+                // }
 
             }
         }
@@ -583,8 +583,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             if ($ELoqGroup->client->usesBiometrics()) {
                 $this->readAaiBiometrics($filename, $ELoqGroup, $date_start);
             } else {
-
-
                 $row = 0;
 
                 $missing = [];
