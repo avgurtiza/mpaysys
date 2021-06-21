@@ -208,7 +208,12 @@ class Messervelib_Payroll
                 if ($holiday_today && $holiday_today->getType() === 'legal') { // Unattended legal holiday
                     $legal_unattended_viable = false;
 
-                    if ($date === '2021-05-01') { // If Labor day 2021
+                    if ($date === '2021-06-12') { // If ANK 2021
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-06-11');
+                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+
+                    } elseif ($date === '2021-05-01') { // If Labor day 2021
                         $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-04-30');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
                         $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
