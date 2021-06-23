@@ -1191,6 +1191,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                             $negative_deduction->find($pk);
 
+                            // FIXME this always returns true
                             if ($negative_deduction) {
 
                                 $new_amount = $negative_deduction->getAmount() + $deficit;
@@ -3614,7 +3615,10 @@ class Payroll_IndexController extends Zend_Controller_Action
         ];
 
 
+
         foreach ($payroll as $pvalue) {
+            /** @var Messerve_Model_PayrollTemp $pvalue */
+
             $employee_type = 'Regular';
 
             if ($pvalue->getIsReliever() === 'yes') {
@@ -3701,6 +3705,24 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $sss_ec = 0;
             }
 
+            $misc_deduction = json_decode($pvalue->getDeductionData());
+            $misc_deduction_string = '';
+
+            $sss_calamity_loan_amount = 0;
+
+            if (count($misc_deduction) > 0) {
+                foreach ($misc_deduction as $mkey => $mvalue) {
+                    if (is_numeric($mkey) && property_exists($mvalue, 'type')) {
+                        $amount = number_format(round($mvalue->amount * -1, 2), 2);
+                        $misc_deduction_string .= "{$mvalue->type}: {$amount}, ";
+
+                        if($mvalue->type === "sss_calamity") {
+                            $sss_calamity_loan_amount = $amount;
+                        }
+                    }
+                }
+            }
+
 
             $this_row += [
                 'BasicPay' => number_format($pvalue->getBasicPay(), 2)
@@ -3730,8 +3752,10 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , 'HDMF ER' => number_format(round($pvalue->getHdmf() * -1, 2), 2)
 
                 , 'SSS loan' => number_format(round($pvalue->getSSSLoan() * -1, 2), 2)
+                , 'SSS Calamity loan' => number_format(round($sss_calamity_loan_amount * -1, 2), 2)
+
                 , 'HDMF loan' => number_format(round($pvalue->getHDMFLoan() * -1, 2), 2)
-                , 'Calamity loan' => number_format(round($pvalue->getHdmfCalamityLoan() * -1, 2), 2)
+                , 'HDMF Calamity loan' => number_format(round($pvalue->getHdmfCalamityLoan() * -1, 2), 2)
 
                 , 'Net pay' => number_format(round($pvalue->getNetPay(), 2), 2)
                 , 'Account number' => $pvalue->getAccountNumber()
@@ -3765,18 +3789,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             ];
 
 
-            $misc_deduction = json_decode($pvalue->getDeductionData());
-            $misc_deduction_string = '';
-
-            if (count($misc_deduction) > 0) {
-
-                foreach ($misc_deduction as $mkey => $mvalue) {
-                    if (is_numeric($mkey) && property_exists($mvalue, 'type')) {
-                        $amount = number_format(round($mvalue->amount * -1, 2), 2);
-                        $misc_deduction_string .= "{$mvalue->type}: {$amount}, ";
-                    }
-                }
-            }
 
             $this_row['Misc deduction data'] = $misc_deduction_string;
 
