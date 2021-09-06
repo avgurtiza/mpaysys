@@ -212,6 +212,11 @@ class Messervelib_Payroll
                         $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-07-19');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
                         $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+                    } elseif ($date === '2021-08-30') { // If NHD 2021
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-08-29');
+                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+
                     } elseif ($date === '2021-06-12') { // If ANK 2021
                         $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-06-11');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
