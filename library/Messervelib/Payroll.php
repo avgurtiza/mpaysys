@@ -208,91 +208,15 @@ class Messervelib_Payroll
                 if ($holiday_today && $holiday_today->getType() === 'legal') { // Unattended legal holiday
                     $legal_unattended_viable = false;
 
-                    if ($date === '2021-11-30') { // Bonifacio Day 2021
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-11-29');
+                    if ($date === '2021-12-30') { // Rizal 2021
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-12-29');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
                         $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-                    }  elseif ($date === '2021-07-20') { // If Eid'l Adha 2021
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-07-19');
+                    } elseif ($date === '2021-12-25') { // Christmas Day 2021
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-12-24');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
                         $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-                    } elseif ($date === '2021-08-30') { // If NHD 2021
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-08-29');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2021-06-12') { // If ANK 2021
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-06-11');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2021-05-01') { // If Labor day 2021
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-04-30');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2021-05-13') { // If Eid'l Fitr 2021
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-05-12');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2021-04-01' || $date === '2021-04-02') { // If MTH or GF 2021
-                        $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2021-03-31');
-
-                        if (!($legal_unattended_group > 0)) {
-                            if ($EloquentEmployee->restDays()->where('date', '2021-03-31')->first()) { // No duty on the 31st?  Let's check if it's a rest day
-                                logger(sprintf("Found rest day on the 31st for %s", $EloquentEmployee->name));
-
-                                // If the 31st was a rest day, let's check if they had duty on the 30th to finally qualify
-                                if ($attendance_group = $this->groupWithAttendanceOnDay($employee_id, '2021-03-30')) {
-                                    $legal_unattended_group = $attendance_group;
-                                    logger(sprintf("%s qualified for %s on group  %s because of duty on Mar 30 and restday on Mar 31", $EloquentEmployee->name, $date, $legal_unattended_group));
-
-                                }
-                            } else {
-                                logger(sprintf("No rest day on the 31st for %s; not viable for unattended legal holiday pay.", $EloquentEmployee->name));
-                            }
-                        }
-
-                        if ($legal_unattended_group > 0) {
-                            $legal_unattended_viable = true;
-
-                            $legal_unattended_group = $EloquentEmployee->group_id; // !!!!!!! This resets the group to the parent group!
-
-                            logger(sprintf("%s qualified for %s on group  %s", $EloquentEmployee->name, $date, $legal_unattended_group));
-                        } else {
-                            logger(sprintf("%s did not qualify for %s", $EloquentEmployee->name, $date));
-                        }
-
-                    } elseif ($date === '2021-04-09') { // If NHD 2021
-                        $legal_unattended_group = $this->groupWithAttendanceOnDay($employee_id, '2021-04-08');
-
-                        if (!($legal_unattended_group > 0)) {
-                            if ($EloquentEmployee->restDays()->where('date', '2021-04-08')->first()) { // No duty on the 8th?  Let's check if it's a rest day
-                                logger(sprintf("Found rest day on the 8th for %s", $EloquentEmployee->name));
-
-                                // If the 8th was a rest day, let's check if they had duty on the 7th to finally qualify
-                                if ($attendance_group = $this->groupWithAttendanceOnDay($employee_id, '2021-04-07')) {
-                                    $legal_unattended_group = $attendance_group;
-                                    logger(sprintf("%s qualified for %s on group  %s because of duty on Apr 7 and restday on Apr 8", $EloquentEmployee->name, $date, $legal_unattended_group));
-
-                                }
-                            } else {
-                                logger(sprintf("No rest day on the 8th for %s; not viable for unattended legal holiday pay.", $EloquentEmployee->name));
-                            }
-                        }
-
-                        if ($legal_unattended_group > 0) {
-                            $legal_unattended_viable = true;
-
-                            $legal_unattended_group = $EloquentEmployee->group_id; // !!!!!!! This resets the group to the parent group!
-
-                            logger(sprintf("%s qualified for %s on group  %s", $EloquentEmployee->name, $date, $legal_unattended_group));
-                        } else {
-                            logger(sprintf("%s did not qualify for %s", $EloquentEmployee->name, $date));
-                        }
                     } else {
-
                         // Had attendance yesterday
                         $date_yesterday = date('Y-m-d 00:00:00', strtotime('-1 day', strtotime($date)));
 
@@ -358,13 +282,6 @@ class Messervelib_Payroll
                         ->setDateProcessed(date("Y-m-d H:i:s"));
 
                     if ($legal_unattended_viable) {
-
-                        /*
-                        $PayrollEloquent = Messerve_Model_Eloquent_AttendancePayroll::where('date', $date)
-                            ->where('group_id', '<>', $legal_unattended_group)
-                            ->where('employee_id', $employee_id);
-                        */
-
                         // Look for attendance on this day on non-mother groups and reset it
                         $PayrollEloquent = Messerve_Model_Eloquent_AttendancePayroll::where('date', $date)
                             ->where('group_id', '<>', $group_id)
