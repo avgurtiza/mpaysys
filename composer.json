@@ -1,18 +1,35 @@
 {
-    "name": "slide-gurtiza/messerve-payroll",
-    "description": "--",
-    "authors": [
-        {
-            "name": "Slide Gurtiza",
-            "email": "slide.gurtiza@gmail.com"
-        }
-    ],
-    "require": {
-        "zendframework/zendframework1": "^1.12",
-        "nesbot/carbon": "^1.21",
-        "illuminate/database": "^5.4",
-        "slm/queue": "^1.0",
-        "slm/queue-doctrine": "^2.0",
-        "phpoffice/phpspreadsheet": "^1.6"
+  "name": "slide-gurtiza/messerve-payroll",
+  "description": "--",
+  "authors": [
+    {
+      "name": "Slide Gurtiza",
+      "email": "slide.gurtiza@gmail.com"
     }
+  ],
+  "require": {
+    "zendframework/zendframework1": "^1.12",
+    "nesbot/carbon": "^1.21",
+    "illuminate/database": "^5.4",
+    "slm/queue": "^1.0",
+    "slm/queue-doctrine": "^2.0",
+    "phpoffice/phpspreadsheet": "^1.6",
+    "ext-pdo": "*",
+    "psy/psysh": "@stable"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^7",
+    "phpunit/dbunit": "^4.0"
+  },
+  "autoload": {
+    "classmap": [
+      "tests/"
+    ],
+    "psr-0": {
+      "": "library/"
+    },
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  }
 }

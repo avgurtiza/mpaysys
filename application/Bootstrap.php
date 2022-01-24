@@ -77,5 +77,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $capsule->setAsGlobal();
         $capsule->bootEloquent();
     }
+
+    protected function _initHelpers() {
+        require_once(APPLICATION_PATH . DIRECTORY_SEPARATOR . "helpers.php");
+    }
 }
 

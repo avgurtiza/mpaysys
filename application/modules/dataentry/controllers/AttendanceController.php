@@ -539,13 +539,13 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                 $employee_count = $Employee->countByQuery('group_id = ' . $gvalue->getId());
 
                 // if ($employee_count > 0) {
-                    $groups_array[] = array(
-                        'client_id' => $cvalue->getId()
-                        , 'client_name' => $cvalue->getName()
-                        , 'group_id' => $gvalue->getId()
-                        , 'group_name' => $gvalue->getName()
-                        , 'employee_count' => $employee_count
-                    );
+                $groups_array[] = array(
+                    'client_id' => $cvalue->getId()
+                , 'client_name' => $cvalue->getName()
+                , 'group_id' => $gvalue->getId()
+                , 'group_name' => $gvalue->getName()
+                , 'employee_count' => $employee_count
+                );
                 // }
 
             }
@@ -1144,8 +1144,9 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                     ->setEmployeeNumber($Employee->getEmployeeNumber());
 
                 if (!$new_attendance->save(true)) {
-                    throw new Exception('Did not insert initial attendance.');
+                    throw new RuntimeException('Did not insert initial attendance.');
                 }
+
                 echo "New attendance";
                 preprint($new_attendance->toArray());
 
@@ -1154,7 +1155,9 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                     $Attendance = new Messerve_Model_Attendance();
                     $Attendance->find($new_attendance->id);
                 } catch (Exception $e) {
-                    die('Caught exception: ' . $e->getMessage() . "\n");
+                    logger($e->getMessage(), "error");
+                    logger($e->getTraceAsString(), "error");
+                    throw new RuntimeException("Did not find attendance record with ID {$new_attendance->id}");
                 }
 
             }
@@ -1167,6 +1170,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             if ($i == 1) $first_day_id = $Attendance->getId();
 
         }
+
 
         $this->view->dates = $dates;
         $this->view->period_size = $period_size;
@@ -1192,6 +1196,8 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         if ($this->_request->isPost()) { // Save submit
             $postvars = $this->_request->getPost();
+
+                $this->logActivity($Employee->eloquent(), $postvars, $dates);
 
             if ($form->isValid($postvars)) {
 
@@ -1253,6 +1259,54 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         $this->view->holidays = $holidays;
 
+    }
+
+    public function logActivity(Messerve_Model_Eloquent_Employee $employee, array $post, array $dates)
+    {
+        $old_data = null;
+
+        $new_data = $post;
+        /*
+        foreach($post as $key => $value) {
+            if(preg_match("/^\d{4}-\d{2}-\d{2}$/", trim($key), $matches)) {
+                $new_data[$key] = $value;
+            }
+        }
+        */
+
+        foreach ($dates as $date => $attendance) {
+            if ($attendance instanceof Messerve_Model_Attendance) {
+                $old_data[$date] = [
+                    "id" => $attendance->id,
+                    "start_1" => $attendance->Start1,
+                    "end_1" => $attendance->End1,
+                    "start_2" => $attendance->Start2,
+                    "end_2" => $attendance->End2,
+                    "start_3" => $attendance->Start3,
+                    "end_3" => $attendance->End3,
+                    "ot_approved_hours" => $attendance->OtApprovedHours,
+                    "type" => $attendance->Type
+                ];
+            }
+        }
+
+
+        try {
+            activity()
+                ->performedOn($employee)
+                ->causedBy(Messerve_Model_Eloquent_User::find($this->_user_auth->id))
+                ->withProperties([
+                    "old" => $old_data,
+                    "new" => $new_data,
+                    "all" => $post
+                ])
+                ->log("Attendance submitted");
+
+        } catch (Exception $exception) {
+            logger($exception->getMessage(), "error");
+            logger($exception->getTraceAsString());
+
+        }
     }
 
     public function dtrAction()
@@ -1322,6 +1376,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             }
         }
     }
+
     public function toggleRestDayAction()
     { // AJAX
         $this->_helper->layout()->disableLayout();
@@ -1330,7 +1385,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         $Attendance = Messerve_Model_Eloquent_Attendance::find($attendance_id);
 
-        if(!$Attendance) {
+        if (!$Attendance) {
             $this->getResponse()->setHttpResponseCode(404);
             return;
         }
@@ -1342,7 +1397,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         $rest_day = $Employee->restDays()->where('date', $date->toDateString());
 
-        if($rest_day->count()) {
+        if ($rest_day->count()) {
             $rest_day->delete();
         } else {
             $rest_day = Messerve_Model_Eloquent_RestDay::create([
@@ -1351,11 +1406,11 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             ]);
 
             $this->_helper->json($rest_day);
-            return  json_encode($rest_day->toArray());
+            return json_encode($rest_day->toArray());
         }
 
 
-        return ;
+        return;
     }
 
     public function resetdayAction()
