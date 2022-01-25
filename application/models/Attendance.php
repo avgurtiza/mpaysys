@@ -1804,4 +1804,15 @@ class Messerve_Model_Attendance extends Messerve_Model_ModelAbstract
                                   ->getAdapter()
                                   ->quote($this->getId()));
     }
+
+    /**
+     * Returns eloquent Model
+     *
+     * @return Messerve_Model_Eloquent_Attendance
+     */
+
+    public function eloquent(): Messerve_Model_Eloquent_Attendance
+    {
+        return Messerve_Model_Eloquent_Attendance::find($this->getId());
+    }
 }

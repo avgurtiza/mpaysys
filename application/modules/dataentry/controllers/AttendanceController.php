@@ -1,5 +1,7 @@
 <?php
 
+use Carbon\Carbon;
+
 class Dataentry_AttendanceController extends Zend_Controller_Action
 {
 
@@ -1266,16 +1268,17 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $old_data = null;
 
         $new_data = $post;
-        /*
-        foreach($post as $key => $value) {
-            if(preg_match("/^\d{4}-\d{2}-\d{2}$/", trim($key), $matches)) {
-                $new_data[$key] = $value;
-            }
-        }
-        */
+
+        $first_attendance = null;
 
         foreach ($dates as $date => $attendance) {
             if ($attendance instanceof Messerve_Model_Attendance) {
+                $today = Carbon::parse($date);
+
+                if($today->day == 1 || $today->day == 16) {
+                    $first_attendance = $attendance;
+                }
+
                 $old_data[$date] = [
                     "id" => $attendance->id,
                     "start_1" => $attendance->Start1,
@@ -1290,10 +1293,13 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             }
         }
 
+        if(!$first_attendance) {
+            throw new \RuntimeException("Failed to save DTR because first day (1 or 16) was not found.");
+        }
 
         try {
             activity()
-                ->performedOn($employee)
+                ->performedOn($first_attendance->eloquent())
                 ->causedBy(Messerve_Model_Eloquent_User::find($this->_user_auth->id))
                 ->withProperties([
                     "old" => $old_data,
