@@ -66,16 +66,12 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
             $employee_count = $Employee->countByQuery('group_id = ' . $gvalue->getId());
 
-            // if ($employee_count > 0) {
             $groups_array[$gvalue->getId()] = $clients[$gvalue->getClientId()] . ' ' . $gvalue->getName()
                 . ' (' . $employee_count . ')';
-            //}
         }
 
 
         asort($groups_array);
-
-        // dd($groups_array);
 
         $form = new Messerve_Form_Attendance();
         $form->setAction('/dataentry/attendance/employees');

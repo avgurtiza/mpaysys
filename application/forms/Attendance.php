@@ -21,8 +21,13 @@ class Messerve_Form_Attendance extends Zend_Form
         $period_options = [];
 
         if(Carbon::today()->day >= 16) {
+            $period_options[Carbon::today()->format('Y-m') . '-16_31'] = Carbon::today()->format('Y F 16-31');
+        }
+
+        if(Carbon::today()->day >= 1) {
             $period_options[Carbon::today()->format('Y-m') . '-1_15'] = Carbon::today()->format('Y F 01-15');
         }
+
 
         for($i = 0; $i <= 12; $i++) {
         	$this_date = $carbon_start->subMonth(1);
