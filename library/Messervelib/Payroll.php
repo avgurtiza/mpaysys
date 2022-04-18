@@ -208,14 +208,36 @@ class Messervelib_Payroll
                 if ($holiday_today && $holiday_today->getType() === 'legal') { // Unattended legal holiday
                     $legal_unattended_viable = false;
 
-                    if ($date === '2021-12-30') { // Rizal 2021
+                    if ($date === '2022-04-09') { // ANK 2022
+
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-04-08');
+                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+
+                    } elseif ($date === '2022-04-14') { // MTH 2022
+
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-04-13');
+                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+
+                    } elseif ($date === '2022-04-15') { // GF 2022
+
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-04-13');
+                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+
+                    } elseif ($date === '2021-12-30') { // Rizal 2021
+
                         $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-12-29');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
                         $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+
                     } elseif ($date === '2021-12-25') { // Christmas Day 2021
+
                         $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-12-24');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
                         $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+
                     } else {
                         // Had attendance yesterday
                         $date_yesterday = date('Y-m-d 00:00:00', strtotime('-1 day', strtotime($date)));
