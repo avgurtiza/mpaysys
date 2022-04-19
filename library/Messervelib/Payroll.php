@@ -199,9 +199,6 @@ class Messervelib_Payroll
 
             $stacked_holiday_multiplier = 1; // For stacked holidays
 
-
-            // $EloquentEmployee = $Employee->eloquent();
-
             if (!($attendance['start_1'] > 0)) { // Work on records with no start_1 times (no duty day)
                 // TODO Mod to accommodate 12MN start dates
 
@@ -226,17 +223,13 @@ class Messervelib_Payroll
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
                         $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
 
-                    } elseif ($date === '2021-12-30') { // Rizal 2021
-
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-12-29');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2021-12-25') { // Christmas Day 2021
-
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2021-12-24');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+                        if (!$legal_unattended_viable) { // Not viable? Check if there was duty yesterday (MTH)
+                            if ($attendance_group = $this->groupWithAttendanceOnDay($EloquentEmployee->id, '2022-04-14')) { // Has duty on MTH
+                                $legal_unattended_group = $attendance_group;
+                                $legal_unattended_viable = true;
+                                logger(sprintf("%s qualified for %s on group %s because of duty on %s (MTH)", $EloquentEmployee->name, "2022-04-15", $legal_unattended_group, "2022-04-14"));
+                            }
+                        }
 
                     } else {
                         // Had attendance yesterday
