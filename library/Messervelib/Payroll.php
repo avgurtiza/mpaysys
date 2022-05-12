@@ -205,7 +205,19 @@ class Messervelib_Payroll
                 if ($holiday_today && $holiday_today->getType() === 'legal') { // Unattended legal holiday
                     $legal_unattended_viable = false;
 
-                    if ($date === '2022-04-09') { // ANK 2022
+                    if ($date === '2022-05-01') { // Labor Day 2022
+
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-04-30');
+                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+
+                    } elseif ($date === '2022-05-03') { // Eid'l Fitr  2022
+
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-05-02');
+                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+
+                    } elseif ($date === '2022-04-09') { // ANK 2022
 
                         $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-04-08');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
