@@ -113,6 +113,7 @@ class Manager_GroupController extends Zend_Controller_Action
             "REGION V" => "REGION V",
             "REGION VI" => "REGION VI",
             "REGION VII" => "REGION VII",
+            "REGION VIII" => "REGION VIII",
             "REGION X" => "REGION X",
             "REGION XI" => "REGION XI",
             "REGION XII" => "REGION XII"
