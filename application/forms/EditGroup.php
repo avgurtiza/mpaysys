@@ -20,7 +20,7 @@ class Messerve_Form_EditGroup extends Zend_Form
         );
 
         $this->addElement(
-            $this->createElement('text', 'region')
+            $this->createElement('select', 'region')
                 ->setLabel('Region')
                 ->setAttrib("maxlength", 128)
                 ->setRequired(true)

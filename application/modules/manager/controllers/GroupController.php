@@ -97,6 +97,31 @@ class Manager_GroupController extends Zend_Controller_Action
 
         $rate_select->setMultiOptions(array('0' => '') + $rate_array);
 
+
+        // Regions
+
+        $region_array = [
+            ""=>"",
+            "NCR" => "NCR",
+            "CAR" => "CAR",
+            "REGION I" => "REGION I",
+            "REGION II" => "REGION II",
+            "REGION III" => "REGION III",
+            "REGION IV-A" => "REGION IV-A",
+            "REGION IV-B" => "REGION IV-B",
+            "REGION IX" => "REGION IX",
+            "REGION V" => "REGION V",
+            "REGION VI" => "REGION VI",
+            "REGION VII" => "REGION VII",
+            "REGION X" => "REGION X",
+            "REGION XI" => "REGION XI",
+            "REGION XII" => "REGION XII"
+        ];
+
+        $region_select = $form->getElement('region');
+
+        $region_select->setMultiOptions($region_array);
+
         $Group = new Messerve_Model_Group();
 
         $id = $this->_request->getParam('id');
