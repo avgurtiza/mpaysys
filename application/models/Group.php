@@ -115,6 +115,8 @@ class Messerve_Model_Group extends Messerve_Model_ModelAbstract
 
     protected $_NonVat;
 
+    protected $_Region;
+
     /**
      * Sets up column and relationship lists
      */
@@ -136,6 +138,7 @@ class Messerve_Model_Group extends Messerve_Model_ModelAbstract
             'address' => 'Address',
             'fuelperhour' => 'Fuelperhour',
             'non_vat' => 'NonVat',
+            'region' => 'Region',
         ));
 
         $this->setParentList(array());
@@ -439,6 +442,17 @@ class Messerve_Model_Group extends Messerve_Model_ModelAbstract
     public function getNonVat()
     {
         return $this->_NonVat;
+    }
+
+    public function setRegion($data)
+    {
+        $this->_Region = $data;
+        return $this;
+    }
+
+    public function getRegion()
+    {
+        return $this->_Region;
     }
 
     /**

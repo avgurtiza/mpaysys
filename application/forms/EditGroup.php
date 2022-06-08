@@ -20,6 +20,16 @@ class Messerve_Form_EditGroup extends Zend_Form
         );
 
         $this->addElement(
+            $this->createElement('text', 'region')
+                ->setLabel('Region')
+                ->setAttrib("maxlength", 128)
+                ->setRequired(true)
+                ->addValidator(new Zend_Validate_StringLength(array("max" => 128)))
+                ->addFilter(new Zend_Filter_StringTrim())
+                ->addFilter(new Zend_Filter_StringToUpper())
+        );
+
+        $this->addElement(
             $this->createElement('text', 'name')
                 ->setLabel('Group Name')
                 ->setAttrib("maxlength", 128)

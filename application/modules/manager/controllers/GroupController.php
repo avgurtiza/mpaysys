@@ -228,7 +228,7 @@ class Manager_GroupController extends Zend_Controller_Action
 
     public function employeeRateScheduleAction()
     {
-        preprint($this->_user_auth);
+        // preprint($this->_user_auth);
         $form = new Messerve_Form_EditEmployeeRateSchedule();
         $groups = $form->getElement("group_id");
         $groups->setOptions(array("multiOptions" => $this->_getGroups()));
