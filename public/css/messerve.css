@@ -437,3 +437,7 @@ tr.rest-day {
 .zend_form #submit-element button {
     color: white;
 }
+
+.zend_form #cancel-element button:hover {
+    color: black;
+}
