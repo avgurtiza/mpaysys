@@ -19,15 +19,42 @@ class Messerve_Form_EditGroup extends Zend_Form
                 
         );
 
-        $this->addElement(
-            $this->createElement('select', 'region')
-                ->setLabel('Region')
-                ->setAttrib("maxlength", 128)
-                ->setRequired(true)
-                ->addValidator(new Zend_Validate_StringLength(array("max" => 128)))
-                ->addFilter(new Zend_Filter_StringTrim())
-                ->addFilter(new Zend_Filter_StringToUpper())
-        );
+        /** @var Zend_Form_Element_Select $region_element */
+        $region_element = $this->createElement('select', 'region')
+            ->setLabel('Region')
+            ->setAttrib("maxlength", 128)
+            ->setRequired(true)
+            ->addValidator(new Zend_Validate_StringLength(array("max" => 128)))
+            ->addFilter(new Zend_Filter_StringTrim())
+            ->addFilter(new Zend_Filter_StringToUpper());
+
+        $region_array = [
+            ""=>"",
+            "NCR" => "NCR",
+            "CAR" => "CAR",
+            "REGION I" => "REGION I",
+            "REGION II" => "REGION II",
+            "REGION III" => "REGION III",
+            "REGION IV-A" => "REGION IV-A",
+            "REGION IV-B" => "REGION IV-B",
+            "REGION IX" => "REGION IX",
+            "REGION V" => "REGION V",
+            "REGION VI" => "REGION VI",
+            "REGION VII" => "REGION VII",
+            "REGION VII-A" => "REGION VII-A",
+            "REGION VII-B" => "REGION VII-B",
+            "REGION VIII" => "REGION VIII",
+            "REGION X" => "REGION X",
+            "REGION X-I" => "REGION X-I",
+            "REGION X-II" => "REGION X-II",
+            "REGION XI" => "REGION XI",
+            "REGION XII" => "REGION XII"
+        ];
+
+        $region_element->setMultiOptions($region_array);
+
+        $this->addElement($region_element);
+
 
         $this->addElement(
             $this->createElement('text', 'name')
