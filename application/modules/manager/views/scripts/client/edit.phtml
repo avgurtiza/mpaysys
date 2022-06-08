@@ -51,13 +51,17 @@
                 <thead>
                 <tr>
                     <th>Group name</th>
+                    <th>Region</th>
                     <th>Actions</th>
                 </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($this->groups as $value): ?>
+                <?php
+                    /** @var Messerve_Model_Group $value */
+                foreach ($this->groups as $value):?>
                     <tr>
                         <td><?php echo $value->getName(); ?></td>
+                        <td><?php echo $value->getRegion(); ?></td>
                         <td>
                             <!-- <a
 				href="/manager/group/employees/id/<?php echo $value->getId(); ?>">Employees</a> -->
