@@ -7,6 +7,10 @@
             </tr>
             </thead>
             <tbody>
+            <tr>
+                <td><a class="button tiny icon-add" href="/manager/rate/edit"><span class="icon icon-gray-add"></span>
+                        Add new rate</a></td>
+            </tr>
             <?php foreach ($this->rates as $value): ?>
                 <tr>
                     <td><a href="/manager/rate/edit/id/<?php
@@ -14,10 +18,6 @@
                             echo $value->getName(); ?></a></td>
                 </tr>
             <?php endforeach; ?>
-            <tr>
-                <td><a href="/manager/rate/edit"><span class="icon icon-gray-add"></span>
-                        Add new rate</a></td>
-            </tr>
             </tbody>
         </table>
     </div>
