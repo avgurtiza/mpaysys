@@ -29,13 +29,13 @@ class Manager_RateController extends Zend_Controller_Action
         // action body
         $RateMap = new Messerve_Model_Mapper_Rate();
 
-        $rates = $RateMap->fetchList('1', 'name ASC');
+        $rates = $RateMap->fetchList('1', 'id DESC');
 
         $this->view->rates = $rates;
 
         $ClientRateMap = new Messerve_Model_Mapper_RateClient();
 
-        $client_rates = $ClientRateMap->fetchList('1', 'name ASC');
+        $client_rates = $ClientRateMap->fetchList('1', 'id DESC');
 
         $this->view->client_rates = $client_rates;
 
