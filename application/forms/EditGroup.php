@@ -36,6 +36,8 @@ class Messerve_Form_EditGroup extends Zend_Form
             "REGION II" => "REGION II",
             "REGION III" => "REGION III",
             "REGION IV-A" => "REGION IV-A",
+            "REGION IV-A1" => "REGION IV-A1",
+            "REGION IV-A2" => "REGION IV-A2",
             "REGION IV-B" => "REGION IV-B",
             "REGION IX" => "REGION IX",
             "REGION V" => "REGION V",
