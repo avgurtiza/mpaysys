@@ -15,7 +15,8 @@
     "slm/queue-doctrine": "^2.0",
     "phpoffice/phpspreadsheet": "^1.6",
     "ext-pdo": "*",
-    "psy/psysh": "@stable"
+    "psy/psysh": "@stable",
+    "ext-json": "*"
   },
   "require-dev": {
     "phpunit/phpunit": "^7",
@@ -29,7 +30,8 @@
       "": "library/"
     },
     "psr-4": {
-      "Tests\\": "tests/"
+      "Tests\\": "tests/",
+      "Domains\\": "src/Domains/"
     }
   }
 }

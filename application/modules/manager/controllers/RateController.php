@@ -247,30 +247,62 @@ class Manager_RateController extends Zend_Controller_Action
 
     }
 
+    private function insertNewClientRate(array $row, string $prefix)
+    {
+
+        list($id, $client_name, $name, $code, $reg, $reg_ot, $reg_nd, $reg_nd_ot, $spec,
+            $spec_ot, $spec_nd, $spec_nd_ot, $legal, $legal_ot, $legal_nd, $legal_nd_ot, $legal_unattend,
+            ) = $row;
+
+        if (!((int)$reg > 0)) {
+            return false;
+        }
+
+        $rate_name = str_replace(' ', '', sprintf("%s-%d-%s-%s", $prefix, $id, $client_name, $name));
+
+        // Create new rate
+        return Messerve_Model_Eloquent_ClientRate::create([
+            'name' => $rate_name,
+            'reg' => $reg,
+            'reg_ot' => $reg_ot,
+            'reg_nd' => $reg_nd,
+            'reg_nd_ot' => $reg_nd_ot,
+            'spec' => $spec,
+            'spec_ot' => $spec_ot,
+            'spec_nd' => $spec_nd,
+            'spec_nd_ot' => $spec_nd_ot,
+            'legal' => $legal,
+            'legal_ot' => $legal_ot,
+            'legal_nd' => $legal_nd,
+            'legal_nd_ot' => $legal_nd_ot,
+            'legal_unattend' => $legal_unattend,
+        ]);
+    }
+
+    /**
+     * @throws Zend_File_Transfer_Exception
+     */
     public function clientRateImportAction()
     {
         if (!$this->_request->isPost()) {
-            return $this->clientRateImportForm();
+            throw new \RuntimeException("Action requires POST.");
         }
 
         $this->_helper->_layout->setLayout('iframe');
         $this->_helper->viewRenderer->setRender('client-rate-import-output');
 
         $upload = new Zend_File_Transfer_Adapter_Http();
+
         $upload->addValidator('Count', false, array('min' => 1, 'max' => 1))
             ->addValidator('Extension', false, 'csv')
             ->addValidator('Size', false, array('max' => '1024kb'))
             ->setDestination('/tmp');
 
         if (!$upload->isValid()) {
-            throw new Exception('Bad upload data: ' . implode(',', $upload->getMessages()));
+            throw new \RuntimeException('Bad upload data: ' . implode(',', $upload->getMessages()));
         }
 
-        try {
-            $upload->receive();
-        } catch (Zend_File_Transfer_Exception $e) {
-            throw new Exception('Bad upload data: ' . $e->getMessage());
-        }
+        $upload->receive();
 
         $file = new SplFileObject($upload->getFileName());
 
@@ -285,42 +317,20 @@ class Manager_RateController extends Zend_Controller_Action
                 continue;
             }
 
-            list($id, $client_name, $name, $code, $reg, $reg_ot, $reg_nd, $reg_nd_ot, $spec,
-                $spec_ot, $spec_nd, $spec_nd_ot, $legal, $legal_ot, $legal_nd, $legal_nd_ot, $legal_unattend,
-                ) = $row;
+            $client_rate = $this->insertNewClientRate($row, $prefix);
 
-            if (!((int)$reg > 0)) {
+            if (!$client_rate) {
                 continue;
             }
 
-            $rate_name = str_replace(' ', '', sprintf("%s-%d-%s-%s", $prefix, $id, $client_name, $name));
-
-            // Create new rate
-            $client_rate = Messerve_Model_Eloquent_ClientRate::create([
-                'name' => $rate_name,
-                'reg' => $reg,
-                'reg_ot' => $reg_ot,
-                'reg_nd' => $reg_nd,
-                'reg_nd_ot' => $reg_nd_ot,
-                'spec' => $spec,
-                'spec_ot' => $spec_ot,
-                'spec_nd' => $spec_nd,
-                'spec_nd_ot' => $spec_nd_ot,
-                'legal' => $legal,
-                'legal_ot' => $legal_ot,
-                'legal_nd' => $legal_nd,
-                'legal_nd_ot' => $legal_nd_ot,
-                'legal_unattend' => $legal_unattend,
-            ]);
-
             // Update groups to use client rate
             try {
-                $group = Messerve_Model_Eloquent_Group::find($id);
+                $group = Messerve_Model_Eloquent_Group::find($client_rate->group_id);
 
                 if (!$group) {
                     $client_rates[] = (object)[
                         'name' => $client_rate->name,
-                        'error' => 'Did not find group with id ' . $id
+                        'error' => 'Did not find group with id ' . $client_rate->group_id
                     ];
 
                 } else {
@@ -336,7 +346,7 @@ class Manager_RateController extends Zend_Controller_Action
             } catch (\Exception $exception) {
                 $client_rates[] = (object)[
                     'name' => $client_rate->name,
-                    'error' => 'Failed assigning rate to group; error follows: '. $exception->getMessage()
+                    'error' => 'Failed assigning rate to group; error follows: ' . $exception->getMessage()
                 ];
 
             }
