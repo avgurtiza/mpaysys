@@ -21,7 +21,12 @@ class GetPayrollMetaAction
 
         $employee = \Messerve_Model_Eloquent_Employee::find($data->getEmployeeId());
 
-        $hours_meta = $this->buildHoursMeta($employee->attendancePayroll);
+        $hours_meta = $this->buildHoursMeta($employee->attendancePayroll()
+            ->where("group_id", $data->getGroupId())
+            ->where("period_start", $data->getPeriodCovered()
+            )->get()
+        );
+
 
         return (["rate_data" => json_encode("")] + $hours_meta);
 
@@ -29,15 +34,16 @@ class GetPayrollMetaAction
 
     private function buildHoursMeta(Collection $collection): array
     {
+
         $payroll = [];
 
-        foreach ($collection as  $pvalue) {
+        foreach ($collection as $pvalue) {
             if ($pvalue->reg_hours > 0) {
                 @$payroll[$pvalue->holiday_type]['reg']['hours'] += $pvalue->reg_hours;
                 @$payroll[$pvalue->holiday_type]['reg']['pay'] += $pvalue->reg_pay;
             }
 
-            if ($pvalue->ot_hours> 0) {
+            if ($pvalue->ot_hours > 0) {
                 @$payroll[$pvalue->holiday_type]['ot']['hours'] += $pvalue->ot_hours;
                 @$payroll[$pvalue->holiday_type]['ot']['pay'] += $pvalue->ot_pay;
             }
