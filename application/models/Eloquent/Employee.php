@@ -1,6 +1,10 @@
 <?php
 use Illuminate\Database\Eloquent\Model as Eloquent;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @method static find(int $getEmployeeId)
+ */
 class Messerve_Model_Eloquent_Employee extends Eloquent
 {
     protected $table = 'employee';
@@ -26,6 +30,11 @@ class Messerve_Model_Eloquent_Employee extends Eloquent
     public function attendance()
     {
         return $this->hasMany(Messerve_Model_Eloquent_Attendance::class, 'employee_id', 'id');
+    }
+
+    public function attendancePayroll(): HasMany
+    {
+        return $this->hasMany(Messerve_Model_Eloquent_AttendancePayroll::class, 'employee_id', 'id');
     }
 
     public function motherGroupAttendanceByDate($date)
