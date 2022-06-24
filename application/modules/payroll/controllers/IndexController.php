@@ -1,5 +1,6 @@
 <?php
 
+use Domains\Payroll\Actions\GetPayrollMetaAction;
 use Messerve_Model_Eloquent_FloatingAttendance as Floating;
 use Messerve_Model_Eloquent_Employee as EmployeeEloq;
 use Messervelib_Philhealth as Philhealth;
@@ -3616,8 +3617,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
 
+        /** @var Messerve_Model_PayrollTemp $pvalue */
         foreach ($payroll as $pvalue) {
-            /** @var Messerve_Model_PayrollTemp $pvalue */
 
             $employee_type = 'Regular';
 
@@ -3682,11 +3683,10 @@ class Payroll_IndexController extends Zend_Controller_Action
             ];
 
 
-            $hours_meta = json_decode($pvalue->getPayrollMeta(), true);
+            $hours_meta = (new GetPayrollMetaAction())($pvalue);
 
             foreach ($hours_struct as $type => $pay) {
                 foreach ($pay as $title => $breakdown) {
-
                     if (isset($hours_meta[$type]) && isset($hours_meta[$type][$title])) {
                         $this_row["$type $title hours"] = $hours_meta[$type][$title]['hours'];
                         $this_row["$type $title pay"] = $hours_meta[$type][$title]['pay'];

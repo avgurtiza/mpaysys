@@ -14,10 +14,10 @@ abstract class TestCase extends PHPUnit_Framework_TestCase
 {
     use DatabaseTestCase;
 
-    // only instantiate pdo once for test clean-up/fixture load
+    // Only instantiate pdo once for test clean-up/fixture load
     static private $pdo = null;
 
-    // only instantiate PHPUnit_Extensions_Database_DB_IDatabaseConnection once per test
+    // Only instantiate PHPUnit_Extensions_Database_DB_IDatabaseConnection once per test
     private $connection = null;
 
     public function setUp()
@@ -32,12 +32,13 @@ abstract class TestCase extends PHPUnit_Framework_TestCase
         defined('APPLICATION_ENV')
         || define('APPLICATION_ENV', (getenv('APPLICATION_ENV') ? getenv('APPLICATION_ENV') : 'testing'));
 
-        $application = new Zend_Application(
+
+        require_once(APPLICATION_PATH . DIRECTORY_SEPARATOR . "helpers.php");
+
+        $this->bootstrap = new Zend_Application(
             'testing',
             APPLICATION_PATH . '/configs/application.ini'
-        );
-
-        $this->bootstrap = $application->bootstrap();
+        );;
 
         parent::setUp();
     }
