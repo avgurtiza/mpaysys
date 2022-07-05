@@ -318,15 +318,37 @@ class Manager_RateController extends Zend_Controller_Action
                 continue;
             }
 
-            $client_rate = $this->insertNewClientRate($row, $prefix);
+            list($id, $client_name, $name, $code, $reg, $reg_ot, $reg_nd, $reg_nd_ot, $spec,
+                $spec_ot, $spec_nd, $spec_nd_ot, $legal, $legal_ot, $legal_nd, $legal_nd_ot, $legal_unattend,
+                ) = $row;
 
-            if (!$client_rate) {
+            if (!((int)$reg > 0)) {
                 continue;
             }
 
+            $rate_name = str_replace(' ', '', sprintf("%s-%d-%s-%s", $prefix, $id, $client_name, $name));
+
+            // Create new rate
+            $client_rate = Messerve_Model_Eloquent_ClientRate::create([
+                'name' => $rate_name,
+                'reg' => $reg,
+                'reg_ot' => $reg_ot,
+                'reg_nd' => $reg_nd,
+                'reg_nd_ot' => $reg_nd_ot,
+                'spec' => $spec,
+                'spec_ot' => $spec_ot,
+                'spec_nd' => $spec_nd,
+                'spec_nd_ot' => $spec_nd_ot,
+                'legal' => $legal,
+                'legal_ot' => $legal_ot,
+                'legal_nd' => $legal_nd,
+                'legal_nd_ot' => $legal_nd_ot,
+                'legal_unattend' => $legal_unattend,
+            ]);
+
             // Update groups to use client rate
             try {
-                $group = Messerve_Model_Eloquent_Group::find($client_rate->group_id);
+                $group = Messerve_Model_Eloquent_Group::find($id);
 
                 if (!$group) {
                     $client_rates[] = (object)[
