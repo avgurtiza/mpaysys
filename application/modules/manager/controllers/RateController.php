@@ -285,7 +285,8 @@ class Manager_RateController extends Zend_Controller_Action
     public function clientRateImportAction()
     {
         if (!$this->_request->isPost()) {
-            throw new \RuntimeException("Action requires POST.");
+            return $this->clientRateImportForm();
+            // throw new \RuntimeException("Action requires POST.");
         }
 
         $this->_helper->_layout->setLayout('iframe');
