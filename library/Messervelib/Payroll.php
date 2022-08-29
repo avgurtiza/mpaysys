@@ -200,12 +200,17 @@ class Messervelib_Payroll
             $stacked_holiday_multiplier = 1; // For stacked holidays
 
             if (!($attendance['start_1'] > 0)) { // Work on records with no start_1 times (no duty day)
-                // TODO Mod to accommodate 12MN start dates
+                // TODO: Mod to accommodate 12MN start dates
 
                 if ($holiday_today && $holiday_today->getType() === 'legal') { // Unattended legal holiday
                     $legal_unattended_viable = false;
 
-                    if ($date === '2022-05-01') { // Labor Day 2022
+                    if ($date === '2022-08-29') { // NHD 2022
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-08-28');
+                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+
+                    } elseif($date === '2022-05-01') { // Labor Day 2022
 
                         $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-04-30');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
