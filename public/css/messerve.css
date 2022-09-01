@@ -441,3 +441,43 @@ tr.rest-day {
 .zend_form #cancel-element button:hover {
     color: black;
 }
+
+.history tr.history-details {
+    display: none;
+}
+
+.locked-dtr {
+    background-color: red;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+}
+
+.locked-dtr a {
+    border-radius: 2px;
+    background-color: white;
+    padding: 0 5px;
+    font-size: 0.8em;
+}
+
+.unlocked-dtr {
+    background-color: green;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+}
+
+.unlocked-dtr a {
+    border-radius: 2px;
+    background-color: white;
+    padding: 0 5px;
+    font-size: 0.8em;
+}
+
+.read-only input {
+    border: none;
+}
+
+#group-switch {
+    max-width: 400px;
+}

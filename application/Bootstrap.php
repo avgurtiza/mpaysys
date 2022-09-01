@@ -81,5 +81,20 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
     protected function _initHelpers() {
         require_once(APPLICATION_PATH . DIRECTORY_SEPARATOR . "helpers.php");
     }
+
+    protected function _initCache() {
+        $cache = Zend_Cache::factory(
+            'Core',
+            'File',
+            array(
+                'lifetime' => 3600 * 24, //cache is cleaned once a day
+                'automatic_serialization' => true
+            ),
+            array('cache_dir' => APPLICATION_PATH.'/cache')
+        );
+
+        Zend_Db_Table_Abstract::setDefaultMetadataCache($cache); //cache database table schemata metadata for faster SQL queries
+        Zend_Registry::set('Cache', $cache);
+    }
 }
 

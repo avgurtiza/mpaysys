@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="/css/foundation.css">
     <link rel="stylesheet" href="/css/foundation-icons.css"/>
 
-    <link href="/css/messerve.css?update=20220608" type="text/css" rel="stylesheet"/>
+    <link href="/css/messerve.css" type="text/css" rel="stylesheet"/>
     <link href="/css/smoothness/jquery-ui-1.9.0.custom.min.css" type="text/css" rel="stylesheet"/>
 
     <script src="/js/jquery-1.8.2.js"></script>
@@ -61,6 +61,11 @@ if (Zend_Controller_Front::getInstance()->getRequest()->getControllerName() != Z
                         <dd><a href="/payroll/index/dtr-anomaly">DTR Anomalies</a></dd>
                     <?php endif; ?>
 
+                    <?php if ($this->user_auth && $this->user_auth->type === 'accounting'): ?>
+                        <dd><a href="/payroll/index/accrual">Accrual</a></dd>
+                        <dd><a href="/payroll/index">Payroll</a></dd>
+                    <?php endif; ?>
+
                     <?php if ($this->user_auth && $this->user_auth->type !== 'encoder'): ?>
                         <dd><a href="/dataentry/attendance">Attendance</a></dd>
                     <?php endif; ?>
@@ -69,6 +74,21 @@ if (Zend_Controller_Front::getInstance()->getRequest()->getControllerName() != Z
                         <dd><a href="/dataentry/index/start">Deductions</a></dd>
                     <?php endif; ?>
 
+                        <?php if(Zend_Registry::get('Cache')->load('dtr_locked')): ?>
+                            <dd class="locked-dtr">
+                                DTR Status is LOCKED
+                            <?php if ($this->user_auth && $this->user_auth->type === 'admin'): ?>
+                                <a href="/dataentry/attendance/unlock">UNLOCK</a>
+                            <?php endif; ?>
+                            </dd>
+                        <?php else: ?>
+                            <dd class="unlocked-dtr">
+                                DTR Status is OPEN
+                                <?php if ($this->user_auth && $this->user_auth->type === 'admin'): ?>
+                                <a href="/dataentry/attendance/lock">LOCK</a>
+                                <?php endif; ?>
+                            </dd>
+                        <?php endif; ?>
                 </dl>
             </blockquote>
 

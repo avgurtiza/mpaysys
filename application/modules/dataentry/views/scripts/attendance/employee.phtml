@@ -1,14 +1,69 @@
 <ul class="breadcrumb">
-    <li class="parent"><a href="/dataentry/attendance">Attendance</a></li>
+    <li class="parent"><a href="/dataentry/attendance">ATTENDANCE</a></li>
     <li><a href="/dataentry/attendance/employees?pay_period=<?php
         echo $this->pay_period; ?>&group_id=<?php echo $this->group_id; ?>">
             <span class="icon icon-gray-arrowleft"></span> <?php echo $this->group->getName(); ?>
         </a>
     </li>
-    <li class="title"><?php echo $this->employee->getFirstname(); ?><?php echo $this->employee->getLastname(); ?></li>
+    <li class="title"><?php echo $this->employee->getFirstname(); ?>&nbsp;<?php echo $this->employee->getLastname(); ?></li>
 </ul>
 
 <br clear="all"/>
+
+<?php if ($this->history && $this->history->count() > 0): ?>
+    <table class="dtr history">
+        <tbody>
+        <tr>
+            <td><a href="#" class="toggleHistory">Toggle history details</a></td>
+        </tr>
+        <?php foreach ($this->history as $row): ?>
+            <tr>
+                <td>Updated by <?php echo $row->causer->real_name; ?>
+                    on <?php echo $row->changed_at->toDateString(); ?>  </td>
+            </tr>
+            <tr class="history-details">
+                <td>
+                    <table class="dtr">
+                        <tr>
+                            <th>Date</th>
+                            <th>Start 1</th>
+                            <th>End 1</th>
+                            <th>Start 2</th>
+                            <th>End 2</th>
+                            <th>Start 3</th>
+                            <th>End 3</th>
+                            <th>OT approved</th>
+                            <th>OT H:MM</th>
+                            <th>Type</th>
+                            <th>Extended</th>
+                            <th>Approved extended</th>
+                        </tr>
+                        <?php foreach ($row->changes as $date => $change) : ?>
+                            <tr>
+                                <td><?php echo $date; ?></td>
+                                <?php foreach ($change as $item) :
+                                    if (in_array($item->name, ['id'])) {
+                                        continue;
+                                    }
+                                    ?>
+                                    <td>
+                                        <?php echo $item->old_value; ?>
+                                        <?php if ($item->old_value != $item->new_value ) : ?>
+                                            ⇨
+                                            <?php echo $item->new_value ?: "no"; ?>
+                                        <?php endif; ?>
+                                    </td>
+                                <?php endforeach; ?>
+                            </tr>
+                        <?php endforeach; ?>
+                    </table>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+<?php endif; ?>
+
 
 <form name="dtr-grid" method="post" action="">
     <input type="submit" value="Save"/>
@@ -39,7 +94,7 @@
             if ($dvalue->ot_approved === 'yes') {
                 $hours = floor($dvalue->getOtApprovedHours());
                 $minutes = round(($dvalue->getOtApprovedHours() - $hours) * 60, 2);
-                $approved_ot_hours = $hours . ':' . str_pad($minutes, 2, 0, STR_PAD_LEFT);
+                $approved_ot_hours = $hours.':'.str_pad($minutes, 2, 0, STR_PAD_LEFT);
             }
 
             $extended_css = 'no_extended';
@@ -67,7 +122,7 @@
                 echo $this->holidays[$dkey]->getType();
             } ?> <?= $extended_css ?>" id="row-<?php echo $dvalue->id; ?>">
                 <td valign="top">
-                        <span class="notice-me rest-day-label">Rest day</span>
+                    <span class="notice-me rest-day-label">Rest day</span>
 
                     <?php echo $dkey; ?> <br/>
 
@@ -76,7 +131,8 @@
                     <input type="button" value="Delete" class="reset-day" attendanceid="<?php echo $dvalue->id; ?>"/>
                     <br>
                     <br>
-                    <button class="button tiny day-is-rest-day" data-attendance-id="<?php echo $dvalue->id; ?>">Toggle rest day
+                    <button class="button tiny day-is-rest-day" data-attendance-id="<?php echo $dvalue->id; ?>">Toggle
+                        rest day
                     </button>
                 </td>
                 <td valign="top"><input type="text" class="miltime in" name="<?php echo $dkey; ?>[start_1]"
@@ -192,24 +248,30 @@
                                 /* || $ekey == 'fuel_cost'
                                 || $ekey == 'fuel_hours'
                                 || $ekey == 'fuel_alloted'*/
-                            ) continue;
+                            ) {
+                                continue;
+                            }
 
                             if (stripos($ekey, 'fuel') !== false) {
                                 $fuel[$ekey] = $evalue;
                                 continue;
                             }
 
-                            if (!(round($evalue, 2) > 0)) continue;
+                            if (!(round($evalue, 2) > 0)) {
+                                continue;
+                            }
                             $warn_css = '';
-                            if ($evalue > 9 || $evalue < 0) $warn_css = 'warn';
+                            if ($evalue > 9 || $evalue < 0) {
+                                $warn_css = 'warn';
+                            }
                             ?>
                             <dt><?php echo ucwords(str_replace('_', ' ', $ekey)); ?></dt>
                             <dd class="<?php echo $warn_css; ?>">
                                 <?php if (strstr($ekey, 'fuel')) {
-                                    echo $evalue . ' L';
+                                    echo $evalue.' L';
                                 } else {
                                     echo decimal_to_time($evalue, 2);
-                                    echo " (" . number_format($evalue, 2) . ")";
+                                    echo " (".number_format($evalue, 2).")";
 
                                 }
                                 ?>
@@ -253,7 +315,9 @@
                             <?php foreach ($fuel as $fkey => $fvalue): ?>
                                 <dt><?php echo ucwords(str_replace('_', ' ', $fkey)); ?></dt>
                                 <dd class="">
-                                    <?= $fvalue; ?><?php if (stripos($fkey, 'hours') === false) echo " L"; ?>
+                                    <?= $fvalue; ?><?php if (stripos($fkey, 'hours') === false) {
+                                        echo " L";
+                                    } ?>
                                 </dd>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -294,6 +358,10 @@
 
 
     $(function () {
+
+        $('.toggleHistory').click(function () {
+            $(".history-details").toggle();
+        });
 
         <?php if($is_dirty && $this->user_auth->type !== 'admin'): ?>
         alert('This DTR has anomalies.  Please correct or confirm with HR.');

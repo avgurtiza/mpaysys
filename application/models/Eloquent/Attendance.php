@@ -1,6 +1,12 @@
 <?php
 use Illuminate\Database\Eloquent\Model as Eloquent;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
+/**
+ * @property mixed id
+ */
 class Messerve_Model_Eloquent_Attendance extends Eloquent
 {
     protected $table = 'attendance';
@@ -11,7 +17,7 @@ class Messerve_Model_Eloquent_Attendance extends Eloquent
 
     protected $fillable = ['datetime_start', 'employee_id'];
 
-    public function employee()
+    public function employee(): BelongsTo
     {
         return $this->belongsTo(Messerve_Model_Eloquent_Employee::class, 'employee_id', 'id');
     }
@@ -21,7 +27,7 @@ class Messerve_Model_Eloquent_Attendance extends Eloquent
         return $this->belongsTo(Messerve_Model_Eloquent_Group::class, 'group_id', 'id');
     }
 
-    public function attendancePayroll()
+    public function attendancePayroll(): HasMany
     {
         return $this->hasMany(Messerve_Model_Eloquent_AttendancePayroll::class, 'attendance_id', 'id');
     }
@@ -37,9 +43,15 @@ class Messerve_Model_Eloquent_Attendance extends Eloquent
             })->get();
     }
 
-    public function bopAttendance() {
+    public function bopAttendance(): HasMany
+    {
         return $this->hasMany(Messerve_Model_Eloquent_BopAttendance::class, 'attendance_id', 'id');
     }
 
 
+
+    public function history(): MorphMany
+    {
+        return $this->morphMany(Messerve_Model_Eloquent_Activity::class, 'subject');
+    }
 }

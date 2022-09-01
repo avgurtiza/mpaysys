@@ -16,6 +16,9 @@ class Default_ErrorController extends Zend_Controller_Action
 
     public function errorAction()
     {
+        // $this->_helper->layout()->disableLayout();
+        // $this->_helper->viewRenderer->setNoRender(true);
+
         $errors = $this->_getParam('error_handler');
 
         if (!$errors || !$errors instanceof ArrayObject) {
