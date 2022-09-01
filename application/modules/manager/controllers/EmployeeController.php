@@ -59,15 +59,22 @@ class Manager_EmployeeController extends Zend_Controller_Action
             $bop_array[$bopvalue->getId()] = $bopvalue->getName();
         }
 
-        $form = new Messerve_Form_EditEmployee();
 
-        $group_select = $form->getElement('group_id');
+        if($this->_user_auth->type == 'bop') {
+            $form = new Messerve_Form_EditRiderBOP();
+        } else {
+            $form = new Messerve_Form_EditEmployee();
 
-        $groups_array = array('0' => 'Unemployed') + $groups_array;
+            $group_select = $form->getElement('group_id');
 
-        $this->view->groups = $groups_array;
+            $groups_array = array('0' => 'Unemployed') + $groups_array;
 
-        $group_select->setMultiOptions($groups_array);
+            $this->view->groups = $groups_array;
+
+            $group_select->setMultiOptions($groups_array);
+        }
+
+
 
         $bop_select = $form->getElement('bop_id');
 
@@ -149,10 +156,10 @@ class Manager_EmployeeController extends Zend_Controller_Action
 
         // $client_id = $this->_request->getParam('client_id');
 
-        $Client = new Messerve_Model_Client();
-        $Client->find($client_id);
+        // $Client = new Messerve_Model_Client();
+        // $Client->find($client_id);
 
-        $this->view->client = $Client;
+        $this->view->client = (new Messerve_Model_Client())->find($client_id);
 
     }
 
