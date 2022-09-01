@@ -87,8 +87,6 @@ class Messervelib_Payroll
 
         $cutoff_total_duration = 0;
 
-        $first_day_id = null; // cache record of first day for fuel calcs
-
         foreach ($data as $date => $attendance) {
             if (!isset($attendance['id']) || !($attendance['id'] > 0)) continue;
 
@@ -483,10 +481,10 @@ class Messervelib_Payroll
                 $end_3 = isset($attendance['end_3']) && $attendance['end_3'] != '' ? strtotime($date . ' T' . str_pad($attendance['end_3'], 4, 0, STR_PAD_LEFT)) : 0;
             }
 
-            $weekday = date('D', $start_1);
-            $weekday_midnight = date('D', $midnight);
+            // $weekday = date('D', $start_1);
+            // $weekday_midnight = date('D', $midnight);
 
-            $total_duration = 0;
+            // $total_duration = 0;
 
             $duration_1 = ($end_1 - $start_1) / 3600;
             $duration_2 = ($end_2 - $start_2) / 3600;
@@ -1015,8 +1013,23 @@ class Messervelib_Payroll
 
                     $options['approved_extended_shift'] = 'no';
 
-                    $floating = Floating::firstOrCreate(['attendance_id' => $Attendance->getId()]);
+                    $floating = Floating::updateOrCreate(['attendance_id' => $Attendance->getId()],
+                        [
+                            'reg_ot' => $time_array['reg_ot'],
+                            'reg_nd_ot' => $time_array['reg_nd_ot'],
 
+                            'spec_ot' => $time_array['spec_ot'],
+                            'spec_nd_ot' => $time_array['spec_nd_ot'],
+
+                            'rest_ot' => $time_array['rest_ot'],
+                            'rest_nd_ot' => $time_array['rest_nd_ot'],
+
+                            'legal_ot' => $time_array['legal_ot'],
+                            'legal_nd_ot' => $time_array['legal_nd_ot'],
+                        ]
+                    );
+
+                    /*
                     $floating->update([
                         'reg_ot' => $time_array['reg_ot'],
                         'reg_nd_ot' => $time_array['reg_nd_ot'],
@@ -1030,6 +1043,7 @@ class Messervelib_Payroll
                         'legal_ot' => $time_array['legal_ot'],
                         'legal_nd_ot' => $time_array['legal_nd_ot'],
                     ]);
+                    */
                 } else {
                     $floating = Floating::where('attendance_id', $Attendance->getId())->first();
 

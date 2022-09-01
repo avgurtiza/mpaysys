@@ -1,6 +1,10 @@
 <?php
 
 use Carbon\Carbon;
+use Domains\Attendance\Actions\GetHistoryChanges;
+use Domains\Attendance\Actions\LockDTR;
+use Domains\Attendance\Actions\UnlockDTR;
+use Illuminate\Support\Collection;
 
 class Dataentry_AttendanceController extends Zend_Controller_Action
 {
@@ -33,7 +37,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         $this->_round_to_ten_minutes = false;
 
-        if ($this->_user_auth->type != 'admin' && $this->_user_auth->type != 'supervisor') {
+        if(!in_array($this->_user_auth->type , ['admin','supervisor','accounting'])) {
             throw new Exception('You are not allowed to access this module.');
         }
 
@@ -64,10 +68,10 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
             $Employee = new Messerve_Model_DbTable_Employee();
 
-            $employee_count = $Employee->countByQuery('group_id = ' . $gvalue->getId());
+            $employee_count = $Employee->countByQuery('group_id = '.$gvalue->getId());
 
-            $groups_array[$gvalue->getId()] = $clients[$gvalue->getClientId()] . ' ' . $gvalue->getName()
-                . ' (' . $employee_count . ')';
+            $groups_array[$gvalue->getId()] = $clients[$gvalue->getClientId()].' '.$gvalue->getName()
+                .' ('.$employee_count.')';
         }
 
 
@@ -91,13 +95,13 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
     public function editAction()
     {
         // action body
-        $employee_id = (int)$this->_request->getParam('employee_id');
+        $employee_id = (int) $this->_request->getParam('employee_id');
 
         $Employee = new Messerve_Model_Employee();
         $Employee->find($employee_id);
         $this->view->employee = $Employee;
 
-        $group_id = (int)$this->_request->getParam('group_id');
+        $group_id = (int) $this->_request->getParam('group_id');
 
         $pay_period = $this->_request->getParam('pay_period');
         $this->view->pay_period = $pay_period;
@@ -108,7 +112,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $date = $this->_request->getParam('date');
 
 
-        $attendance_id = (int)$this->_request->getParam('attendance_id');
+        $attendance_id = (int) $this->_request->getParam('attendance_id');
         $Attendance = new Messerve_Model_Attendance();
 
         $Attendance->find($attendance_id);
@@ -119,11 +123,11 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         if ($this->_request->isPost()) { // Save submit
             // preprint($_POST);
 
-            $start_1 = strtotime($date . ' T' . str_pad($this->_request->getPost('start_1'), 4, 0, STR_PAD_LEFT));
-            $end_1 = strtotime($date . ' T' . str_pad($this->_request->getPost('end_1'), 4, 0, STR_PAD_LEFT));
+            $start_1 = strtotime($date.' T'.str_pad($this->_request->getPost('start_1'), 4, 0, STR_PAD_LEFT));
+            $end_1 = strtotime($date.' T'.str_pad($this->_request->getPost('end_1'), 4, 0, STR_PAD_LEFT));
 
-            $start_2 = strtotime($date . ' T' . str_pad($this->_request->getPost('start_2'), 4, 0, STR_PAD_LEFT));
-            $end_2 = strtotime($date . ' T' . str_pad($this->_request->getPost('end_2'), 4, 0, STR_PAD_LEFT));
+            $start_2 = strtotime($date.' T'.str_pad($this->_request->getPost('start_2'), 4, 0, STR_PAD_LEFT));
+            $end_2 = strtotime($date.' T'.str_pad($this->_request->getPost('end_2'), 4, 0, STR_PAD_LEFT));
 
             /*
              if($end_2 < $start_1) { // Adjust date for time crossing midnight
@@ -137,8 +141,8 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                 $break_duration = ($start_2 - $end_1) / 3600;
             }
 
-            $midnight = strtotime($this->_request->getPost('datetime_start') . ' + 1 day');
-            $night_diff_start = strtotime($this->_request->getPost('datetime_start') . 'T' . $this->_night_diff_start);
+            $midnight = strtotime($this->_request->getPost('datetime_start').' + 1 day');
+            $night_diff_start = strtotime($this->_request->getPost('datetime_start').'T'.$this->_night_diff_start);
 
 
             $weekday = date('D', $start_1);
@@ -168,8 +172,8 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                 // echo "<br />Start of OT: " . date('Y-m-d Hi', $start_of_ot);
 
                 // Time crossed midnight?  Check for holiday rates for the following day
-                $ot_start_time = (int)date('Hi', $start_of_ot);
-                $ot_end_time = (int)date('Hi', $end_of_shift);
+                $ot_start_time = (int) date('Hi', $start_of_ot);
+                $ot_end_time = (int) date('Hi', $end_of_shift);
 
                 if ($ot_start_time > $ot_end_time || $ot_start_time == 0) {
                     echo "<br /> Time crossed meridian. A";
@@ -279,7 +283,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $DeductAttendMap = new Messerve_Model_Mapper_DeductionAttendance();
 
         // RESET! Delete all employee deductions for this payroll period
-        $DeductAttendMap->getDbTable()->delete('attendance_id = ' . $attendance_id);
+        $DeductAttendMap->getDbTable()->delete('attendance_id = '.$attendance_id);
 
         if ($deductions) {
             foreach ($deductions as $dvalue) {
@@ -346,7 +350,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             $select = $Calendar->getDbTable()->select(true);
             $select->setIntegrityCheck(false)
                 ->where("(`date` LIKE '{$m_d}' AND `year` LIKE '0000') OR (`date` LIKE '{$m_d}' AND `year` LIKE '{$y}')")
-                ->where("calendar_id IN (" . implode(',', $calendars) . ")");
+                ->where("calendar_id IN (".implode(',', $calendars).")");
 
             $today_holidays = $Calendar->getDbTable()->fetchAll($select);
 
@@ -369,7 +373,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             $select = $Calendar->getDbTable()->select(true);
             $select->setIntegrityCheck(false)
                 ->where("(`date` LIKE '{$m_d}' AND `year` LIKE '0000') OR (`date` LIKE '{$m_d}' AND `year` LIKE '{$y}')")
-                ->where("calendar_id IN (" . implode(',', $calendars) . ")");
+                ->where("calendar_id IN (".implode(',', $calendars).")");
 
             $tomorrow_holidays = $Calendar->getDbTable()->fetchAll($select);
 
@@ -404,7 +408,9 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         /* Today */
         if ($end < $this->_night_diff_start) {
             $today = $end - $start;
-            if ($today > 0) $broken_array['today'] += $today;
+            if ($today > 0) {
+                $broken_array['today'] += $today;
+            }
         }
 
         /* ND */
@@ -412,10 +418,14 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             if ($start <= $this->_night_diff_start) {
                 echo "<br /> ND :A ";
                 $today = $this->_night_diff_start - $start;
-                if ($today > 0) $broken_array['today'] += $today;
+                if ($today > 0) {
+                    $broken_array['today'] += $today;
+                }
 
                 $today_nd = $end - $this->_night_diff_start;
-                if ($today_nd > 0) $broken_array['today_nd'] += $today_nd;
+                if ($today_nd > 0) {
+                    $broken_array['today_nd'] += $today_nd;
+                }
 
             } else {
                 echo "<br /> ND :B ";
@@ -423,7 +433,9 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                 // if($today > 0) $broken_array['today'] +=  $today;
 
                 $today_nd = $end - $start;
-                if ($today_nd > 0) $broken_array['today_nd'] += $today_nd;
+                if ($today_nd > 0) {
+                    $broken_array['today_nd'] += $today_nd;
+                }
             }
 
         }
@@ -441,40 +453,54 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                 } else {
                     echo "<br />Start before MN";
                     $today_nd = $this->_midnight - $start;
-                    if ($today_nd > 0) $broken_array['today_nd'] += $today_nd;
+                    if ($today_nd > 0) {
+                        $broken_array['today_nd'] += $today_nd;
+                    }
 
                     $tomorrow_nd = $this->_night_diff_end - $this->_midnight;
                     $broken_array['tomorrow_nd'] += $tomorrow_nd;
                 }
 
                 $tomorrow = $end - $this->_night_diff_end;
-                if ($tomorrow > 0) $broken_array['tomorrow'] += $tomorrow;
+                if ($tomorrow > 0) {
+                    $broken_array['tomorrow'] += $tomorrow;
+                }
 
             } else {
                 echo "<br /> Duration $duration_id ND end safe";
                 if ($start >= $this->_midnight) {
                     echo "<br />Start after MN";
                     $tomorrow_nd = $end - $start;
-                    if ($tomorrow_nd > 0) $broken_array['tomorrow_nd'] += $tomorrow_nd;
+                    if ($tomorrow_nd > 0) {
+                        $broken_array['tomorrow_nd'] += $tomorrow_nd;
+                    }
                 } else {
                     echo "<br />Start before MN - ";
 
                     $tomorrow_nd = $end - $this->_midnight;
-                    if ($tomorrow_nd > 0) $broken_array['tomorrow_nd'] += $tomorrow_nd;
+                    if ($tomorrow_nd > 0) {
+                        $broken_array['tomorrow_nd'] += $tomorrow_nd;
+                    }
 
                     if ($start >= $this->_night_diff_start) {
                         echo " after ND";
                         $today_nd = $this->_midnight - $start;
-                        if ($today_nd > 0) $broken_array['today_nd'] += $today_nd;
+                        if ($today_nd > 0) {
+                            $broken_array['today_nd'] += $today_nd;
+                        }
 
 
                     } else { // $start less than nd
                         echo " before ND";
                         $today = $this->_night_diff_start - $start;
-                        if ($today > 0) $broken_array['today'] += $today;
+                        if ($today > 0) {
+                            $broken_array['today'] += $today;
+                        }
 
                         $today_nd = $this->_midnight - $this->_night_diff_start;
-                        if ($today_nd > 0) $broken_array['today_nd'] += $today_nd;
+                        if ($today_nd > 0) {
+                            $broken_array['today_nd'] += $today_nd;
+                        }
                     }
                 }
 
@@ -511,11 +537,9 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
     public function employeesAction()
     {
-        // action body
-
         $this->view->fuelcost = isset($_SESSION['fuelcost']) ? $_SESSION['fuelcost'] : 0;
 
-        $group_id = (int)$this->_request->getParam('group_id');
+        $group_id = (int) $this->_request->getParam('group_id');
         $Group = new Messerve_Model_Group();
         $Group->find($group_id);
         $this->view->group = $Group;
@@ -529,12 +553,12 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $groups_array = array();
 
         foreach ($clients as $cvalue) {
-            $client_groups = $Group->getMapper()->fetchList('client_id = ' . $cvalue->getId(), 'name ASC');
+            $client_groups = $Group->getMapper()->fetchList('client_id = '.$cvalue->getId(), 'name ASC');
 
             foreach ($client_groups as $gvalue) {
                 $Employee = new Messerve_Model_DbTable_Employee();
 
-                $employee_count = $Employee->countByQuery('group_id = ' . $gvalue->getId());
+                $employee_count = $Employee->countByQuery('group_id = '.$gvalue->getId());
 
                 // if ($employee_count > 0) {
                 $groups_array[] = array(
@@ -561,10 +585,10 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $year_month = "{$period_array[0]}-{$period_array[1]}";
 
         if ($period_array[2] === '1_15') {
-            $date_start = date('Y-m-d', strtotime($year_month . '-1'));
-            $date_end = date('Y-m-d', strtotime($year_month . '-15'));
+            $date_start = date('Y-m-d', strtotime($year_month.'-1'));
+            $date_end = date('Y-m-d', strtotime($year_month.'-15'));
         } else {
-            $date_start = date('Y-m-d', strtotime($year_month . '-16'));
+            $date_start = date('Y-m-d', strtotime($year_month.'-16'));
             $date_end = date('Y-m-d', strtotime('next month -1 day', strtotime($year_month)));
         }
 
@@ -572,7 +596,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $this->view->date_end = $date_end;
 
         if ($this->_request->isPost()) {
-
             $filename = realpath($_FILES['file']['tmp_name']);
 
             $ELoqGroup = Messerve_Model_Eloquent_Group::find($group_id);
@@ -585,18 +608,18 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
                 $missing = [];
 
-                if (($handle = fopen($filename, "rb")) !== FALSE) {
+                if (($handle = fopen($filename, "rb")) !== false) {
 
                     while (!feof($handle)) {
                         $line = fgets($handle, 1024);
 
                         if (count(explode("\t", $line)) > 1) {
                             $delimiter = "\t";
-                            echo "<br /> TAB" . count(explode("\t", $line));
+                            echo "<br /> TAB".count(explode("\t", $line));
 
                         } elseif (count(explode(",", $line)) > 1) {
                             echo "<br /> COMMA";
-                            $delimiter = "," . count(explode("\t", $line));
+                            $delimiter = ",".count(explode("\t", $line));
                         } else {
                             continue;
                         }
@@ -605,13 +628,13 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                         $data = array_map('trim', $data);
 
                         if ($row > 0) { // Skip first row, headers
-                            $employee_number = isset($data[6]) ? (int)$data[6] : 0;
+                            $employee_number = isset($data[6]) ? (int) $data[6] : 0;
 
                             if ($employee_number > 0) {
                                 $data['date'] = date('Y-m-d', strtotime($data[0]));
                                 $date_now = $data['date'];
 
-                                $data['start_1'] = date('Y-m-d H:i', strtotime($data[0] . ' ' . $data[7]));
+                                $data['start_1'] = date('Y-m-d H:i', strtotime($data[0].' '.$data[7]));
 
                                 if (
                                 (strpos($data[7], 'PM') > 0 && strpos($data[8], 'AM') > 0)
@@ -621,10 +644,10 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                                     $date_now = date('Y-m-d', strtotime('+1 day', strtotime($data[0])));
                                 }
 
-                                $data['end_1'] = date('Y-m-d H:i', strtotime($date_now . ' ' . $data[8]));
+                                $data['end_1'] = date('Y-m-d H:i', strtotime($date_now.' '.$data[8]));
 
                                 if ($data[9] != '' & $data[10] != '') {
-                                    $data['start_2'] = date('Y-m-d H:i', strtotime($date_now . ' ' . $data[9]));
+                                    $data['start_2'] = date('Y-m-d H:i', strtotime($date_now.' '.$data[9]));
 
                                     if (
                                         strpos($data[9], 'PM') > 0 && strpos($data[10], 'AM') > 0
@@ -633,12 +656,12 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                                         $date_now = date('Y-m-d', strtotime('+1 day', strtotime($data[0])));
                                     }
 
-                                    $data['end_2'] = date('Y-m-d H:i', strtotime($date_now . ' ' . $data[10]));
+                                    $data['end_2'] = date('Y-m-d H:i', strtotime($date_now.' '.$data[10]));
 
                                 }
 
                                 if ($data[11] != '' && $data[12] != '') {
-                                    $data['start_3'] = date('Y-m-d H:i', strtotime($date_now . ' ' . $data[11]));
+                                    $data['start_3'] = date('Y-m-d H:i', strtotime($date_now.' '.$data[11]));
 
                                     if (
                                         strpos($data[11], 'PM') > 0 && strpos($data[12], 'AM') > 0
@@ -646,7 +669,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                                         $date_now = date('Y-m-d', strtotime('+1 day', strtotime($data[0])));
                                     }
 
-                                    $data['end_3'] = date('Y-m-d H:i', strtotime($date_now . ' ' . $data[12]));
+                                    $data['end_3'] = date('Y-m-d H:i', strtotime($date_now.' '.$data[12]));
 
                                 }
 
@@ -659,10 +682,12 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                                     $Attendance = new Messerve_Model_Attendance();
 
                                     $Attendance = $Attendance->getMapper()->findOneByField(
-                                        array('datetime_start', 'employee_id'
+                                        array(
+                                            'datetime_start', 'employee_id'
                                             // ,'group_id'
                                         )
-                                        , array($data['date'], $Employee->getId()
+                                        , array(
+                                            $data['date'], $Employee->getId()
                                             // , $group_id
                                         )
                                     );
@@ -715,7 +740,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
                                     if (isset($data[17])) {
 
-                                        $approved_ot = (float)$data[17];
+                                        $approved_ot = (float) $data[17];
 
                                         if ($data[18] != '' && $approved_ot > 0) {
                                             $Attendance->setOtApproved('yes')->setOtApprovedHours($approved_ot);
@@ -735,7 +760,8 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                                     $save_this_day['type'] = 'regular';
                                     // $save_this_day['ot_approved'] = $data[18];
 
-                                    $this->_save_the_day($Attendance->getEmployeeId(), $Attendance->getGroupId(), array($data['date'] => $save_this_day));
+                                    $this->_save_the_day($Attendance->getEmployeeId(), $Attendance->getGroupId(),
+                                        array($data['date'] => $save_this_day));
 
                                 } else {
                                     echo "<br />MISSING $employee_number:";
@@ -840,7 +866,8 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                             'ROUND(SUM(reg) + SUM(reg_nd) + SUM(reg_ot)	+ SUM(reg_nd_ot)	+ SUM(sun)	+ SUM(sun_nd)	
                         + SUM(sun_ot)	+ SUM(sun_nd_ot)	+ SUM(spec)	+ SUM(spec_nd)	+ SUM(spec_ot)	+ SUM(spec_nd_ot)	
                         + SUM(legal)	+ SUM(legal_nd)	+ SUM(legal_ot)	+ SUM(legal_nd_ot)	+ SUM(rest)	+ SUM(rest_nd)	
-                        + SUM(rest_ot)	+ SUM(rest_nd_ot),2)'])
+                        + SUM(rest_ot)	+ SUM(rest_nd_ot),2)'
+                    ])
                 ->where('employee_id = ?', $evalue->getId())
                 ->where('group_id = ?', $group_id)
                 ->where("datetime_start BETWEEN '{$date_start}' AND '{$date_end}'");
@@ -856,11 +883,11 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         /* PDF reports */
 
-        $path_name = realpath(APPLICATION_PATH . '/../public/export') . "/$date_start/$group_id/";
+        $path_name = realpath(APPLICATION_PATH.'/../public/export')."/$date_start/$group_id/";
 
         $this->view->report_path = "export/$date_start/$group_id";
 
-        $client_path = $path_name . 'client/';
+        $client_path = $path_name.'client/';
 
         $client_reports = array();
 
@@ -886,7 +913,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $this->view->client_reports = $client_reports;
 
 
-        $payslip_path = $path_name . 'payslips/';
+        $payslip_path = $path_name.'payslips/';
 
         $payslips = array();
 
@@ -907,7 +934,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         $this->view->payslips = $payslips;
 
-        $summary_path = $path_name . 'summary/';
+        $summary_path = $path_name.'summary/';
 
         $summaries = array();
 
@@ -932,8 +959,11 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
     }
 
-    protected function writeAttendance($row, Messerve_Model_Eloquent_Group $group, Messerve_Model_Eloquent_Employee $employee)
-    {
+    protected function writeAttendance(
+        $row,
+        Messerve_Model_Eloquent_Group $group,
+        Messerve_Model_Eloquent_Employee $employee
+    ) {
         $group_id = $group->id;
 
         if ($employee->group_id != $group_id) { // Write attendance only if rider belongs to group
@@ -946,12 +976,12 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         $date_now = $row[2];
 
-        $start = $date_now . ' ' . $row[4];
+        $start = $date_now.' '.$row[4];
         $end = null;
 
         foreach ([$row[5], $row[6], $row[7]] as $maybe_end) {
             if ($maybe_end) {
-                $end = $date_now . ' ' . $maybe_end;
+                $end = $date_now.' '.$maybe_end;
             }
         }
 
@@ -1082,13 +1112,22 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         return $rate_array;
     }
 
+    /**
+     * @throws Zend_Form_Exception
+     * @throws Zend_Exception
+     * @throws Zend_Controller_Dispatcher_Exception
+     * @throws Exception
+     */
     public function employeeAction()
     {
-        // action body
-        $employee_id = (int)$this->_request->getParam('id');
+        if($this->_user_auth->type != 'admin' && $this->_user_auth->type != 'supervisor' && $this->_user_auth->type != 'encoder') {
+            $this->_helper->viewRenderer('employee-read-only');
+        }
+
+        $employee_id = (int) $this->_request->getParam('id');
         $this->view->employee_id = $employee_id;
 
-        $group_id = (int)$this->_request->getParam('group_id');
+        $group_id = (int) $this->_request->getParam('group_id');
         $this->view->group_id = $group_id;
 
         $Employee = (new Messerve_Model_Employee())->find($employee_id);
@@ -1145,10 +1184,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                     throw new RuntimeException('Did not insert initial attendance.');
                 }
 
-                echo "New attendance";
-                preprint($new_attendance->toArray());
-
-
                 try {
                     $Attendance = new Messerve_Model_Attendance();
                     $Attendance->find($new_attendance->id);
@@ -1165,7 +1200,10 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
             $current_date = date('Y-m-d', strtotime('+1 day', strtotime($current_date)));
 
-            if ($i == 1) $first_day_id = $Attendance->getId();
+            if ($i == 1) {
+                $first_day_id = $Attendance->getId();
+                $firstAttendance = $Attendance->eloquent();
+            }
 
         }
 
@@ -1193,27 +1231,25 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         }
 
         if ($this->_request->isPost()) { // Save submit
+
+            if(Zend_Registry::get('Cache')->load('dtr_locked')) {
+                throw new Zend_Controller_Dispatcher_Exception('DTR is locked!', 403);
+            }
+
             $postvars = $this->_request->getPost();
 
-                $this->logActivity($Employee->eloquent(), $postvars, $dates);
+            $this->logActivity($Employee->eloquent(), $postvars, $dates);
 
             if ($form->isValid($postvars)) {
 
-                $Deductions
-                    ->setOptions($postvars)
-                    ->save();
+                $Deductions->setOptions($postvars)->save();
 
-                $AddIncome
-                    ->setOptions($postvars)
-                    ->save();
-
+                $AddIncome->setOptions($postvars)->save();
 
                 $MPayroll = new Messervelib_Payroll();
                 $MPayroll->save_the_day($employee_id, $group_id, $postvars);
                 $MPayroll->save_the_day($employee_id, $group_id, $postvars);
-
-                // $this->_save_the_day($employee_id, $group_id, $postvars); // TODO:  figure out why this needs to run twice
-                // $this->_save_the_day($employee_id, $group_id, $postvars);
+                // TODO:  figure out why this needs to run twice
 
                 $this->_redirect("/dataentry/attendance/employee/id/{$employee_id}/pay_period/{$pay_period}/date_start/{$date_start}/date_end/{$date_end}/group_id/{$group_id}");
             }
@@ -1241,12 +1277,15 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         foreach ($calendars as $cvalue) {
             $Calendar = new Messerve_Model_Mapper_CalendarEntry();
-            $calendar_entries = $Calendar->fetchList("(`year` = '0000' OR `year` = '$current_year') AND calendar_id = " . $cvalue, 'date ASC');
+            $calendar_entries = $Calendar->fetchList("(`year` = '0000' OR `year` = '$current_year') AND calendar_id = ".$cvalue,
+                'date ASC');
 
             foreach ($calendar_entries as $cevalue) {
                 $holiday_date = $cevalue->getDate();
 
-                if (strlen($holiday_date) < 10) $holiday_date = $current_year . '-' . $holiday_date;
+                if (strlen($holiday_date) < 10) {
+                    $holiday_date = $current_year.'-'.$holiday_date;
+                }
 
                 if (!isset($holidays[$holiday_date]) || $cevalue->getType() == 'legal') {
                     $holidays[$holiday_date] = $cevalue;
@@ -1257,10 +1296,15 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         $this->view->holidays = $holidays;
 
+        if (isset($firstAttendance) && $firstAttendance instanceof Messerve_Model_Eloquent_Attendance) {
+            $this->view->history = (new GetHistoryChanges())($firstAttendance);
+        }
+
     }
 
     public function logActivity(Messerve_Model_Eloquent_Employee $employee, array $post, array $dates)
     {
+        // TODO:  Get other data besides attendance
         $old_data = null;
 
         $new_data = $post;
@@ -1271,7 +1315,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             if ($attendance instanceof Messerve_Model_Attendance) {
                 $today = Carbon::parse($date);
 
-                if($today->day == 1 || $today->day == 16) {
+                if ($today->day == 1 || $today->day == 16) {
                     $first_attendance = $attendance;
                 }
 
@@ -1283,13 +1327,16 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                     "end_2" => $attendance->End2,
                     "start_3" => $attendance->Start3,
                     "end_3" => $attendance->End3,
+                    "ot_approved" => $attendance->getOtApproved(),
                     "ot_approved_hours" => $attendance->OtApprovedHours,
-                    "type" => $attendance->Type
+                    "type" => $attendance->Type,
+                    "extended_shift" => $attendance->getExtendedShift(),
+                    "approved_extended_shift" => $attendance->getApprovedExtendedShift()
                 ];
             }
         }
 
-        if(!$first_attendance) {
+        if (!$first_attendance) {
             throw new \RuntimeException("Failed to save DTR because first day (1 or 16) was not found.");
         }
 
@@ -1317,7 +1364,8 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
     }
 
     public function searchrelieverAction()
-    { // AJAX
+    {
+        // AJAX
         $this->_helper->layout()->disableLayout();
         $this->_helper->viewRenderer->setNoRender(true);
 
@@ -1335,13 +1383,17 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         if (count($result) > 0) {
             foreach ($result as $value) {
 
+                if (!$value->getGroupId()) {
+                    continue;
+                }
+
                 $Group = new Messerve_Model_Group();
                 $Group->find($value->getGroupId());
 
                 $json_array[] = array(
                     'id' => $value->getId()
-                , 'label' => $value->getFirstName() . ' ' . $value->getLastName() . ' (' . $Group->getName() . ')'
-                , 'value' => $value->getFirstName() . ' ' . $value->getLastName() . ' (' . $Group->getName() . ')'
+                , 'label' => $value->getFirstName().' '.$value->getLastName().' ('.$Group->getName().')'
+                , 'value' => $value->getFirstName().' '.$value->getLastName().' ('.$Group->getName().')'
                 );
             }
         }
@@ -1381,9 +1433,16 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
     public function toggleRestDayAction()
     { // AJAX
+
+
         $this->_helper->layout()->disableLayout();
         $this->_helper->viewRenderer->setNoRender(true);
-        $attendance_id = (int)$this->_request->getParam('attendance_id');
+
+        if(Zend_Registry::get('Cache')->load('dtr_locked')) {
+            throw new Zend_Controller_Dispatcher_Exception('DTR is locked!', 403);
+        }
+
+        $attendance_id = (int) $this->_request->getParam('attendance_id');
 
         $Attendance = Messerve_Model_Eloquent_Attendance::find($attendance_id);
 
@@ -1420,7 +1479,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $this->_helper->layout()->disableLayout();
         $this->_helper->viewRenderer->setNoRender(true);
 
-        $attendance_id = (int)$this->_request->getParam('attendance_id');
+        $attendance_id = (int) $this->_request->getParam('attendance_id');
 
         $Attendance = new Messerve_Model_Attendance();
         $Attendance->find($attendance_id);
@@ -1440,7 +1499,8 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             , 'rest' => 0, 'rest_nd' => 0, 'rest_ot' => 0, 'rest_nd_ot' => 0
             , 'fuel_overage' => 0, 'fuel_hours' => 0, 'fuel_alloted' => 0, 'fuel_consumed' => 0
             , 'fuel_cost' => 0, 'ot_approved' => 'no', 'ot_approved_hours' => 0, 'ot_actual_hours' => 0
-            , 'extended_shift' => 'no');
+            , 'extended_shift' => 'no'
+            );
 
             $Attendance->setOptions($reset)->save();
 
@@ -1455,4 +1515,32 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
     {
         return "--";
     }
+
+    /**
+     * @throws Zend_Exception
+     */
+    public function lockAction()
+    {
+        if ($this->_user_auth && $this->_user_auth->type == 'admin') {
+            (new LockDTR())();
+            $this->getResponse()->setRedirect($_SERVER['HTTP_REFERER']);
+        }
+
+        throw new Zend_Controller_Dispatcher_Exception('You are not allowed to unlock the DTR', 403);
+    }
+
+    /**
+     * @throws Zend_Exception
+     */
+    public function unlockAction()
+    {
+        if ($this->_user_auth && $this->_user_auth->type == 'admin') {
+            (new UnlockDTR())();
+            $this->getResponse()->setRedirect($_SERVER['HTTP_REFERER']);
+        }
+
+        throw new Zend_Controller_Dispatcher_Exception('You are not allowed to unlock the DTR', 403);
+
+    }
+
 }
