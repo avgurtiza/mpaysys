@@ -22,11 +22,6 @@ class Default_UserController extends Zend_Controller_Action
         if($this->_user_auth->type != 'admin') {
             throw new Exception('You are not allowed to access this module.');
         }
-        /*
-    	if(!checkaccess($this->_user_auth->type, array('admin'))) {
-    		die('Access denied');
-    	}
-        */
     }
 
     public function indexAction()

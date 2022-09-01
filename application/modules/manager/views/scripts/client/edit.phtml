@@ -1,20 +1,22 @@
 <ul class="breadcrumbs">
-	<li><a href="/manager/client">Clients</a></li>
-	<li class="current"><?php if($this->client->getId() > 0): ?> <?php echo $this->client->getName();?>
-		<?php else: ?> New client <?php endif; ?>
-	</li>
+    <li><a href="/manager/client">Clients</a></li>
+    <li class="current"><?php if ($this->client->getId() > 0): ?><?php echo $this->client->getName(); ?>
+        <?php else: ?> New client <?php endif; ?>
+    </li>
 </ul>
 
-<br />
+<br/>
 
 <ul class="tabs horizontal" data-tab>
     <li class="tab-title active"><a href="#panel-employee">Employees</a></li>
-    <li class="tab-title"><a href="#panel-groups">Groups</a></li>
-    <li class="tab-title"><a href="#panel-name">Rename</a></li>
+    <?php if ($this->user_auth->type !== 'bop'): ?>
+        <li class="tab-title"><a href="#panel-groups">Groups</a></li>
+        <li class="tab-title"><a href="#panel-name">Rename</a></li>
+    <?php endif; ?>
 </ul>
 <div class="tabs-content">
     <div class="content active" id="panel-employee">
-        <?php if($this->client->getId() > 0): ?>
+        <?php if ($this->client->getId() > 0): ?>
             <table border="1" id="employee-table">
                 <tr>
                     <th class="sort-this">Group</th>
@@ -32,21 +34,27 @@
                         <td><?php echo $value->getFirstName(); ?></td>
                         <td><?php echo $value->getDateEmployed(); ?></td>
                         <td><a
-                                href="/manager/employee/edit/client_id/<?php echo $this->client->getId(); ?>/id/<?php echo $value->getId(); ?>">Edit</a>
+                                    href="/manager/employee/edit/client_id/<?php echo $this->client->getId(); ?>/id/<?php echo $value->getId(); ?>">Edit</a>
+                            <?php if ($this->user_auth->type !== 'bop'): ?>
                             <a
-                                href="/manager/deduction/index/client_id/<?php echo $this->client->getId(); ?>/employee_id/<?php echo $value->getId(); ?>">Deductions</a>
+                                    href="/manager/deduction/index/client_id/<?php echo $this->client->getId(); ?>/employee_id/<?php echo $value->getId(); ?>">Deductions</a>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
             </table>
 
-            <a class="ibutton" href="/manager/employee/edit/client_id/<?php echo $this->client->getId();?>">Add new employee</a>
-            <br />
+            <?php if ($this->user_auth->type !== 'bop'): ?>
+
+                <a class="ibutton" href="/manager/employee/edit/client_id/<?php echo $this->client->getId(); ?>">Add new
+                    employee</a>
+            <?php endif; ?>
+            <br/>
 
         <?php endif; ?>
     </div>
     <div class="content" id="panel-groups">
-        <?php if($this->client->getId() > 0): ?>
+        <?php if ($this->client->getId() > 0): ?>
             <table border="1">
                 <thead>
                 <tr>
@@ -57,7 +65,7 @@
                 </thead>
                 <tbody>
                 <?php
-                    /** @var Messerve_Model_Group $value */
+                /** @var Messerve_Model_Group $value */
                 foreach ($this->groups as $value):?>
                     <tr>
                         <td><?php echo $value->getName(); ?></td>
@@ -71,7 +79,7 @@
                 <?php endforeach; ?>
                 <tr>
                     <td><a
-                            href="/manager/group/edit/client_id/<?php echo $this->client->getId(); ?>">
+                                href="/manager/group/edit/client_id/<?php echo $this->client->getId(); ?>">
                             <span class="icon icon-gray-add"></span> Add new group
                         </a>
                     </td>
@@ -79,7 +87,7 @@
                 </tr>
                 </tbody>
             </table>
-            <br />
+            <br/>
 
         <?php endif; ?>
     </div>
@@ -87,65 +95,62 @@
         <?php echo $this->form; ?>
     </div>
 </div>
- 
 
 
-
-<br />
-
+<br/>
 
 
 <script
-	src="/js/jquery.sortElements.js"></script>
+        src="/js/jquery.sortElements.js"></script>
 <script>
-<!--
-	$(function() {
-		$('button.cancel').click(function() {
-			history.back();	 
-		} ); 
-	} );
+    <!--
+    $(function () {
+        $('button.cancel').click(function () {
+            history.back();
+        });
+    });
 
-//-->
+    //-->
 </script>
 
 <script>
-            var th = jQuery('th.sort-this'),
-                inverse = false;
-            
-            th.click(function(){
-                
-                var header = $(this),
-                    index = header.index();
-                    
-                header
-                    .closest('table')
-                    .find('td')
-                    .filter(function(){
-                        return $(this).index() === index;
-                    })
-                    .sortElements(function(a, b){
-                        
-                        a = $(a).text();
-                        b = $(b).text();
-                        
-                        return (
-                            isNaN(a) || isNaN(b) ?
-                                a > b : +a > +b
-                            ) ?
-                                inverse ? -1 : 1 :
-                                inverse ? 1 : -1;
-                            
-                    }, function(){
-                        return this.parentNode;
-                    });
-                
-                inverse = !inverse;
-                
+    var th = jQuery('th.sort-this'),
+        inverse = false;
+
+    th.click(function () {
+
+        var header = $(this),
+            index = header.index();
+
+        header
+            .closest('table')
+            .find('td')
+            .filter(function () {
+                return $(this).index() === index;
+            })
+            .sortElements(function (a, b) {
+
+                a = $(a).text();
+                b = $(b).text();
+
+                return (
+                    isNaN(a) || isNaN(b) ?
+                        a > b : +a > +b
+                ) ?
+                    inverse ? -1 : 1 :
+                    inverse ? 1 : -1;
+
+            }, function () {
+                return this.parentNode;
             });
-            
-            $('button').click(function(){
-                li.sortElements(function(a, b){
-                    return $(a).text() > $(b).text() ? 1 : -1;
-                });
-            });
-        </script>
+
+        inverse = !inverse;
+
+    });
+
+    $('button').click(function () {
+        li.sortElements(function (a, b) {
+            return $(a).text() > $(b).text() ? 1 : -1;
+        });
+    });
+</script>

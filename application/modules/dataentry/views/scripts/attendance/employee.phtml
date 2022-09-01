@@ -5,7 +5,8 @@
             <span class="icon icon-gray-arrowleft"></span> <?php echo $this->group->getName(); ?>
         </a>
     </li>
-    <li class="title"><?php echo $this->employee->getFirstname(); ?>&nbsp;<?php echo $this->employee->getLastname(); ?></li>
+    <li class="title"><?php echo $this->employee->getFirstname(); ?>
+        &nbsp;<?php echo $this->employee->getLastname(); ?></li>
 </ul>
 
 <br clear="all"/>
@@ -18,8 +19,8 @@
         </tr>
         <?php foreach ($this->history as $row): ?>
             <tr>
-                <td>Updated by <?php echo $row->causer->real_name; ?>
-                    on <?php echo $row->changed_at->toDateString(); ?>  </td>
+                <td><b>Updated by <?php echo $row->causer->real_name; ?>
+                        on <?php echo $row->changed_at->format('Y-m-d h:i A'); ?>  </b></td>
             </tr>
             <tr class="history-details">
                 <td>
@@ -38,21 +39,30 @@
                             <th>Extended</th>
                             <th>Approved extended</th>
                         </tr>
-                        <?php foreach ($row->changes as $date => $change) : ?>
+                        <?php foreach ($row->changes as $key => $change) : ?>
                             <tr>
-                                <td><?php echo $date; ?></td>
-                                <?php foreach ($change as $item) :
-                                    if (in_array($item->name, ['id'])) {
-                                        continue;
-                                    }
-                                    ?>
-                                    <td>
-                                        <?php echo $item->old_value; ?>
-                                        <?php if ($item->old_value != $item->new_value ) : ?>
-                                            ⇨
-                                            <?php echo $item->new_value ?: "no"; ?>
-                                        <?php endif; ?>
-                                    </td>
+                                <td><?=ucwords(str_replace('_', ' ', $key)); ?></td>
+                                <?php foreach ($change as $item) : ?>
+                                    <?php if ($key == 'additional_income') : ?>
+                                        <td>
+                                            <dl>
+                                            <?php foreach($item as $income_key => $income): if($income_key == 'attendance_id' || $income <= 0) continue; ?>
+                                                <dt><?=ucwords($income_key)?></dt><dd><?=$income?></dd>
+                                            <?php endforeach; ?>
+                                            </dl>
+                                        </td>
+                                    <?php else : ?>
+                                        <?php if (in_array($item->name, ['id'])) {
+                                            continue;
+                                        } ?>
+                                        <td>
+                                            <?php echo $item->old_value; ?>
+                                            <?php if ($item->old_value != $item->new_value) : ?>
+                                                ⇨
+                                                <?php echo $item->new_value ?: "no"; ?>
+                                            <?php endif; ?>
+                                        </td>
+                                    <?php endif; ?>
                                 <?php endforeach; ?>
                             </tr>
                         <?php endforeach; ?>

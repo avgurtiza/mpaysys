@@ -3,8 +3,7 @@
 
 namespace Domains\Attendance\Collections;
 
-
-use Domains\Attendance\Data\DTRPropertyChange;
+use Domains\Attendance\Data\AdditionalIncome;
 use Illuminate\Support\Collection;
 
 class DTRChanges extends Collection
@@ -13,8 +12,19 @@ class DTRChanges extends Collection
     {
         $array = [];
 
+        $has_additional_income = false;
+
         foreach ($object->old as $date => $old_item) {
-            $array[$date] =  DTRPropertyChanges::fromObject($old_item, $object->new->$date);
+            if(property_exists($object->new, $date)) {
+                $array[$date] =  DTRPropertyChanges::fromObject($old_item, $object->new->$date);
+            } else {
+                $has_additional_income = true;
+            }
+        }
+
+
+        if($has_additional_income) {
+            $array['additional_income'][] =  AdditionalIncome::fromObject($object->new);
         }
 
         return collect($array);

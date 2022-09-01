@@ -1,32 +1,33 @@
 <ul class="breadcrumbs">
-	<li class="current"><a href="/manager/client">Clients</a></li>
+    <li class="current"><a href="/manager/client">Clients</a></li>
 </ul>
 
 <table class="grid">
-<thead>
-</thead>
-<tbody>
+    <thead>
+    </thead>
+    <tbody>
 
-<?php foreach ($this->clients as $value): ?>
-	<tr>
-		<td>			
-			<a href="/manager/client/edit/id/<?php echo $value->getId(); ?>">
-				<?php echo $value->getName(); ?>
-			</a>
-		</td>
-	</tr>
-<?php endforeach; ?>
-	<tr>
-		<td><a href="/manager/client/edit"><span class="icon icon-gray-add"></span>Add new client</a></td>
-	</tr>
-	
-	<tr>
-		<td>			
-			<a href="/manager/group/employees/id/0">
-				Unemployed
-			</a>
-		</td>
-	</tr>
-	
-</tbody>
+    <?php foreach ($this->clients as $value): ?>
+        <tr>
+            <td>
+                <a href="/manager/client/edit/id/<?php echo $value->getId(); ?>">
+                    <?php echo $value->getName(); ?>
+                </a>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+    <?php if ($this->user_auth->type !== 'bop'): ?>
+        <tr>
+            <td><a href="/manager/client/edit"><span class="icon icon-gray-add"></span>Add new client</a></td>
+        </tr>
+    <?php endif; ?>
+    <tr>
+        <td>
+            <a href="/manager/group/employees/id/0">
+                Unemployed
+            </a>
+        </td>
+    </tr>
+
+    </tbody>
 </table>

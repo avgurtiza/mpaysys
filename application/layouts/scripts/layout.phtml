@@ -53,7 +53,8 @@ if (Zend_Controller_Front::getInstance()->getRequest()->getControllerName() != Z
 
             <blockquote style="float: left; clear: right;">
                 <dl class="hor-menu">
-                    <?php if ($this->user_auth && $this->user_auth->type === 'admin'): ?>
+                    <?php if ($this->user_auth): ?>
+                    <?php if ($this->user_auth->type === 'admin'): ?>
                         <dd><a href="/payroll/index">Payroll</a></dd>
                         <dd><a href="/payroll/index/accrual">Accrual</a></dd>
                         <dd><a href="/payroll/floating">Floating OT</a></dd>
@@ -66,13 +67,17 @@ if (Zend_Controller_Front::getInstance()->getRequest()->getControllerName() != Z
                         <dd><a href="/payroll/index">Payroll</a></dd>
                     <?php endif; ?>
 
-                    <?php if ($this->user_auth && $this->user_auth->type !== 'encoder'): ?>
+                    <?php if ($this->user_auth && $this->user_auth->type !== 'encoder'&& $this->user_auth->type !== 'bop'): ?>
                         <dd><a href="/dataentry/attendance">Attendance</a></dd>
                     <?php endif; ?>
 
                     <?php if ($this->user_auth && $this->user_auth->type === 'encoder'): ?>
                         <dd><a href="/dataentry/index/start">Deductions</a></dd>
                     <?php endif; ?>
+
+                        <?php if ($this->user_auth && $this->user_auth->type === 'bop'): ?>
+                            <dd><a href="/manager/client">Clients / Employees</a></dd>
+                        <?php endif; ?>
 
                         <?php if(Zend_Registry::get('Cache')->load('dtr_locked')): ?>
                             <dd class="locked-dtr">
@@ -88,6 +93,7 @@ if (Zend_Controller_Front::getInstance()->getRequest()->getControllerName() != Z
                                 <a href="/dataentry/attendance/lock">LOCK</a>
                                 <?php endif; ?>
                             </dd>
+                        <?php endif; ?>
                         <?php endif; ?>
                 </dl>
             </blockquote>
