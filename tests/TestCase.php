@@ -20,7 +20,7 @@ abstract class TestCase extends PHPUnit_Framework_TestCase
     // Only instantiate PHPUnit_Extensions_Database_DB_IDatabaseConnection once per test
     private $connection = null;
 
-    public function setUp()
+    public function setUp() : void
     {
         error_reporting(E_ERROR || E_WARNING);
 

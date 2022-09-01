@@ -110,6 +110,41 @@
         });
     });
     //--></script>
+
+<?php if ($this->user_auth->type === 'accounting'): ?>
+    <fieldset>
+        <legend>Summary report</legend>
+        <ul class="report-list">
+            <?php $i = 0;
+            foreach ($this->summaries as $svalue): if ($i >= 5) break;
+                $i++; ?>
+                <li><a href="<?php echo "/{$this->report_path}/summary/$svalue"; ?>"
+                       target="_blank"><?php echo $svalue; ?></a></li>
+            <?php endforeach; ?>
+        </ul>
+
+        <a href="/payroll/index/summaryreport/date_start/<?php
+        echo $this->date_start; ?>/date_end/<?php
+        echo $this->date_end; ?>/group_id/<?php
+        echo $this->group->getId(); ?>/pay_period/<?php
+        echo $this->pay_period; ?>?csv=true" class="button tiny secondary">Download DTR/Billing XLS</a>
+    </fieldset>
+
+    <fieldset>
+        <legend>Billing report</legend>
+
+        <ul class="report-list">
+            <?php $i = 0;
+            foreach ($this->client_reports as $crvalue): if ($i >= 5) break;
+                $i++; ?>
+                <li><a href="<?php echo "/{$this->report_path}/client/$crvalue"; ?>"
+                       target="_blank"><?php echo $crvalue; ?></a></li>
+            <?php endforeach; ?>
+        </ul>
+
+    </fieldset>
+<?php endif; ?>
+
 <?php if ($this->user_auth->type === 'admin'): ?>
 
     <fieldset>
