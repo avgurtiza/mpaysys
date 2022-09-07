@@ -45,10 +45,10 @@ class AdditionalIncome
     {
         return new AdditionalIncome(
             $object->attendance_id,
-            $object->thirteenth_month_pay,
-            $object->incentives,
-            $object->paternity,
-            $object->misc_income
+            $object->thirteenth_month_pay ?? 0,
+            $object->incentives ?? 0,
+            $object->paternity ?? 0,
+            $object->misc_income ?? 0
         );
     }
 }
