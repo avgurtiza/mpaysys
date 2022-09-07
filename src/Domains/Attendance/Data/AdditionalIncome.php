@@ -44,11 +44,11 @@ class AdditionalIncome
     public static function fromObject(object $object): AdditionalIncome
     {
         return new AdditionalIncome(
-            $object->attendance_id,
-            $object->thirteenth_month_pay ?? 0,
-            $object->incentives ?? 0,
-            $object->paternity ?? 0,
-            $object->misc_income ?? 0
+            (int) $object->attendance_id,
+            (float) $object->thirteenth_month_pay,
+            (float) $object->incentives,
+            (float) $object->paternity,
+            (float) $object->misc_income
         );
     }
 }
