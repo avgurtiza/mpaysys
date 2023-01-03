@@ -204,12 +204,12 @@ class Messervelib_Payroll
                     $legal_unattended_viable = false;
 
                     if ($date === '2022-12-30') { // Rizal Day 2022
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-12-30');
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-12-29');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
                         $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
 
                     } elseif ($date === '2022-12-25') { // Xmas Day 2022
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-12-25');
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-12-24');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
                         $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
 
