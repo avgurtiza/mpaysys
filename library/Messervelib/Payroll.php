@@ -203,7 +203,33 @@ class Messervelib_Payroll
                 if ($holiday_today && $holiday_today->getType() === 'legal') { // Unattended legal holiday
                     $legal_unattended_viable = false;
 
-                    if ($date === '2022-12-30') { // Rizal Day 2022
+                    if ($date === '2023-04-10') { // ANK Monday 2023
+
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-04-09');
+                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+
+                    } elseif ($date === '2023-04-06') { // MTH 2023
+
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-04-05');
+                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+
+                    } elseif ($date === '2023-04-07') { // GF 2023
+
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-04-05');
+                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+
+                        if (!$legal_unattended_viable) { // Not viable? Check if there was duty yesterday (MTH)
+                            if ($attendance_group = $this->groupWithAttendanceOnDay($EloquentEmployee->id, '2022-04-06')) { // Has duty on MTH
+                                $legal_unattended_group = $attendance_group;
+                                $legal_unattended_viable = true;
+                                logger(sprintf("%s qualified for %s on group %s because of duty on %s (MTH)", $EloquentEmployee->name, "2022-04-06", $legal_unattended_group, "2022-04-14"));
+                            }
+                        }
+
+                    } elseif ($date === '2022-12-30') { // Rizal Day 2022
                         $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-12-29');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
                         $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
@@ -223,7 +249,7 @@ class Messervelib_Payroll
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
                         $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
 
-                    } elseif($date === '2022-05-01') { // Labor Day 2022
+                    } elseif ($date === '2022-05-01') { // Labor Day 2022
 
                         $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-04-30');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
@@ -1772,7 +1798,7 @@ class Messervelib_Payroll
 
     protected function _get_monthly_fuel_purchase(
         Messerve_Model_Attendance $Attendance
-        , $monthly_work_duration, $date_start, $date_end
+        ,                         $monthly_work_duration, $date_start, $date_end
     )
     {
         $employee_id = $Attendance->getEmployeeId();
@@ -1979,8 +2005,8 @@ class Messervelib_Payroll
 
     protected function _get_monthly_fuel_consumption(
         Messerve_Model_Attendance $Attendance
-        , $monthly_work_duration
-        , $fuel_purchased = 0
+        ,                         $monthly_work_duration
+        ,                         $fuel_purchased = 0
     )
     {
         $employee_id = $Attendance->getEmployeeId();
