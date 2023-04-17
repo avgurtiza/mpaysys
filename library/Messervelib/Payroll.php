@@ -222,10 +222,10 @@ class Messervelib_Payroll
                         $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
 
                         if (!$legal_unattended_viable) { // Not viable? Check if there was duty yesterday (MTH)
-                            if ($attendance_group = $this->groupWithAttendanceOnDay($EloquentEmployee->id, '2022-04-06')) { // Has duty on MTH
+                            if ($attendance_group = $this->groupWithAttendanceOnDay($EloquentEmployee->id, '2023-04-06')) { // Has duty on MTH
                                 $legal_unattended_group = $attendance_group;
                                 $legal_unattended_viable = true;
-                                logger(sprintf("%s qualified for %s on group %s because of duty on %s (MTH)", $EloquentEmployee->name, "2022-04-06", $legal_unattended_group, "2022-04-14"));
+                                logger(sprintf("%s qualified for %s on group %s because of duty on %s (MTH)", $EloquentEmployee->name, "2023-04-07", $legal_unattended_group, "2023-04-06"));
                             }
                         }
 
