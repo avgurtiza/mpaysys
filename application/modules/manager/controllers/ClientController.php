@@ -20,7 +20,7 @@ class Manager_ClientController extends Zend_Controller_Action
         $this->view->user_auth = $this->_user_auth;
         /* Initialize action controller here */
 
-        if (!in_array($this->_user_auth->type, ['admin', 'bop'])) {
+        if (!in_array($this->_user_auth->type, ['admin', 'bop', 'employee_editor'])) {
             throw new Exception('You are not allowed to access this module.');
         }
 

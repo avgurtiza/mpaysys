@@ -65,7 +65,7 @@ class Default_AuthController extends Zend_Controller_Action
 
                     if($auth_object->type == 'encoder') { // TODO: Implement roles and permissions
                         $this->_redirect('dataentry/index/start');
-                    } elseif($auth_object->type == 'bop') {
+                    } elseif($auth_object->type == 'bop' || $auth_object->type == 'employee_editor') {
                         $this->_redirect('manager/client');
                     } else {
                         $this->_redirect('dataentry/attendance');
