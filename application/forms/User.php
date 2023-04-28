@@ -52,14 +52,14 @@ class Messerve_Form_User extends Zend_Form
         // $types_options = zend_enum_from_info($info, 'type');
 
         $types_options = [
-            'Supervisor' => 'supervisor',
-            'Accounting' => 'accounting',
-            'Manager' => 'manager',
-            'Admin' => 'admin',
-            'Encoder' => 'encoder',
-            'Rider details' => 'rider_details',
-            'BOP' => 'bop',
-            'Employee editor' => 'employee_editor'
+            'supervisor' => 'supervisor',
+            'accounting' => 'accounting',
+            'manager' => 'manager',
+            'admin' => 'admin',
+            'encoder' => 'encoder',
+            'rider_details' => 'rider details',
+            'bop' => 'bop',
+            'employee_editor' => 'employee editor'
         ];
         
         $type = new Zend_Form_Element_Select('type');
