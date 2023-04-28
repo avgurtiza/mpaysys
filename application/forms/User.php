@@ -49,7 +49,18 @@ class Messerve_Form_User extends Zend_Form
         
         $info = $Staff->getMapper()->getDbTable()->info();
         
-        $types_options = zend_enum_from_info($info, 'type');
+        // $types_options = zend_enum_from_info($info, 'type');
+
+        $types_options = [
+            'Supervisor' => 'supervisor',
+            'Accounting' => 'accounting',
+            'Manager' => 'manager',
+            'Admin' => 'admin',
+            'Encoder' => 'encoder',
+            'Rider details' => 'rider_details',
+            'BOP' => 'bop',
+            'Employee editor' => 'employee_editor'
+        ];
         
         $type = new Zend_Form_Element_Select('type');
         $type->setLabel('Type');
