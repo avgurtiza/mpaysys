@@ -203,7 +203,13 @@ class Messervelib_Payroll
                 if ($holiday_today && $holiday_today->getType() === 'legal') { // Unattended legal holiday
                     $legal_unattended_viable = false;
 
-                    if ($date === '2023-04-10') { // ANK Monday 2023
+                    if ($date === '2023-04-21') { // Eid'l Fitr Friday 2023
+
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-04-20');
+                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+
+                    } elseif ($date === '2023-04-10') { // ANK Monday 2023
 
                         $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-04-09');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
