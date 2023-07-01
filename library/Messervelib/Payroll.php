@@ -203,7 +203,15 @@ class Messervelib_Payroll
                 if ($holiday_today && $holiday_today->getType() === 'legal') { // Unattended legal holiday
                     $legal_unattended_viable = false;
 
-                    if ($date === '2023-06-12') { // Independence day 2023
+
+                    // TODO: Move to a service and have that service read the database for the holidays
+                    if ($date === '2023-06-28') { // Eid'l Adha 2023
+
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-06-27');
+                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+
+                    } elseif ($date === '2023-06-12') { // Independence day 2023
 
                         $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-06-11');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
