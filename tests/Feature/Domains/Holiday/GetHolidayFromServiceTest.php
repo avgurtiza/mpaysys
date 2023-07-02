@@ -15,7 +15,7 @@ class GetHolidayFromServiceTest extends TestCase
      * @throws \Zend_Exception
      */
     public function test_holiday_is_fetched() {
-        \Zend_Registry::getInstance()->set('config', new \Zend_Config_Ini(APPLICATION_PATH . '/configs/application.test.ini', 'testing'));
+        \Zend_Registry::getInstance()->set('config', new \Zend_Config_Ini('application/configs/application.test.ini', 'testing'));
 
         $config = \Zend_Registry::getInstance()->get('config');
         $base_url = $config->get('magistrate')->api->base_url;
