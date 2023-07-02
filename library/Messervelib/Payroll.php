@@ -1,6 +1,7 @@
 <?php
 
 use Carbon\Carbon;
+use Domains\Holiday\Actions\GetHolidayFromService;
 use Messerve_Model_Eloquent_FloatingAttendance as Floating;
 
 class Messervelib_Payroll
@@ -68,6 +69,11 @@ class Messervelib_Payroll
         ];
     }
 
+    /**
+     * @throws Zend_Exception
+     * @throws Zend_Config_Exception
+     * @throws Zend_Http_Client_Exception
+     */
     public function save_the_day($employee_id, $group_id, $data)
     {
 
@@ -204,116 +210,76 @@ class Messervelib_Payroll
                     $legal_unattended_viable = false;
 
 
-                    // TODO: Move to a service and have that service read the database for the holidays
-                    if ($date === '2023-06-28') { // Eid'l Adha 2023
+//                    if ($date === '2023-06-28') { // Eid'l Adha 2023
+//
+//                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-06-27');
+//                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+//                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+//                    }
+//
+//                    if ($date === '2023-06-12') { // Independence day 2023
+//
+//                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-06-11');
+//                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+//                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+//
+//                    }
+//
+//                    if ($date === '2023-05-01') { // Labor day 2023
+//
+//                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-04-30');
+//                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+//                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+//
+//                    }
+//
+//                    if ($date === '2023-04-21') { // Eid'l Fitr Friday 2023
+//
+//                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-04-20');
+//                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+//                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+//
+//                    }
+//
+//                    if ($date === '2023-04-10') { // ANK Monday 2023
+//
+//                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-04-09');
+//                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+//                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+//
+//                    }
+//
+//                    if ($date === '2023-04-06') { // MTH 2023
+//
+//                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-04-05');
+//                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+//                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+//
+//                    }
+//
+//                    if ($date === '2023-04-07') { // GF 2023
+//
+//                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-04-05');
+//                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+//                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+//
+//                        if (!$legal_unattended_viable) { // Not viable? Check if there was duty yesterday (MTH)
+//                            if ($attendance_group = $this->groupWithAttendanceOnDay($EloquentEmployee->id, '2023-04-06')) { // Has duty on MTH
+//                                $legal_unattended_group = $attendance_group;
+//                                $legal_unattended_viable = true;
+//                                logger(sprintf("%s qualified for %s on group %s because of duty on %s (MTH)", $EloquentEmployee->name, "2023-04-07", $legal_unattended_group, "2023-04-06"));
+//                            }
+//                        }
+//                    }
 
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-06-27');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+                    // Check Magistrate for holiday handling
+                    $holiday_data = (new GetHolidayFromService())($date);
 
-                    } elseif ($date === '2023-06-12') { // Independence day 2023
+                    $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, $holiday_data->rest_day);
+                    $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                    $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
 
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-06-11');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2023-05-01') { // Labor day 2023
-
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-04-30');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2023-04-21') { // Eid'l Fitr Friday 2023
-
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-04-20');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2023-04-10') { // ANK Monday 2023
-
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-04-09');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2023-04-06') { // MTH 2023
-
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-04-05');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2023-04-07') { // GF 2023
-
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-04-05');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                        if (!$legal_unattended_viable) { // Not viable? Check if there was duty yesterday (MTH)
-                            if ($attendance_group = $this->groupWithAttendanceOnDay($EloquentEmployee->id, '2023-04-06')) { // Has duty on MTH
-                                $legal_unattended_group = $attendance_group;
-                                $legal_unattended_viable = true;
-                                logger(sprintf("%s qualified for %s on group %s because of duty on %s (MTH)", $EloquentEmployee->name, "2023-04-07", $legal_unattended_group, "2023-04-06"));
-                            }
-                        }
-
-                    } elseif ($date === '2022-12-30') { // Rizal Day 2022
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-12-29');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2022-12-25') { // Xmas Day 2022
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-12-24');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2022-11-30') { // Boni 2022
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-11-29');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2022-08-29') { // NHD 2022
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-08-28');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2022-05-01') { // Labor Day 2022
-
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-04-30');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2022-05-03') { // Eid'l Fitr  2022
-
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-05-02');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2022-04-09') { // ANK 2022
-
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-04-08');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2022-04-14') { // MTH 2022
-
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-04-13');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                    } elseif ($date === '2022-04-15') { // GF 2022
-
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2022-04-13');
-                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
-
-                        if (!$legal_unattended_viable) { // Not viable? Check if there was duty yesterday (MTH)
-                            if ($attendance_group = $this->groupWithAttendanceOnDay($EloquentEmployee->id, '2022-04-14')) { // Has duty on MTH
-                                $legal_unattended_group = $attendance_group;
-                                $legal_unattended_viable = true;
-                                logger(sprintf("%s qualified for %s on group %s because of duty on %s (MTH)", $EloquentEmployee->name, "2022-04-15", $legal_unattended_group, "2022-04-14"));
-                            }
-                        }
-
-                    } else {
+                    if (!$legal_unattended_viable) {
                         // Had attendance yesterday
                         $date_yesterday = date('Y-m-d 00:00:00', strtotime('-1 day', strtotime($date)));
 
