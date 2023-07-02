@@ -23,7 +23,7 @@ class GetHolidayFromService
     {
         // TODO:  Hacky!  Fix this!
         if($base_url === null) {
-            $ini = new \Zend_Config_Ini(APPLICATION_PATH . '/configs/application.ini', 'production');
+            $ini = new \Zend_Config_Ini(  'application/configs/application.test.ini', 'production');
 
             \Zend_Registry::getInstance()->set('config', $ini);
 
