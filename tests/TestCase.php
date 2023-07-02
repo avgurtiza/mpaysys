@@ -37,7 +37,7 @@ abstract class TestCase extends PHPUnit_Framework_TestCase
 
         $this->bootstrap = new Zend_Application(
             'testing',
-            APPLICATION_PATH . '/configs/application.ini'
+            APPLICATION_PATH . '/configs/application.test.ini'
         );;
 
         parent::setUp();
