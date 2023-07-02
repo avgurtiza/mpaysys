@@ -76,7 +76,6 @@ class Messervelib_Payroll
      */
     public function save_the_day($employee_id, $group_id, $data)
     {
-
         $Employee = new Messerve_Model_Employee();
 
         $Employee->find($employee_id);
@@ -273,11 +272,11 @@ class Messervelib_Payroll
 //                    }
 
                     // Check Magistrate for holiday handling
-                    $holiday_data = (new GetHolidayFromService())($date);
-
-                    $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, $holiday_data->rest_day);
-                    $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
-                    $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+                    if($holiday_data = (new GetHolidayFromService($this->_config->magistrate->api->base_url))($date)) {
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, $holiday_data->rest_day);
+                        $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
+                        $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
+                    }
 
                     if (!$legal_unattended_viable) {
                         // Had attendance yesterday
