@@ -4,3 +4,4 @@ Zend/
 tmp/*
 !tmp/.gitkeep
 logs/*
+application/cache/*
