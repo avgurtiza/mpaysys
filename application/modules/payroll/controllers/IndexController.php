@@ -865,8 +865,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $pay_rate_id = 0;
 
-            foreach ($employee_pay as $pkey => $pvalue) {
-                $ecola = 0;
+            foreach ($employee_pay as $rate_id_key => $pvalue) {
+                // $ecola = 0;
                 $sss = 0;
 
                 foreach ($pvalue as $rkey => $rvalue) {
@@ -874,10 +874,13 @@ class Payroll_IndexController extends Zend_Controller_Action
                     if ($rkey === "meta") {
                         $pay_rate_id = $rvalue->employee->rate->id;
 
-                        // preprint($rvalue, true);
                         $payroll_meta['rate_data'] = json_encode($rvalue);
 
-                        $pay_rate = 8 * $rvalue->employee->rate->reg;
+                        // $pay_rate = 8 * $rvalue->employee->rate->reg;
+
+                        $pay_rate_model = Messerve_Model_Eloquent_Rate::query()->find($rate_id_key);
+
+                        $pay_rate= $pay_rate_model->reg * 8;
 
                         $ecola = $rvalue->employee->rate->ecola;
                         $sss = $rvalue->employee->rate->sss_employee;
@@ -1210,7 +1213,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                             }
                         }
 
-                        if (stripos($sdvalue['type'], 'loan') || stripos($sdvalue['type'],'calamity')) {
+                        if (stripos($sdvalue['type'], 'loan') || stripos($sdvalue['type'], 'calamity')) {
                             $page->setFont($font, 8)->drawText(ucwords(str_replace('_', ' ', $sdvalue['type'])), $dim_x + 380, $dim_y);
                             $page->setFont($mono, 8)->drawText(str_pad(number_format($sdvalue['amount'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
 
@@ -2080,15 +2083,15 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $temp_bill = [];
 
-        foreach ($total_hours as  $holiday_type=>$hours) {
-            $temp_bill[$holiday_type . '_hours'] = number_format($hours,2);
+        foreach ($total_hours as $holiday_type => $hours) {
+            $temp_bill[$holiday_type . '_hours'] = number_format($hours, 2);
             $temp_bill[$holiday_type . '_rate'] = $client_rate->$holiday_type;
-            $temp_bill[$holiday_type . '_amount'] =  number_format($client_rate->$holiday_type * $hours,2);
+            $temp_bill[$holiday_type . '_amount'] = number_format($client_rate->$holiday_type * $hours, 2);
         }
 
         $client_billing[] = $temp_bill;
 
-        $all_data = array_merge([['DTR ',  $group->client->name,  $group->name]], $header, $days_data, [[''],['Client billing']],$client_billing);
+        $all_data = array_merge([['DTR ', $group->client->name, $group->name]], $header, $days_data, [[''], ['Client billing']], $client_billing);
 
         $this->renderXls($all_data, $filename);
     }
@@ -3616,7 +3619,6 @@ class Payroll_IndexController extends Zend_Controller_Action
         ];
 
 
-
         /** @var Messerve_Model_PayrollTemp $pvalue */
         foreach ($payroll as $pvalue) {
 
@@ -3716,7 +3718,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                         $amount = $mvalue->amount;
                         $misc_deduction_string .= "{$mvalue->type}: {$amount}, ";
 
-                        if($mvalue->type === "sss_calamity") {
+                        if ($mvalue->type === "sss_calamity") {
                             $sss_calamity_loan_amount = $amount;
                         }
                     }
@@ -3787,7 +3789,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
             ];
-
 
 
             $this_row['Misc deduction data'] = $misc_deduction_string;
@@ -4444,4 +4445,3 @@ class Payroll_IndexController extends Zend_Controller_Action
         $this->view->api_host = ($this->_config->get('messerve'))->api_host;
     }
 }
-
