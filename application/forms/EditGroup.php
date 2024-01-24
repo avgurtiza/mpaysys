@@ -38,6 +38,7 @@ class Messerve_Form_EditGroup extends Zend_Form
             "REGION IV-A" => "REGION IV-A",
             "REGION IV-A1" => "REGION IV-A1",
             "REGION IV-A2" => "REGION IV-A2",
+            "REGION IV-A3" => "REGION IV-A3",
             "REGION IV-B" => "REGION IV-B",
             "REGION IX" => "REGION IX",
             "REGION V" => "REGION V",
@@ -88,8 +89,8 @@ class Messerve_Form_EditGroup extends Zend_Form
         $this->addElement(
             $this->createElement('checkbox', 'non_vat')
                 ->setLabel('Non-VAT billing')
-                ->setCheckedValue('1')
-                ->setUncheckedValue('0')
+                ->setCheckedValue(1)
+                ->setUncheckedValue(0)
         );
 
         $this->addElement(
