@@ -3166,7 +3166,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $Group->find($group_id);
 
-
         // TODO:  find by date!
 
         // $RateSchedule = new Messerve_Model_EmployeeRateSchedule();
@@ -3455,7 +3454,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $page->setFont($mono, $bill_font_size)->drawText(str_pad(number_format($value, 2), 12, ' ', STR_PAD_LEFT), $dim_x + 280, $dim_y);
                 $total_amount += round($value, 2);
 
-                if ($Group->getNonVat() == 1) {
+                if ($Group->getNonVat() == 0) {
                     $vat_net = $value / 1.12;
 
                     $page->setFont($mono, $bill_font_size)->drawText(str_pad(number_format($vat_net, 2), 12, ' ', STR_PAD_LEFT)
@@ -3480,7 +3479,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $vat_net = $total_amount / 1.12;
 
 
-        if ($Group->getNonVat() == 1) {
+        if ($Group->getNonVat() == 0) {
             $page->setFont($mono_bold, $bill_font_size)->drawText(str_pad(number_format($vat_net, 2), 12, ' ', STR_PAD_LEFT)
                 , $dim_x + 355, $dim_y);
 
@@ -3492,7 +3491,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $page->setFont($font, $bill_font_size)->drawText('VATABLE SALES', $dim_x, $dim_y);
 
-        if ($Group->getNonVat() == 1) {
+        if ($Group->getNonVat() == 0) {
             $page->setFont($mono, $bill_font_size)->drawText(str_pad(number_format($vat_net, 2), 12, ' ', STR_PAD_LEFT), $dim_x + 285, $dim_y);
         }
 
@@ -3501,7 +3500,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $page->setFont($font, $bill_font_size)->drawText('VALUE ADDED TAX (VAT)', $dim_x, $dim_y);
         $page->setFont($bold, $bill_font_size)->drawText('12%', $dim_x + 185, $dim_y);
 
-        if ($Group->getNonVat() == 1) {
+        if ($Group->getNonVat() == 0) {
             $page->setFont($mono, $bill_font_size)->drawText(str_pad(number_format($vat_net * 0.12, 2), 12, ' ', STR_PAD_LEFT), $dim_x + 285, $dim_y);
         }
 

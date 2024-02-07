@@ -193,6 +193,7 @@ class Messerve_Model_Mapper_Group extends Messerve_Model_Mapper_MapperAbstract
         }
 
         if (is_array($data)) {
+
             $entry->setId($data['id'])
                   ->setName($data['name'])
                   ->setBillingName($data['billing_name'])
@@ -223,6 +224,7 @@ class Messerve_Model_Mapper_Group extends Messerve_Model_Mapper_MapperAbstract
                   ->setTin($data->tin)
                   ->setAddress($data->address)
                   ->setFuelperhour($data->fuelperhour)
+                  ->setNonVat($data->non_vat)
                   ->setRegion($data->region)
             ;
         }

@@ -113,7 +113,7 @@ class Messerve_Model_Group extends Messerve_Model_ModelAbstract
      */
     protected $_Fuelperhour;
 
-    protected $_NonVat;
+    public $_NonVat;
 
     protected $_Region;
 
