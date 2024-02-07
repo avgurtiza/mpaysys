@@ -34,10 +34,4 @@ class Messerve_Model_DbTable_Group extends Messerve_Model_DbTable_TableAbstract
     protected $_id = 'id';
 
     protected $_sequence = true;
-
-    
-    
-
-
-
 }
