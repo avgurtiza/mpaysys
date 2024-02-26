@@ -120,7 +120,7 @@ class Messervelib_Payroll
 
             if (!isset($rate_date_start)) {
                 /*
-                $rate_date_start is used to set the pay period.  Pay periods start at either  the 1st or the 16th and
+                $rate_date_start is used to set the pay period.  Salary periods start at either  the 1st or the 16th and
                 the lines after this block set the proper one.  Defaulting to the first period of month so code editors
                 won't complain of it being unset.
                 */

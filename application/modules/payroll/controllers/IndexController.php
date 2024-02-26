@@ -1,6 +1,11 @@
 <?php
 
+use Carbon\Carbon;
 use Domains\Payroll\Actions\GetPayrollMetaAction;
+use Domains\Payslips\Data\Bop\Metadata;
+use Domains\Payslips\Data\Bop\Totals;
+use Domains\Payslips\Data\Payslip;
+use Illuminate\Support\Collection;
 use Messerve_Model_Eloquent_FloatingAttendance as Floating;
 use Messerve_Model_Eloquent_Employee as EmployeeEloq;
 use Messervelib_Philhealth as Philhealth;
@@ -60,8 +65,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $this->view->anomalies = $anomalous_attendance;
 
-        $cutoff_start = \Carbon\Carbon::parse($cutoff_range->start);
-        $cutoff_end = \Carbon\Carbon::parse($cutoff_range->end);
+        $cutoff_start = Carbon::parse($cutoff_range->start);
+        $cutoff_end = Carbon::parse($cutoff_range->end);
 
         $pay_period = sprintf('%s-%s-%s_%s',
             $cutoff_start->year,
@@ -365,14 +370,15 @@ class Payroll_IndexController extends Zend_Controller_Action
         }
     }
 
-    protected function bopSlipPage($bop_slip_data)
+    /**
+     * @throws Zend_Pdf_Exception
+     */
+    protected function bopSlipPage($bop_slip_data, &$PayslipData): Zend_Pdf_Page
     {
 
         $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
         $bold = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_BOLD);
-        $italic = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_ITALIC);
         $mono = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_COURIER);
-        $boldmono = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_COURIER_BOLD);
 
         $logo = Zend_Pdf_Image::imageWithPath(APPLICATION_PATH . '/../public/images/messerve.png');
 
@@ -393,7 +399,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $page->drawImage($logo, $dim_x, $bottomPos, $rightPos, $dim_y);
         $dim_y -= 12;
-
 
         $page->setFont($font, 8)->drawText('Billing period: ', $dim_x + 340, $dim_y, 'UTF8');
 
@@ -434,7 +439,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
         $return_to_top = $dim_y;
-        // Additions
+        // Addition
         $additions = 0;
 
         /*if (isset($bop_slip_data['metadata']['bop']) && stripos($bop_slip_data['metadata']['bop'], 'R1') !== false) {
@@ -446,11 +451,14 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
         if (isset($bop_slip_data['addition']['maintenance']) && $bop_slip_data['addition']['maintenance'] > 0) {
-            $page->setFont($bold, 8)->drawText($bop_slip_data['metadata']['bop'] . ' - maintenance', $dim_x + 220, $dim_y);
+            $addition_name = $bop_slip_data['metadata']['bop'] . ' - maintenance';
+            $page->setFont($bold, 8)->drawText($addition_name, $dim_x + 220, $dim_y);
             $page->setFont($mono, 8)->drawText(str_pad(number_format($bop_slip_data['addition']['maintenance'], 2), 8, ' ', STR_PAD_LEFT), $dim_x + 320, $dim_y, 'UTF8');
             $additions += $bop_slip_data['addition']['maintenance'];
 
             $dim_y -= 16;
+
+            $PayslipData->bop->additions->push(new Domains\Payslips\Data\Bop\Addition($addition_name, $bop_slip_data['addition']['maintenance']));
         }
 
         if (isset($bop_slip_data['addition']['fuel']) && $bop_slip_data['addition']['fuel'] > 0) {
@@ -467,7 +475,20 @@ class Payroll_IndexController extends Zend_Controller_Action
             $page->setFont($mono, 8)->drawText(str_pad($bop_slip_data['addition']['fuel_data']['consumed'], 10, ' ', STR_PAD_LEFT), $dim_x + 260, $dim_y);
 
             $dim_y -= 16;
+
+            $Metadata = new Collection();
+
+            $Metadata->push(new Metadata('Allotment L', $bop_slip_data['addition']['fuel_data']['allocation']));
+            $Metadata->push(new Metadata('Consumed L', $bop_slip_data['addition']['fuel_data']['consumed']));
+
+            $PayslipData->bop->additions->push(new Domains\Payslips\Data\Bop\Addition(
+                'Gasoline',
+                round($bop_slip_data['addition']['fuel'], 2),
+                $Metadata
+            ));
+
         }
+
 
         $dim_y = $return_to_top;
 
@@ -480,12 +501,17 @@ class Payroll_IndexController extends Zend_Controller_Action
         // Deductions
         $deductions = 0;
 
-        if (isset($bop_slip_data['metadata']['bop']) && stripos($bop_slip_data['metadata']['bop'], 'R1') == false) {
-            $page->setFont($bold, 8)->drawText($bop_slip_data['metadata']['bop'] /* . ' ' . $bop_slip_data['metadata']['bop_payment_count'] . '/' . $bop_slip_data['metadata']['bop_installments_count']*/
-                , $dim_x + 380, $dim_y);
+        if (isset($bop_slip_data['metadata']['bop']) && !stripos($bop_slip_data['metadata']['bop'], 'R1')) {
+            $page->setFont($bold, 8)->drawText($bop_slip_data['metadata']['bop'], $dim_x + 380, $dim_y);
             $page->setFont($mono, 8)->drawText(str_pad(number_format($bop_slip_data['deduction']['bop_motorcycle'], 2), 8, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y, 'UTF8');
             $deductions += $bop_slip_data['deduction']['bop_motorcycle'];
             $dim_y -= 16;
+
+            $PayslipData->bop->deductions->push(new Domains\Payslips\Data\Bop\Deduction(
+                $bop_slip_data['metadata']['bop'],
+                round($bop_slip_data['deduction']['bop_motorcycle'], 2),
+                new Metadata("", 0)
+            ));
         }
 
         if (isset($bop_slip_data['deduction']['fuel']) && $bop_slip_data['deduction']['fuel'] > 0) {
@@ -502,17 +528,31 @@ class Payroll_IndexController extends Zend_Controller_Action
             $page->setFont($mono, 8)->drawText(str_pad($bop_slip_data['deduction']['fuel_data']['consumed'], 10, ' ', STR_PAD_LEFT), $dim_x + 420, $dim_y);
 
             $dim_y -= 16;
-        }
 
+            $Metadata = new Collection();
+            $Metadata->push(new Metadata('Allotment L', $bop_slip_data['deduction']['fuel_data']['allocation']));
+            $Metadata->push(new Metadata('Consumed L', $bop_slip_data['deduction']['fuel_data']['consumed']));
+
+            $PayslipData->bop->additions->push(new Domains\Payslips\Data\Bop\Addition(
+                'Fuel overage',
+                round($bop_slip_data['deduction']['fuel'], 2),
+                $Metadata
+            ));
+        }
 
         $dim_y = $return_to_top;
 
         $page->setFont($bold, 10)->drawText('Total deduction', $dim_x + 380, $dim_y - 180);
         $page->setFont($mono, 8)->drawText(str_pad(number_format($deductions, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y - 180);
 
-
         $page->setFont($bold, 10)->drawText('TOTAL', $dim_x + 380, 80);
         $page->setFont($mono, 8)->drawText(str_pad(number_format($additions - $deductions, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, 80);
+
+        $PayslipData->bop->totals = new Totals(
+            round($additions, 2),
+            round($deductions, 2),
+            round($additions - $deductions, 2)
+        );
 
         if (isset($bop_slip_data['deduction'])) {
             // $page->setFont($font, 8)->drawText(print_r($bop_slip_data['deduction']['fuel_data'], true), $dim_x + 20, $dim_y);
@@ -546,11 +586,11 @@ class Payroll_IndexController extends Zend_Controller_Action
         foreach ($splits as $split) {
             $date_splits[] = [
                 'start' => $split_start,
-                'end' => \Carbon\Carbon::parse($split->date_active)->subDays(1)->toDateString(),
+                'end' => Carbon::parse($split->date_active)->subDays(1)->toDateString(),
                 'rate' => $group_rate
             ];
 
-            $split_start = \Carbon\Carbon::parse($split->date_active)->toDateString();
+            $split_start = Carbon::parse($split->date_active)->toDateString();
 
             $group_rate = $split->rate;
         }
@@ -652,13 +692,17 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $logo = Zend_Pdf_Image::imageWithPath(APPLICATION_PATH . '/../public/images/messerve.png');
 
-        $parent = realpath(APPLICATION_PATH . '/../public/export') . "/$date_start/$group_id";
+        $parent = APPLICATION_PATH . '/../public/export' . "/$date_start/$group_id";
         $folder = $parent . "/payslips/";
 
         $cmd = "mkdir -p $folder";
+
         shell_exec($cmd); // Create folder
 
+        $folder = realpath($folder) . '/';
+
         $cmd = "chmod -R 777 $parent";
+
         shell_exec($cmd); // Change permissions since queue runs this as user fixstop and will fail creation of
         // user-initiated client billing
         // TODO:  add www-data to fixstop group
@@ -867,6 +911,9 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             foreach ($employee_pay as $rate_id_key => $pvalue) {
                 // $ecola = 0;
+                $payslip_rate = null;
+
+                $PayslipData = new Payslip();
                 $sss = 0;
 
                 foreach ($pvalue as $rkey => $rvalue) {
@@ -875,15 +922,19 @@ class Payroll_IndexController extends Zend_Controller_Action
                         $pay_rate_id = $rvalue->employee->rate->id;
 
                         $payroll_meta['rate_data'] = json_encode($rvalue);
+                        // preprint($rvalue, true);
+                        // $payroll_meta['rate_data'] = $rvalue;
 
                         // $pay_rate = 8 * $rvalue->employee->rate->reg;
 
                         $pay_rate_model = Messerve_Model_Eloquent_Rate::query()->find($rate_id_key);
 
-                        $pay_rate= $pay_rate_model->reg * 8;
+                        $pay_rate = $pay_rate_model->reg * 8;
 
                         $ecola = $rvalue->employee->rate->ecola;
                         $sss = $rvalue->employee->rate->sss_employee;
+
+                        $minimum_wage = $pay_rate + $ecola;
                         $dim_y -= 8;
 
                         $page->setFont($font, 8)->drawText('Daily rate', $dim_x, $dim_y, 'UTF8');
@@ -893,8 +944,10 @@ class Payroll_IndexController extends Zend_Controller_Action
                         $page->setFont($mono, 8)->drawText(number_format($ecola, 2), $dim_x + 110, $dim_y, 'UTF8');
 
                         $page->setFont($font, 8)->drawText('Min. wage', $dim_x + 140, $dim_y, 'UTF8');
-                        $page->setFont($mono, 8)->drawText(number_format($pay_rate + $ecola, 2), $dim_x + 180, $dim_y, 'UTF8');
+                        $page->setFont($mono, 8)->drawText(number_format($minimum_wage, 2), $dim_x + 180, $dim_y, 'UTF8');
                         $dim_y -= 8;
+
+                        $payslip_rate = new Payslip\Rate($pay_rate, $ecola, $minimum_wage);
 
                     } else {
                         $page->setFont($font, 8)->drawText("{$rkey}", $dim_x, $dim_y);
@@ -921,11 +974,11 @@ class Payroll_IndexController extends Zend_Controller_Action
                             $page->setFont($mono, 8)->drawText(str_pad(number_format($dvalue['hours'], 2), 8, ' ', STR_PAD_LEFT), $dim_x + 110, $dim_y);
                             $page->setFont($mono, 8)->drawText(str_pad(number_format($dvalue['pay'], 2), 8, ' ', STR_PAD_LEFT), $dim_x + 160, $dim_y);
 
+                            $PayslipData->salary->push(new Payslip\Salary($dkey, $rkey, $dvalue['hours'], $dvalue['pay']));
                         }
                     }
 
                     $dim_y -= 8;
-
                 }
 
                 $basic_pay = $total_pay;
@@ -933,6 +986,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 // Legal adjustments for attendance less than 8 hours
                 $LegalAttendanceMap = new Messerve_Model_Mapper_Attendance();
 
+                // TODO: Move to an action
                 $legal_attendance = $LegalAttendanceMap->fetchListToArray("(attendance.employee_id = '{$Employee->getId()}')
                     AND (attendance.group_id = {$group_id})
                     AND datetime_start >= '{$date_start} 00:00'
@@ -952,6 +1006,12 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             }
 
+            if ($payslip_rate === null) {
+                throw new \RuntimeException("No payslip rate found for employee {$Employee->getEmployeeNumber()}");
+            }
+
+            $PayslipData->rate = $payslip_rate;
+
             $dim_y = 92;
 
             $page->drawLine($dim_x - 2, $dim_y, $dim_x + 560, $dim_y);
@@ -962,9 +1022,12 @@ class Payroll_IndexController extends Zend_Controller_Action
             $page->setFont($mono, 8)->drawText(str_pad(number_format($total_no_hours, 2), 6, ' ', STR_PAD_LEFT), $dim_x + 110, $dim_y);
 
             $dim_y -= 8;
+
             $page->setFont($font, 8)->drawText('Total Hrs. pay', $dim_x, $dim_y);
             $page->setFont($mono, 8)->drawText(str_pad(substr(number_format($total_pay, 3), 0, -1), 8, ' ', STR_PAD_LEFT), $dim_x + 160, $dim_y);
 
+            $PayslipData->totals->hours = $total_no_hours;
+            $PayslipData->totals->pay = $total_pay; // After this point, additional pay may get tacked into $total_pay
 
             $dim_y = $reset_y;
             $page->setFont($bold, 8)->drawText('ADDITION', $dim_x + 220, $dim_y);
@@ -972,6 +1035,8 @@ class Payroll_IndexController extends Zend_Controller_Action
             $dim_y -= 8;
             $page->setFont($font, 8)->drawText('Total hours pay', $dim_x + 220, $dim_y);
             $page->setFont($mono, 8)->drawText(str_pad(substr(number_format($total_pay, 3), 0, -1), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
+
+            $PayslipData->additions->push(new Payslip\Addition('Total hours pay', $total_pay));
 
             if ($Employee->getGroupId() == $group_id) {
                 $pay_splits = $this->calculateEcola($Employee->getId(), $group_id, $date_start, $date_end);
@@ -988,6 +1053,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                         $page->setFont($font, 8)->drawText('ECOLA (' . $attended_days . ' day/s)', $dim_x + 220, $dim_y);
                         $page->setFont($mono, 8)->drawText(str_pad(number_format($ecola_addition, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
 
+                        $PayslipData->additions->push(new Payslip\Addition('ECOLA', $ecola_addition));
+
                     }
 
                     if (isset($pay_split['legal']) && $pay_split['legal']['pay'] > 0) {
@@ -998,13 +1065,15 @@ class Payroll_IndexController extends Zend_Controller_Action
                         $total_pay += $ecola_addition;
 
                         $dim_y -= 8;
-                        $page->setFont($font, 8)->drawText('ECOLA - Legal (' . $attended_days . ' day/s)', $dim_x + 220, $dim_y);
+                        $addition_name = 'ECOLA - Legal (' . $attended_days . ' day/s)';
+
+                        $page->setFont($font, 8)->drawText($addition_name, $dim_x + 220, $dim_y);
+
                         $page->setFont($mono, 8)->drawText(str_pad(number_format($ecola_addition, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
 
+                        $PayslipData->additions->push(new Payslip\Addition($addition_name, $ecola_addition));
                     }
-
                 }
-
             }
 
             $prev_sss = 0;
@@ -1057,8 +1126,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             if ($group_id == $Employee->getGroupId()) { // Apply adjustments only on mother group payslip
                 // Apply philhealth
-                $phihealth_deductions = Philhealth::getPhilhealthDeductionByRiderRate($EmployeeEloq, $date_start);
-                $value['deductions']['philhealth'] = $phihealth_deductions['employee'];
+                $philhealth_deductions = Philhealth::getPhilhealthDeductionByRiderRate($EmployeeEloq, $date_start);
+                $value['deductions']['philhealth'] = $philhealth_deductions['employee'];
             }
 
 
@@ -1108,14 +1177,13 @@ class Payroll_IndexController extends Zend_Controller_Action
             }
 
             if (isset($value['more_income']) && $value['more_income']['gasoline'] > 0) {
+
                 $fuel_excess = number_format($value['more_income']['gasoline'], 2, '.', '');
 
                 $other_additions += $fuel_excess;
 
                 $bop_slip_data['addition']['fuel'] = $fuel_excess;
                 $bop_slip_data['addition']['fuel_data'] = ['allocation' => $Attendance->getFuelAlloted(), 'consumed' => $Attendance->getFuelConsumed()];
-
-
             }
 
 
@@ -1123,6 +1191,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $page->setFont($font, 8)->drawText('TOTAL ADDITION', $dim_x + 220, $dim_y);
             $page->setFont($mono, 8)->drawText(str_pad(number_format($total_pay, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
+
+            $PayslipData->totals->additions = $total_pay;
 
             $dim_y = 136;
             $dim_y -= 8;
@@ -1143,6 +1213,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $page->setFont($font, 8)->drawText(ucwords(str_replace('_', ' ', $pkey)), $dim_x + 380, $dim_y);
                     $page->setFont($mono, 8)->drawText(str_pad(number_format($pvalue, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
                     $dim_y -= 8;
+
+                    $PayslipData->deductions->push(new Payslip\Deduction($pkey, round($pvalue, 2)));
+
                 }
             }
 
@@ -1218,6 +1291,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                             $page->setFont($mono, 8)->drawText(str_pad(number_format($sdvalue['amount'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $dim_y);
 
                             $total_deduct += $sdvalue['amount'];
+
+                            $PayslipData->deductions->push(new Payslip\Deduction($sdvalue['type'], round($sdvalue['amount'], 2)));
                         } else {
 
                             $messerve_deduct += $sdvalue['amount'];
@@ -1234,6 +1309,8 @@ class Payroll_IndexController extends Zend_Controller_Action
             if ($messerve_deduct > 0) {
                 $page->setFont($font, 8)->drawText('Misc deduction', $dim_x + 380, $split_dim_y);
                 $page->setFont($mono, 8)->drawText(str_pad(number_format($messerve_deduct, 2), 10, ' ', STR_PAD_LEFT), $dim_x + 480, $split_dim_y);
+
+                $PayslipData->deductions->push(new Payslip\Deduction('Misc deduction', $messerve_deduct));
             }
 
 
@@ -1279,13 +1356,22 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $page->setFont($font, 8)->drawText('Pilipinas Messerve Inc.  |  ' . $messerve_address, $dim_x, 24);
 
+            // Payslip page 1 done.  Let's build the metadata for Catchy
+
+            $PayslipData->totals->deductions = round($total_deduct, 2);
+            $PayslipData->totals->net_pay = round($net_pay, 2);
+
+
             $pdf->pages[] = $page;
+
 
             // Disable BOP slip
 
             if (($other_additions + $other_deductions > 0)) {
-                $pdf->pages[] = $this->bopSlipPage($bop_slip_data);
+                $pdf->pages[] = $this->bopSlipPage($bop_slip_data, $PayslipData);
             }
+
+            $payroll_meta['payslip_data'] = (array)$PayslipData;
 
             if ($group_id == $Employee->getGroupId()) {
                 $is_reliever = 'no';
@@ -1298,15 +1384,14 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $net_pay = $net_pay + $other_additions - $other_deductions; // Hack!
 
+            $philhealth_deduction = 0;
 
-            $phihealth_deduction = 0;
-
-            if (isset($phihealth_deductions) && isset($phihealth_deductions['employee'])) {
+            if (isset($philhealth_deductions['employee'])) {
                 $this->resetPhilhealth($date_start, $Employee->getId());
                 // Set philhealth deductions to 0 for all groups,
                 // just in case the rider got transferred after payroll of their previous mother group was processed.
 
-                $phihealth_deduction = $phihealth_deductions['employee'];
+                $philhealth_deduction = $philhealth_deductions['employee'];
             }
 
             // Move to eloquent!
@@ -1327,7 +1412,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setNetPay($net_pay)
                 ->setEcola($ecola_addition + $legal_ecola_addition)
                 ->setSss($value['deductions']['sss'])
-                ->setPhilhealth($phihealth_deduction)
+                ->setPhilhealth($philhealth_deduction)
                 ->setHdmf($value['deductions']['hdmf'])
                 ->setCashBond($value['deductions']['cash_bond'])
                 ->setInsurance($value['deductions']['insurance'])
@@ -1358,7 +1443,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setIncentives($value['more_income']['incentives'])
                 ->setIsReliever($is_reliever)
                 ->setRateId($pay_rate_id)
-                ->setPhilhealthbasic($philhealth_basic);
+                ->setPhilhealthbasic($philhealth_basic)
+                ->setUpdatedAt(Carbon::now()->toDateTimeString());
 
             $PayrollTemp->save();
 
@@ -1382,25 +1468,23 @@ class Payroll_IndexController extends Zend_Controller_Action
         // mkdir($folder . 'dole', 0777);
         // $dole_filename = $folder . "dole/Payslips_{$this->_client->getName()}_{$Group->getName()}_{$group_id}_{$date_start}_{$this->_last_date}.pdf";
 
-        $pdf->save($filename);
-        // $dole_pdf->save($dole_filename);
+        $filename = str_replace(' ', '_', $filename);
 
+        @mkdir(dirname($filename), 0777, true);
+
+        $pdf->save($filename);
+
+        // $dole_pdf->save($dole_filename);
 
         $this->summaryreportAction();
 
-        // echo 'Almost done...' . $this->_request->getParam("is_ajax");
-
         if ($this->_request->getParam("is_ajax") !== "true" && PHP_SAPI !== 'cli') {
             $this->_helper->getHelper('Redirector')->goToUrl($_SERVER['HTTP_REFERER']);
-            // $this->_redirect($_SERVER['HTTP_REFERER']);
         } elseif ($this->_request->getParam("is_ajax") === "true") {
-            echo "AJAX Complete";
-        } else {
-            // echo "OK";
+            return "OK";
         }
 
         return 'OK';
-        // return [];
     }
 
     protected function resetPhilhealth($employee_id, $date_start)
@@ -2188,7 +2272,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $dim_y -= 10;
 
         $this->writePdfLine($page, 'Pay period: ' . $date_start . ' to ' . $date_end, $dim_x + 300, $dim_y, 'bold');
-        // $page->setFont($bold, 10)->drawText('Pay period: ' . $date_start . ' to ' . $date_end, $dim_x + 300, $dim_y);
+
         $dim_y -= 32;
 
         $date1 = new DateTime($date_start); //inclusive
@@ -2369,7 +2453,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
                 $dates[$current_date] = $Attendance;
 
-                $current_date = \Carbon\Carbon::parse($current_date)->addDay()->toDateString();
+                $current_date = Carbon::parse($current_date)->addDay()->toDateString();
 
                 $attendance_array = $Attendance->toArray();
 
@@ -2605,7 +2689,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 // $EloqAttendancePay = $EloqAttendance->attendancePayroll->first(); // TODO: move to model, maybe?
 
 
-                $split_bill_hours[\Carbon\Carbon::parse($Attendance->getDatetimeStart())->toDateString()][$Attendance->getEmployeeId()] = [
+                $split_bill_hours[Carbon::parse($Attendance->getDatetimeStart())->toDateString()][$Attendance->getEmployeeId()] = [
                     // $split_bill_hours[\Carbon\Carbon::parse($Attendance->getDatetimeStart())->toDateString()][$Attendance->getEmployeeNumber()] = [
                     // $split_bill_hours[$EloqAttendance->datetime_start->toDateString()][] = [
                     'reg' => $today_reg
@@ -3307,7 +3391,10 @@ class Payroll_IndexController extends Zend_Controller_Action
         /* PDF */
 
         $template = realpath(APPLICATION_PATH . "/../library/Templates/oh.pdf");
-        if (!file_exists($template)) die($template . ': template does not exist.');
+
+        if (!file_exists($template)) {
+            throw new \RuntimeException($template . ': template does not exist.');
+        }
 
         $pdf = Zend_Pdf::load($template);
         $page = $pdf->pages[0];
@@ -3844,18 +3931,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             if (isset($payroll_array[$employee_number])) {
                 $payroll_array[$employee_number]['Amount'] += round($pvalue->getNetPay(), 2);
             } else {
-
-                /*
-                 * $this_row = array(
-                    'empno' => $employee_number
-                , 'emplname' => $pvalue->getLastName()
-                , 'salary' => round($pvalue->getNetPay(), 2)
-                , 'actno' => '073' . strtoupper($pvalue->getAccountNumber())
-                , 'empfname' => $pvalue->getFirstName()
-                , 'depbrcode' => '73'
-                );
-                */
-
                 $payroll_array[$employee_number] = [
                     'Last Name' => $pvalue->getLastName()
                     , 'First Name' => $pvalue->getFirstName()
@@ -3937,7 +4012,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             $select->where('attendance.group_id = ?', $group_id);
         }
 
-        // die($select->assemble());
         $result = $AttendDB->fetchRow($select);
 
         return (float)$result->total;
@@ -4182,7 +4256,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ORDER BY employee_id, datetime_start
                 ";
 
-        // die($sql);
         $rows = $db->fetchAll($sql);
 
         unset($db);
@@ -4396,7 +4469,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $date = date('Y-m-d', $next_month);
         }
-        die('OH HAI');
+
+        return "OK";
     }
 
     public function pendingAction()
@@ -4418,7 +4492,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $thirteenth_month_options = [];
 
-        $today = \Carbon\Carbon::today();
+        $today = Carbon::today();
 
         if ($today->day <= 15) {
             $today->subMonth(1);
@@ -4433,7 +4507,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             $thirteenth_month_options[$today->format('Y-m-01')] = $today->format('Y-m-01');
         }
 
-        $last_month = \Carbon\Carbon::today()->subMonth(1);
+        $last_month = Carbon::today()->subMonth(1);
         $thirteenth_month_options['November-to-' . $two_months_ago->format('M')] = 'nt:' . $two_months_ago->format('Y-m');
         $thirteenth_month_options['November-to-' . $last_month->format('M')] = 'nt:' . $last_month->format('Y-m');
         // $thirteenth_month_options['November-to-date'] = 'nt:' . \Carbon\Carbon::today()->format('Y-m');

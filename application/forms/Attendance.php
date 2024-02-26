@@ -44,7 +44,7 @@ class Messerve_Form_Attendance extends Zend_Form
 
 		$this->addElement(
 				$this->createElement('select','pay_period')
-					->setLabel('Pay period')
+					->setLabel('Salary period')
 	                ->setRequired(true)
 	                ->addValidator(new Zend_Validate_Int())
 	                ->addFilter(new Zend_Filter_StringTrim())

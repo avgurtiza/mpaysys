@@ -82,6 +82,7 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
             'philhealth_basic' => $model->getPhilhealthBasic(),
             'payroll_meta' => $model->getPayrollMeta(),
             'rate_id' => $model->getRateId(),
+            'updated_at' => $model->getUpdatedAt(),
         );
 
         return $result;
@@ -279,6 +280,7 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
                 ->setPhilhealthbasic($data['philhealth_basic'])
                 ->setPayrollMeta($data['payroll_meta'])
                 ->setRateId($data['rate_id'])
+                ->setUpdatedAt($data['updated_at'])
             ;
         } elseif ($data instanceof Zend_Db_Table_Row_Abstract || $data instanceof stdClass) {
             $entry->setId($data->id)
@@ -331,6 +333,7 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
                 ->setPhilhealthbasic($data->philhealth_basic)
                 ->setPayrollMeta($data->payroll_meta)
                 ->setRateId($data->rate_id)
+                ->setUpdatedAt($data->updated_at)
             ;
         }
 
