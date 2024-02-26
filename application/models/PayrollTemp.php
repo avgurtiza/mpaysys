@@ -322,6 +322,7 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
     protected $_RateId;
     protected $_HdmfCalamityLoan;
     protected $_Philhealthbasic;
+    protected $_UpdatedAt;
 
 
     /**
@@ -380,6 +381,7 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
             'payroll_meta'=>'PayrollMeta',
             'rate_id'=>'RateId',
             'philhealth_basic'=>'Philhealthbasic',
+            'updated_at' => 'UpdatedAt'
         ));
 
         $this->setParentList(array(
@@ -1405,6 +1407,17 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
     public function getRateId()
     {
         return $this->_RateId;
+    }
+
+    public function setUpdatedAt($data)
+    {
+        $this->_UpdatedAt = $data;
+        return $this;
+    }
+
+    public function getUpdatedAt()
+    {
+        return $this->_UpdatedAt;
     }
 
     /**
