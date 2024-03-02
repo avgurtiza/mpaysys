@@ -1101,11 +1101,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $monthly_pay = $total_pay + $prev_gross_pay;
                     $monthly_sss_array = $this->get_sss_deduction($monthly_pay);
 
-                    if ($monthly_sss_array[0] < $monthly_sss_array[1] && $monthly_sss_array[0] > 0) {
-                        $monthly_sss = $monthly_sss_array[0];
-                    } else {
-                        $monthly_sss = $monthly_sss_array[1];
-                    }
+                    // As of 2024-03, the first element of the array is the deduction. According to Sally,
+                    // ER does not want to use the calculated SSS deduction.
+                    $monthly_sss = $monthly_sss_array[0];
 
                     $sss_bal = $monthly_sss - $prev_sss;
                     $sss_debug = "THIS PAY: $total_pay, PREV PAY: $prev_gross_pay, MONTHLY: $monthly_pay, PREV SSS: $prev_sss,  MONTHLY SSS: $monthly_sss,  SSS BAL: $sss_bal";
@@ -1115,11 +1113,9 @@ class Payroll_IndexController extends Zend_Controller_Action
             } else {
                 $sss_deduction = $this->get_sss_deduction($total_pay);
 
-                if ($sss_deduction[0] < $sss_deduction[1] && $sss_deduction[0] > 0) {
-                    $value['deductions']['sss'] = $sss_deduction[0];
-                } else {
-                    $value['deductions']['sss'] = $sss_deduction[1];
-                }
+                // As of 2024-03, the first element of the array is the deduction. According to Sally,
+                // ER does not want to use the calculated SSS deduction.
+                $value['deductions']['sss'] = $sss_deduction[0];
 
                 $sss_debug = "";
             }
@@ -4024,8 +4020,6 @@ class Payroll_IndexController extends Zend_Controller_Action
         $result = $SSS->fetchRow("`min` <= $total_pay AND `max` >= $total_pay");
 
         $table_sss = (int)$result->employee;
-
-        // $multiplier = .0363;
 
         $multiplier = .045;
 
