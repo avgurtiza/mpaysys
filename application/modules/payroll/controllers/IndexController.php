@@ -131,10 +131,13 @@ class Payroll_IndexController extends Zend_Controller_Action
 
     }
 
+    /**
+     * @throws Exception
+     */
     public function cliAction()
     {
         if (PHP_SAPI !== 'cli') {
-            throw  new Exception('Not CLI!');
+            throw new Exception('Not CLI!');
         }
 
         $params = $this->_request->getParam('params');
@@ -1128,8 +1131,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
 
             if ($EmployeeRate->sss_employee <= 0) { // Rider rate is 0 sss
-                echo "NO SSS.";
-                $sss_deduction = 0;
+                logger("Rider {$Employee->getId()} is 0 sss");
                 $value['deductions']['sss'] = 0;
             }
 
@@ -1203,6 +1205,8 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $dim_y -= 8;
 
+            logger("Deductions: " . print_r($value['deductions'], 1));
+
             foreach ($value['deductions'] as $pkey => $pvalue) {
                 if ($pvalue > 0) {
                     $total_deduct += $pvalue;
@@ -1235,8 +1239,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $bop_slip_data['deduction']['fuel'] = $fuel_deduction;
                     $bop_slip_data['deduction']['fuel_data'] = ['allocation' => $Attendance->getFuelAlloted(), 'consumed' => $Attendance->getFuelConsumed()];
 
-                    echo "<br> Fuel deduction" . $fuel_deduction;
-
                     $other_deductions += $fuel_deduction;
                 }
             }
@@ -1253,8 +1255,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                         $deficit = $total_pay - $total_deduct - $messerve_deduct - $sdvalue['amount'];
 
                         if ($deficit < 0 && isset($sdvalue['deduction_id']) && $sdvalue['deduction_id'] > 0) {
-                            echo "Deficit: $deficit";
-
                             $pk = [
                                 'deduction_attendance_id' => $sdvalue['deduction_id'],
                                 'attendance_id' => $Attendance->id
@@ -1373,6 +1373,14 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $is_reliever = 'no';
             } else {
                 $is_reliever = 'yes';
+            }
+
+            if(!isset($sss_deduction) || $sss_deduction == null) {
+                throw new RuntimeException("SSS deduction is null for employee {$Employee->getEmployeeNumber()}");
+            }
+
+            if(!isset($sss_debug) || $sss_debug == null) {
+                $sss_debug = "";
             }
 
             $scheduled_deductions["sss_pair"] = $sss_deduction;
@@ -1777,8 +1785,6 @@ class Payroll_IndexController extends Zend_Controller_Action
             ];
 
             foreach ($all_attendance as $day) {
-                // echo "{$evalue->firstname} {$day->datetime_start} <br>";
-
                 $AttendanceMap = new Messerve_Model_Mapper_Attendance();
 
                 $first_day = $AttendanceMap->findOneByField(
@@ -1787,7 +1793,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 );
 
                 if (!$first_day) {
-                    echo "SKIP";
+                    // Skip this day
                     continue;
                 }
 
@@ -3981,9 +3987,9 @@ class Payroll_IndexController extends Zend_Controller_Action
             $pre_jan = $this->_get_work_duration($evalue->getId(), 0, $last_year . '-11-16', $last_year . '-12-31 23:59');
             $post_jan = $this->_get_work_duration($evalue->getId(), 0, $this_year . '-01-01', $this_year . '-11-15 23:59');
 
-            if (!($pre_jan + $post_jan) > 0) continue;
-
-            echo "\n{$evalue->getEmployeeNumber()}\t{$Group->getName()}\t{$evalue->getLastName()}\t{$evalue->getFirstName()}\t{$pre_jan}\t{$Rate->getReg()}\t{$post_jan}\t{$Rate->getReg()}";
+            if (!($pre_jan + $post_jan) > 0) {
+                continue;
+            }
         }
 
     }
@@ -4019,7 +4025,7 @@ class Payroll_IndexController extends Zend_Controller_Action
 
         $result = $SSS->fetchRow("`min` <= $total_pay AND `max` >= $total_pay");
 
-        $table_sss = (int)$result->employee;
+        $table_sss = $result->employee;
 
         $multiplier = .045;
 
@@ -4410,9 +4416,6 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $next_month = strtotime('next month', strtotime($date));
             $date_last = date('Y-m-d', strtotime("yesterday", $next_month));
-
-            echo "$date - $date_15 / $date_16 - $date_last <br>";
-
 
             $rows = $this->get_range_attendance($date, $date_15);
 
