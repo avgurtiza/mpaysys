@@ -75,22 +75,41 @@ class ValidateDtrPost
     /**
      * @throws Exception
      */
-    private function hasOverlappingAttendance(DTRFormRow $item) : ?Attendance
+    private function hasOverlappingAttendance(DTRFormRow $item): ?Attendance
     {
         $date = Carbon::parse($item->date);
 
         [$start, $end] = $this->getStartAndEnd($item, $date);
 
+        if($start == null || $end == null) {
+            return null;
+        }
         $periodAttendance = (new Attendance())->newQuery()
             ->where('employee_id', $this->employee_id)
-            ->where('datetime_start', '>=', $date->startOfDay())
-            ->where('datetime_start', '<=', $date->endOfDay())
+            ->where('datetime_start', $date->startOfDay())
             ->where('id', '!=', $item->id)
             // ->where('group_id', '!=', $this->group_id)
             ->get();
 
         foreach ($periodAttendance as $attendance) {
-            [$attendanceStart, $attendanceEnd] = $this->getStartAndEnd($attendance, $date);
+
+            $form = new DTRFormRow(
+                $attendance->id,
+                Carbon::parse($attendance->datetime_start),
+                $attendance->start_1,
+                $attendance->end_1,
+                $attendance->start_2,
+                $attendance->end_2,
+                $attendance->start_3,
+                $attendance->end_3,
+                $attendance->ot_approved_hours,
+                $attendance->type);
+
+            [$attendanceStart, $attendanceEnd] = $this->getStartAndEnd($form, $date);
+
+            if($attendanceStart == null || $attendanceEnd == null) {
+                continue;
+            }
 
             if ($start->between($attendanceStart, $attendanceEnd) || $end->between($attendanceStart, $attendanceEnd)) {
                 return $attendance;
@@ -105,8 +124,8 @@ class ValidateDtrPost
      */
     private function getStartAndEnd(DTRFormRow $item, Carbon $date): array
     {
-        $start = 0;
-        $end = 0;
+        $start = null;
+        $end = null;
 
         if ($item->start_3 > 0) {
             $start = $item->start_3;
@@ -142,8 +161,8 @@ class ValidateDtrPost
         }
 
         return [
-            'start' => $this->militaryToCarbon($start, $date),
-            'end' => $this->militaryToCarbon($end, $date)
+            $start ? $this->militaryToCarbon($start, $date->copy()) : null,
+            $end ? $this->militaryToCarbon($end, $date->copy()) : null
         ];
     }
 

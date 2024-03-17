@@ -959,27 +959,23 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                 // Check for overlaps
                 $validator = (new ValidateDtrPost())($employee_id, $group_id, DTRSubmission::fromFormArray($postvars));
 
-                if ($validator->fails()) {
-                    $firstError = $validator->errors()->first();
+                if (!$validator->fails()) {
 
-                    throw new Exception("DTR submission failed: " . print_r(
-                        [$firstError->attendance->id, $firstError->otherAttendance->id],
-                        true));
-                    $this->view->form = $form;
-                    $this->view->errors = $validator->errors();
-                    return;
+                    $Deductions->setOptions($postvars)->save();
+
+                    $AddIncome->setOptions($postvars)->save();
+
+                    $MPayroll = new Messervelib_Payroll();
+                    $MPayroll->save_the_day($employee_id, $group_id, $postvars);
+                    $MPayroll->save_the_day($employee_id, $group_id, $postvars);
+                    // TODO:  figure out why this needs to run twice
+
+                    $this->redirect("/dataentry/attendance/employee/id/$employee_id/pay_period/$pay_period/date_start/$date_start/date_end/$date_end/group_id/$group_id");
+                } else {
+                    // $form->addErrors($validator->errors()->toArray());
+                    echo "Invalid form data.";
                 }
 
-                $Deductions->setOptions($postvars)->save();
-
-                $AddIncome->setOptions($postvars)->save();
-
-                $MPayroll = new Messervelib_Payroll();
-                $MPayroll->save_the_day($employee_id, $group_id, $postvars);
-                $MPayroll->save_the_day($employee_id, $group_id, $postvars);
-                // TODO:  figure out why this needs to run twice
-
-                $this->redirect("/dataentry/attendance/employee/id/$employee_id/pay_period/$pay_period/date_start/$date_start/date_end/$date_end/group_id/$group_id");
             }
 
             // Log action

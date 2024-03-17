@@ -68,4 +68,20 @@ class DTRFormRow
         $this->ot_approved_hours = $ot_approved_hours;
         $this->type = $type;
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'date' => $this->date->format('Y-m-d'),
+            'start_1' => $this->start_1,
+            'end_1' => $this->end_1,
+            'start_2' => $this->start_2,
+            'end_2' => $this->end_2,
+            'start_3' => $this->start_3,
+            'end_3' => $this->end_3,
+            'ot_approved_hours' => $this->ot_approved_hours,
+            'type' => $this->type
+        ];
+    }
 }
