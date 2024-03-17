@@ -5,7 +5,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
- * @property mixed id
+ * @property int id
+ * @property int $employee_id
+ * @property int $group_id
  */
 class Messerve_Model_Eloquent_Attendance extends Eloquent
 {
