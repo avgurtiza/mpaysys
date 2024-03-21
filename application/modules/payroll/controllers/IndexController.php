@@ -1121,12 +1121,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 }
 
                 $sss_debug = "THIS PAY: $total_pay, PREV PAY: $prev_gross_pay, MONTHLY: $monthly_pay, PREV SSS: $prev_sss,  MONTHLY SSS: $monthly_sss,  SSS BAL: $sss_bal";
-
-                if($Employee->getId() == 10085) {
-                    preprint($sss_debug);
-                    preprint($value['deductions']);
-                    preprint($sss_result, true);
-                }
             } else {
                 $sss_deduction = $this->get_sss_deduction($total_pay);
 
