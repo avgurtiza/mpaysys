@@ -222,23 +222,23 @@ class Messervelib_Payroll
 
                     if ($date === '2024-03-28') { // MTH 2024
 
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-03-27');
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2024-03-27');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
                         $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
 
                     }
 
-                    if ($date === '2023-03-29') { // GF 2024
+                    if ($date === '2024-03-29') { // GF 2024
 
-                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2023-03-27');
+                        $legal_holiday_viability = $this->legalHolidayViability($EloquentEmployee, $date, '2024-03-27');
                         $legal_unattended_group = $legal_holiday_viability->legal_unattended_group;
                         $legal_unattended_viable = $legal_holiday_viability->legal_unattended_viable;
 
                         if (!$legal_unattended_viable) { // Not viable? Check if there was duty yesterday (MTH)
-                            if ($attendance_group = $this->groupWithAttendanceOnDay($EloquentEmployee->id, '2023-03-28')) { // Has duty on MTH
+                            if ($attendance_group = $this->groupWithAttendanceOnDay($EloquentEmployee->id, '2024-03-28')) { // Has duty on MTH
                                 $legal_unattended_group = $attendance_group;
                                 $legal_unattended_viable = true;
-                                logger(sprintf("%s qualified for %s on group %s because of duty on %s (MTH)", $EloquentEmployee->name, "2023-03-29", $legal_unattended_group, "2023-03-28"));
+                                logger(sprintf("%s qualified for %s on group %s because of duty on %s (MTH)", $EloquentEmployee->name, "2024-03-29", $legal_unattended_group, "2024-03-28"));
                             }
                         }
                     }
