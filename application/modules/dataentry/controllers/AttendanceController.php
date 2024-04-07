@@ -945,6 +945,8 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             $Deductions->setAttendanceId($first_day_id)->save();
         }
 
+        $this->view->validationErrors = null;
+
         if ($this->_request->isPost()) { // Save submit
 
             if (Zend_Registry::get('Cache')->load('dtr_locked')) {
@@ -953,7 +955,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
             $postvars = $this->_request->getPost();
 
-            $this->logActivity($Employee->eloquent(), $postvars, $dates);
+            // $this->logActivity($Employee->eloquent(), $postvars, $dates);
 
             if ($form->isValid($postvars)) {
                 // Check for overlaps
@@ -972,8 +974,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
                     $this->redirect("/dataentry/attendance/employee/id/$employee_id/pay_period/$pay_period/date_start/$date_start/date_end/$date_end/group_id/$group_id");
                 } else {
-                    // $form->addErrors($validator->errors()->toArray());
-                    echo "Invalid form data.";
+                    $this->view->validationErrors = $validator->errors();
                 }
 
             }

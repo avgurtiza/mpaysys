@@ -17,4 +17,9 @@ class DTRValidationErrors extends Collection
 
         return $this;
     }
+
+    public function byAttendanceId($id)
+    {
+        return $this->where('attendance.id', $id)->first();
+    }
 }

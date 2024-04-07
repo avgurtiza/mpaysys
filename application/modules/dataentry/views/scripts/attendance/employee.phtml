@@ -9,8 +9,16 @@
         &nbsp;<?php echo $this->employee->getLastname(); ?></li>
 </ul>
 
+<?php if($this->validationErrors): ?>
+    <?php foreach ($this->validationErrors as $error): ?>
+        <div class="alert-box alert">
+            <?php echo $error->message; ?>
+            <?php echo $error->otherAttendance->datetime_start->toDateString(); ?>
+            <?php echo $error->otherAttendance->group->name; ?>
+        </div>
+    <?php endforeach; ?>
+<?php endif; ?>
 <br clear="all"/>
-
 <?php if ($this->history && $this->history->count() > 0): ?>
     <table class="dtr history">
         <tbody>
@@ -334,6 +342,14 @@
                     </dl>
                 </td>
             </tr>
+            <?php if ($this->validationErrors && $error = $this->validationErrors->byAttendanceId($dvalue->id)) :?>
+                <tr>
+                    <td colspan="12" class="error-message">
+                        <div class="alert-box alert">
+                        <?php echo $error->message; ?> (<?php echo $error->otherAttendance->group->name; ?>)
+                    </td>
+                </tr>
+            <?php endif; ?>
         <?php endforeach; ?>
         </tbody>
     </table>
