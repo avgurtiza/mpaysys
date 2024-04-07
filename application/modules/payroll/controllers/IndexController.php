@@ -925,10 +925,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                         $pay_rate_id = $rvalue->employee->rate->id;
 
                         $payroll_meta['rate_data'] = json_encode($rvalue);
-                        // preprint($rvalue, true);
-                        // $payroll_meta['rate_data'] = $rvalue;
-
-                        // $pay_rate = 8 * $rvalue->employee->rate->reg;
 
                         $pay_rate_model = Messerve_Model_Eloquent_Rate::query()->find($rate_id_key);
 
@@ -1079,8 +1075,11 @@ class Payroll_IndexController extends Zend_Controller_Action
                 }
             }
 
-            $prev_sss = 0;
             $prev_gross_pay = 0;
+            $monthly_sss = 0;
+            $prev_sss = 0;
+            $monthly_pay = 0;
+            $sss_bal = 0;
 
             if ($cutoff == 1) {
                 $PayrollTemp = new Messerve_Model_PayrollTemp();
@@ -1094,8 +1093,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                     , "employee_id = " . $Employee->getId())
                 );
 
-                if (count($sss_result) > 0) {
 
+
+                if (count($sss_result) > 0) {
                     foreach ($sss_result as $srvalue) {
                         $prev_sss += $srvalue["sss"];
                         $prev_gross_pay += $srvalue["basic_pay"] + $srvalue["ecola"];
@@ -1109,10 +1109,18 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $monthly_sss = $monthly_sss_array[0];
 
                     $sss_bal = $monthly_sss - $prev_sss;
-                    $sss_debug = "THIS PAY: $total_pay, PREV PAY: $prev_gross_pay, MONTHLY: $monthly_pay, PREV SSS: $prev_sss,  MONTHLY SSS: $monthly_sss,  SSS BAL: $sss_bal";
 
+                    logger(sprintf("Employee %s, SSS %s", $Employee->getLastname(), $sss_debug));
                     $value['deductions']['sss'] = $sss_bal;
+                } else {
+                    $sss_deduction = $this->get_sss_deduction($total_pay);
+
+                    // As of 2024-03, the first element of the array is the deduction. According to Sally,
+                    // ER does not want to use the calculated SSS deduction.
+                    $value['deductions']['sss'] = $sss_deduction[0];
                 }
+
+                $sss_debug = "THIS PAY: $total_pay, PREV PAY: $prev_gross_pay, MONTHLY: $monthly_pay, PREV SSS: $prev_sss,  MONTHLY SSS: $monthly_sss,  SSS BAL: $sss_bal";
             } else {
                 $sss_deduction = $this->get_sss_deduction($total_pay);
 
@@ -1375,6 +1383,7 @@ class Payroll_IndexController extends Zend_Controller_Action
                 $is_reliever = 'yes';
             }
 
+            /*
             if(!isset($sss_deduction) || $sss_deduction == null) {
                 throw new RuntimeException("SSS deduction is null for employee {$Employee->getEmployeeNumber()}");
             }
@@ -1382,6 +1391,7 @@ class Payroll_IndexController extends Zend_Controller_Action
             if(!isset($sss_debug) || $sss_debug == null) {
                 $sss_debug = "";
             }
+            */
 
             $scheduled_deductions["sss_pair"] = $sss_deduction;
             $scheduled_deductions["sss_debug"] = $sss_debug;
@@ -4019,7 +4029,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         return (float)$result->total;
     }
 
-    protected function get_sss_deduction($total_pay)
+    protected function get_sss_deduction($total_pay): array
     {
         $SSS = new Messerve_Model_DbTable_Sss();
 
