@@ -955,7 +955,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
             $postvars = $this->_request->getPost();
 
-            // $this->logActivity($Employee->eloquent(), $postvars, $dates);
+            $this->logActivity($Employee->eloquent(), $postvars, $dates);
 
             if ($form->isValid($postvars)) {
                 // Check for overlaps
