@@ -56,4 +56,16 @@ class Messerve_Model_Eloquent_Attendance extends Eloquent
     {
         return $this->morphMany(Messerve_Model_Eloquent_Activity::class, 'subject');
     }
+
+    public function earliestStart() : int {
+        return collect([$this->start_1, $this->start_2, $this->start_3])->filter(function (int $value) {
+            return $value > 0;
+        })->min();
+    }
+
+    public function latestEnd() : int {
+        return collect([$this->end_1, $this->end_2, $this->end_3])->filter(function (int $value) {
+            return $value > 0;
+        })->max();
+    }
 }

@@ -10,13 +10,9 @@
 </ul>
 
 <?php if($this->validationErrors): ?>
-    <?php foreach ($this->validationErrors as $error): ?>
-        <div class="alert-box alert">
-            <?php echo $error->message; ?>
-            <?php echo $error->otherAttendance->datetime_start->toDateString(); ?>
-            <?php echo $error->otherAttendance->group->name; ?>
-        </div>
-    <?php endforeach; ?>
+    <div class="alert-box alert">
+        DTR failed validation and cannot be saved.  Please correct the errors and try again.
+    </div>
 <?php endif; ?>
 <br clear="all"/>
 <?php if ($this->history && $this->history->count() > 0): ?>
@@ -346,7 +342,10 @@
                 <tr>
                     <td colspan="12" class="error-message">
                         <div class="alert-box alert">
-                        <?php echo $error->message; ?> (<?php echo $error->otherAttendance->group->name; ?>)
+                        <?php echo $error->message; ?>
+                            (<?php echo $error->otherAttendance->group->name; ?>
+                            <?php echo $error->otherAttendance->datetime_start->toDateString(); ?>
+                            <?php echo $error->otherAttendance->earliestStart(); ?>-<?php echo $error->otherAttendance->latestEnd(); ?>)
                     </td>
                 </tr>
             <?php endif; ?>
