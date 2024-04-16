@@ -344,8 +344,12 @@
                         <div class="alert-box alert">
                         <?php echo $error->message; ?>
                             (<?php echo $error->otherAttendance->group->name; ?>
-                            <?php echo $error->otherAttendance->datetime_start->toDateString(); ?>
-                            <?php echo $error->otherAttendance->earliestStart(); ?>-<?php echo $error->otherAttendance->latestEnd(); ?>)
+                            <?php
+                                if($error->otherAttendance->datetime_start) {
+                                    echo $error->otherAttendance->datetime_start->toDateString();
+                                    echo $error->otherAttendance->earliestStart() . '-' . $error->otherAttendance->latestEnd();
+                                }
+                            ?>
                     </td>
                 </tr>
             <?php endif; ?>

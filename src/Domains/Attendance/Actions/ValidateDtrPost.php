@@ -130,7 +130,7 @@ class ValidateDtrPost
         if ($item->start_3 > 0) {
             $start = $item->start_3;
             if (!$item->end_3) {
-                throw new Exception("Start 3 has no end time");
+                // throw new Exception("Start 3 has no end time");
             }
 
             $end = $item->end_3;
@@ -140,7 +140,7 @@ class ValidateDtrPost
             $start = $item->start_2;
 
             if (!$item->end_2) {
-                throw new Exception("Start 2 has no end time");
+                // throw new Exception("Start 2 has no end time");
             }
 
             if (!$end || $end < $item->end_2) {
@@ -152,7 +152,7 @@ class ValidateDtrPost
             $start = $item->start_1;
 
             if (!$item->end_1) {
-                throw new Exception("Start 1 has no end time");
+                // throw new Exception("Start 1 has no end time");
             }
 
             if (!$end || $end < $item->end_1) {
