@@ -686,7 +686,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         $row,
         Messerve_Model_Eloquent_Group $group,
         Messerve_Model_Eloquent_Employee $employee
-    ) : bool
+    ): bool
     {
         $group_id = $group->id;
 
@@ -958,28 +958,27 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             $this->logActivity($Employee->eloquent(), $postvars, $dates);
 
             if ($form->isValid($postvars)) {
-                // Check for overlaps
-                $validator = (new ValidateDtrPost())($employee_id, $group_id, DTRSubmission::fromFormArray($postvars));
-
-                if (!$validator->fails()) {
-
+                if ($form->getValue('attendance_id')) {
                     $Deductions->setOptions($postvars)->save();
-
                     $AddIncome->setOptions($postvars)->save();
-
-                    $MPayroll = new Messervelib_Payroll();
-                    $MPayroll->save_the_day($employee_id, $group_id, $postvars);
-                    $MPayroll->save_the_day($employee_id, $group_id, $postvars);
-                    // TODO:  figure out why this needs to run twice
 
                     $this->redirect("/dataentry/attendance/employee/id/$employee_id/pay_period/$pay_period/date_start/$date_start/date_end/$date_end/group_id/$group_id");
                 } else {
-                    $this->view->validationErrors = $validator->errors();
+                    $validator = (new ValidateDtrPost())($employee_id, $group_id, DTRSubmission::fromFormArray($postvars));
+
+                    if ($validator->fails()) {
+                        $this->view->validationErrors = $validator->errors();
+                    } else {
+                        $MPayroll = new Messervelib_Payroll();
+
+                        // TODO:  figure out why this needs to run twice
+                        $MPayroll->save_the_day($employee_id, $group_id, $postvars);
+                        $MPayroll->save_the_day($employee_id, $group_id, $postvars);
+
+                        $this->redirect("/dataentry/attendance/employee/id/$employee_id/pay_period/$pay_period/date_start/$date_start/date_end/$date_end/group_id/$group_id");
+                    }
                 }
-
             }
-
-            // Log action
         }
 
         $form->populate($AddIncome->toArray());
