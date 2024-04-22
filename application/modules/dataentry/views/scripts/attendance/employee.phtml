@@ -368,7 +368,6 @@
 <br clear="all"/>
 
 <script>
-    <!--
     function padfield(num, size) {
         var s = "000000000" + num;
         return s.substr(s.length - size);
@@ -400,16 +399,6 @@
         <?php if($is_dirty && $this->user_auth->type === 'admin'): ?>
         alert('This DTR has anomalies.');
         <?php endif; ?>
-
-
-        /*
-        $('.check-extend').each(function () {
-            var sibling_approved = $(this).siblings('.check-approve-extend');
-            if(!$(this).is(':checked')) {
-                sibling_approved.prop('checked', false).prop('disabled', true);
-            }
-        });
-        */
 
         $('.check-extend').on('change', function () {
             var sibling_approved = $(this).siblings('.check-approve-extend');
@@ -490,5 +479,4 @@
             }
         });
     });
-    //-->
 </script>
