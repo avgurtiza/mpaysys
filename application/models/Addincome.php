@@ -84,6 +84,20 @@ class Messerve_Model_Addincome extends Messerve_Model_ModelAbstract
      */
     protected $_MiscIncome;
 
+    /**
+     * Database var type decimal(10,2)
+     *
+     * @var float
+     */
+    protected $_SoloParentLeave;
+
+    /**
+     * Database var type decimal(10,2)
+     *
+     * @var float
+     */
+    protected $_TlAllowance;
+
 
 
     /**
@@ -102,6 +116,8 @@ class Messerve_Model_Addincome extends Messerve_Model_ModelAbstract
             'incentives'=>'Incentives',
             'paternity'=>'Paternity',
             'misc_income'=>'MiscIncome',
+            'solo_parent_leave'=>'SoloParentLeave',
+            'tl_allowance'=>'TlAllowance'
         ));
 
         $this->setParentList(array(
@@ -307,6 +323,48 @@ class Messerve_Model_Addincome extends Messerve_Model_ModelAbstract
     public function getMiscIncome()
     {
         return $this->_MiscIncome;
+    }
+
+    /**
+     * Sets column solo_parent_leave
+     *
+     * @param float $data
+     * @return Messerve_Model_Addincome
+     */
+    public function setSoloParentLeave($data) {
+        $this->_SoloParentLeave = $data;
+        return $this;
+    }
+
+    /**
+     * Gets column solo_parent_leave
+     *
+     * @return float
+     */
+    public function getSoloParentLeave() {
+        return $this->_SoloParentLeave;
+    }
+
+    /**
+     * Sets column tl_allowance
+     *
+     * @param float $data
+     * @return Messerve_Model_Addincome
+     */
+
+    public function setTlAllowance($data) {
+        $this->_TlAllowance = $data;
+        return $this;
+    }
+
+    /**
+     * Gets column tl_allowance
+     *
+     * @return float
+     */
+
+    public function getTlAllowance() {
+        return $this->_TlAllowance;
     }
 
     /**

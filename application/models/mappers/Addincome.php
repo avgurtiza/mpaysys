@@ -27,7 +27,7 @@ class Messerve_Model_Mapper_Addincome extends Messerve_Model_Mapper_MapperAbstra
      */
     public function toArray($model)
     {
-        if (! $model instanceof Messerve_Model_Addincome) {
+        if (!$model instanceof Messerve_Model_Addincome) {
             throw new Exception('Unable to create array: invalid model passed to mapper');
         }
 
@@ -41,6 +41,8 @@ class Messerve_Model_Mapper_Addincome extends Messerve_Model_Mapper_MapperAbstra
             'incentives' => $model->getIncentives(),
             'paternity' => $model->getPaternity(),
             'misc_income' => $model->getMiscIncome(),
+            'solo_parent_leave' => $model->getSoloParentLeave(),
+            'tl_allowance' => $model->getTlAllowance()
         );
 
         return $result;
@@ -64,12 +66,12 @@ class Messerve_Model_Mapper_Addincome extends Messerve_Model_Mapper_MapperAbstra
      * Deletes the current model
      *
      * @param Messerve_Model_Addincome $model The model to delete
-     * @see Messerve_Model_DbTable_TableAbstract::delete()
      * @return int
+     * @see Messerve_Model_DbTable_TableAbstract::delete()
      */
     public function delete($model)
     {
-        if (! $model instanceof Messerve_Model_Addincome) {
+        if (!$model instanceof Messerve_Model_Addincome) {
             throw new Exception('Unable to delete: invalid model passed to mapper');
         }
 
@@ -97,8 +99,9 @@ class Messerve_Model_Mapper_Addincome extends Messerve_Model_Mapper_MapperAbstra
      * @return boolean If the save action was successful
      */
     public function save(Messerve_Model_Addincome $model,
-        $ignoreEmptyValues = true, $recursive = false, $useTransaction = true
-    ) {
+                                                  $ignoreEmptyValues = true, $recursive = false, $useTransaction = true
+    )
+    {
         $data = $model->toArray();
         if ($ignoreEmptyValues) {
             foreach ($data as $key => $value) {
@@ -127,11 +130,11 @@ class Messerve_Model_Mapper_Addincome extends Messerve_Model_Mapper_MapperAbstra
                 }
             } else {
                 $this->getDbTable()
-                     ->update($data,
-                              array(
-                                 'id = ?' => $primary_key
-                              )
-                );
+                    ->update($data,
+                        array(
+                            'id = ?' => $primary_key
+                        )
+                    );
             }
 
             if ($useTransaction && $success) {
@@ -188,24 +191,28 @@ class Messerve_Model_Mapper_Addincome extends Messerve_Model_Mapper_MapperAbstra
 
         if (is_array($data)) {
             $entry->setId($data['id'])
-                  ->setAttendanceId($data['attendance_id'])
-                  ->setThirteenthMonthPay($data['thirteenth_month_pay'])
-                  ->setGasoline($data['gasoline'])
-                  ->setMaintenanceIncome($data['maintenance_income'])
-                  ->setBikeOwnership($data['bike_ownership'])
-                  ->setIncentives($data['incentives'])
-                  ->setPaternity($data['paternity'])
-                  ->setMiscIncome($data['misc_income']);
+                ->setAttendanceId($data['attendance_id'])
+                ->setThirteenthMonthPay($data['thirteenth_month_pay'])
+                ->setGasoline($data['gasoline'])
+                ->setMaintenanceIncome($data['maintenance_income'])
+                ->setBikeOwnership($data['bike_ownership'])
+                ->setIncentives($data['incentives'])
+                ->setPaternity($data['paternity'])
+                ->setMiscIncome($data['misc_income'])
+                ->setSoloParentLeave($data['solo_parent_leave'])
+                ->setTlAllowance($data['tl_allowance']);
         } elseif ($data instanceof Zend_Db_Table_Row_Abstract || $data instanceof stdClass) {
             $entry->setId($data->id)
-                  ->setAttendanceId($data->attendance_id)
-                  ->setThirteenthMonthPay($data->thirteenth_month_pay)
-                  ->setGasoline($data->gasoline)
-                  ->setMaintenanceIncome($data->maintenance_income)
-                  ->setBikeOwnership($data->bike_ownership)
-                  ->setIncentives($data->incentives)
-                  ->setPaternity($data->paternity)
-                  ->setMiscIncome($data->misc_income);
+                ->setAttendanceId($data->attendance_id)
+                ->setThirteenthMonthPay($data->thirteenth_month_pay)
+                ->setGasoline($data->gasoline)
+                ->setMaintenanceIncome($data->maintenance_income)
+                ->setBikeOwnership($data->bike_ownership)
+                ->setIncentives($data->incentives)
+                ->setPaternity($data->paternity)
+                ->setMiscIncome($data->misc_income)
+                ->setSoloParentLeave($data->solo_parent_leave)
+                ->setTlAllowance($data->tl_allowance);
         }
 
         $entry->setMapper($this);

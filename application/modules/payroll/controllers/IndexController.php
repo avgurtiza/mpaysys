@@ -1171,6 +1171,23 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['paternity'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
                     $total_pay += $value['more_income']['paternity'];
                 }
+
+                if ($value['more_income']['solo_parent_leave'] > 0) {
+                    $dim_y -= 8;
+                    $page->setFont($font, 8)->drawText('Solo parent leave', $dim_x + 220, $dim_y);
+                    $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['solo_parent_leave'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
+                    $total_pay += $value['more_income']['solo_parent_leave'];
+                }
+
+                if ($value['more_income']['tl_allowance'] > 0) {
+                    $dim_y -= 8;
+                    $page->setFont($font, 8)->drawText('TL allowance', $dim_x + 220, $dim_y);
+                    $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['tl_allowance'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
+                    $total_pay += $value['more_income']['tl_allowance'];
+                }
+
+
+
             }
 
             // BOP

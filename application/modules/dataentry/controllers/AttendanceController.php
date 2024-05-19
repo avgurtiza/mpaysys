@@ -928,13 +928,11 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         $form = new Messerve_Form_EditAddDeduct();
 
-        $AddIncome = new Messerve_Model_Addincome();
-        $AddIncome = $AddIncome->getMapper()->findOneByField('attendance_id', $first_day_id);
+        $AddIncome = (new Messerve_Model_Addincome())->getMapper()->findOneByField('attendance_id', $first_day_id);
 
         if (!$AddIncome) {
             $AddIncome = new Messerve_Model_Addincome();
             $AddIncome->setAttendanceId($first_day_id)->save();
-
         }
 
         $Deductions = new Messerve_Model_Deductions();
