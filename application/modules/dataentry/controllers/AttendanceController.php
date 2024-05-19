@@ -298,7 +298,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                 , 'group_name' => $gvalue->getName()
                 , 'employee_count' => $employee_count
                 );
-                // }
+                //
 
             }
         }
@@ -329,7 +329,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             $filename = realpath($_FILES['file']['tmp_name']);
 
             $ELoqGroup = Messerve_Model_Eloquent_Group::find($group_id);
-            // if ($Group->getClientId() == 14) {
 
             if ($ELoqGroup->client->usesBiometrics()) {
                 $this->readAaiBiometrics($filename, $ELoqGroup, $date_start);
@@ -886,7 +885,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                 array('employee_id', 'datetime_start', 'group_id')
                 , array($employee_id, $current_date, $group_id)
             );
-
 
             if (!$Attendance) {
                 $new_attendance = new Messerve_Model_Attendance();

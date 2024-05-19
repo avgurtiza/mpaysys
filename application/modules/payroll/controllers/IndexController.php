@@ -1149,6 +1149,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $page->setFont($font, 8)->drawText('Misc income', $dim_x + 220, $dim_y);
                     $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['misc_income'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
                     $total_pay += $value['more_income']['misc_income'];
+
+                    $PayslipData->additions->push(new Payslip\Addition('Misc income', $value['more_income']['misc_income']));
                 }
 
                 if ($value['more_income']['incentives'] > 0) {
@@ -1156,6 +1158,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $page->setFont($font, 8)->drawText('SILP', $dim_x + 220, $dim_y);
                     $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['incentives'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
                     $total_pay += $value['more_income']['incentives'];
+
+                    $PayslipData->additions->push(new Payslip\Addition('Incentives', $value['more_income']['incentives']));
+
                 }
 
                 if ($value['more_income']['thirteenth_month_pay'] > 0) {
@@ -1163,6 +1168,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $page->setFont($font, 8)->drawText('13th month pay', $dim_x + 220, $dim_y);
                     $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['thirteenth_month_pay'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
                     $total_pay += $value['more_income']['thirteenth_month_pay'];
+
+                    $PayslipData->additions->push(new Payslip\Addition('13th month pay', $value['more_income']['thirteenth_month_pay']));
+
                 }
 
                 if ($value['more_income']['paternity'] > 0) {
@@ -1170,6 +1178,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $page->setFont($font, 8)->drawText('Paternity leave', $dim_x + 220, $dim_y);
                     $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['paternity'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
                     $total_pay += $value['more_income']['paternity'];
+
+                    $PayslipData->additions->push(new Payslip\Addition('Paternity', $value['more_income']['paternity']));
                 }
 
                 if ($value['more_income']['solo_parent_leave'] > 0) {
@@ -1177,6 +1187,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $page->setFont($font, 8)->drawText('Solo parent leave', $dim_x + 220, $dim_y);
                     $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['solo_parent_leave'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
                     $total_pay += $value['more_income']['solo_parent_leave'];
+
+                    $PayslipData->additions->push(new Payslip\Addition('Solo parent leave', $value['more_income']['solo_parent_leave']));
                 }
 
                 if ($value['more_income']['tl_allowance'] > 0) {
@@ -1184,10 +1196,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $page->setFont($font, 8)->drawText('TL allowance', $dim_x + 220, $dim_y);
                     $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['tl_allowance'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
                     $total_pay += $value['more_income']['tl_allowance'];
+
+                    $PayslipData->additions->push(new Payslip\Addition('TL allowance', $value['more_income']['tl_allowance']));
                 }
-
-
-
             }
 
             // BOP
@@ -1438,6 +1449,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setAccountNumber($Employee->getAccountNumber())
                 ->setPayrollMeta(json_encode($payroll_meta))
                 ->setPaternity($value['more_income']['paternity'])
+                ->setSoloParentLeave($value['more_income']['solo_parent_leave'])
+                ->setTlAllowance($value['more_income']['tl_allowance'])
                 ->setGrossPay($total_pay)
                 ->setBasicPay($basic_pay)
                 ->setNetPay($net_pay)
@@ -3855,6 +3868,10 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , 'Misc addition' => number_format(round($pvalue->getMiscAddition(), 2), 2)
 
                 , 'Paternity' => number_format(round($pvalue->getPaternity(), 2), 2)
+
+                , 'Solo parent leave' => number_format(round($pvalue->getSoloParentLeave(), 2), 2)
+
+                , 'TL allowance' => number_format(round($pvalue->getTlAllowance(), 2), 2)
 
                 , 'Gross pay' => number_format(round($pvalue->getGrossPay(), 2), 2)
 

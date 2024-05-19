@@ -24,6 +24,7 @@ class Messerve_Model_Mapper_Addincome extends Messerve_Model_Mapper_MapperAbstra
      *
      * @param Messerve_Model_Addincome $model
      * @return array
+     * @throws Exception
      */
     public function toArray($model)
     {
@@ -31,7 +32,7 @@ class Messerve_Model_Mapper_Addincome extends Messerve_Model_Mapper_MapperAbstra
             throw new Exception('Unable to create array: invalid model passed to mapper');
         }
 
-        $result = array(
+        return array(
             'id' => $model->getId(),
             'attendance_id' => $model->getAttendanceId(),
             'thirteenth_month_pay' => $model->getThirteenthMonthPay(),
@@ -44,8 +45,6 @@ class Messerve_Model_Mapper_Addincome extends Messerve_Model_Mapper_MapperAbstra
             'solo_parent_leave' => $model->getSoloParentLeave(),
             'tl_allowance' => $model->getTlAllowance()
         );
-
-        return $result;
     }
 
     /**
