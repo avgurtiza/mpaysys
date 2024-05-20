@@ -75,7 +75,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                 . ' (' . $employee_count . ')';
         }
 
-
         asort($groups_array);
 
         $form = new Messerve_Form_Attendance();
@@ -94,7 +93,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
     }
 
     /**
-     * @throws Zend_Form_Exception
      * @throws Exception
      */
     private function saveSubmit(
@@ -108,157 +106,20 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
         int                          $group_id): Messerve_Form_EditAttendance
     {
 
-        throw  new Exception('Not implemented');
-
-        $start_1 = strtotime($date . ' T' . str_pad($this->_request->getPost('start_1'), 4, 0, STR_PAD_LEFT));
-        $end_1 = strtotime($date . ' T' . str_pad($this->_request->getPost('end_1'), 4, 0, STR_PAD_LEFT));
-
-        $start_2 = strtotime($date . ' T' . str_pad($this->_request->getPost('start_2'), 4, 0, STR_PAD_LEFT));
-        $end_2 = strtotime($date . ' T' . str_pad($this->_request->getPost('end_2'), 4, 0, STR_PAD_LEFT));
-
-        $break_duration = 0;
-
-        if ($end_1 > 0 && $start_1 > 0) {
-            $break_duration = ($start_2 - $end_1) / 3600;
-        }
-
-        $midnight = strtotime($this->_request->getPost('datetime_start') . ' + 1 day');
-        $night_diff_start = strtotime($this->_request->getPost('datetime_start') . 'T' . $this->_night_diff_start);
-
-        $weekday = date('D', $start_1);
-        $weekday_midnight = date('D', $midnight);
-
-        // Duration past 8 hours?  Must be OT
-        $total_duration = ($end_2 - $start_1) / 3600;
-        $total_duration = $total_duration - $break_duration;
-
-        $ot_duration = $total_duration - $this->_max_regular_hours;
-
-        $post_mn_ot = 0;
-        $nd_ot = 0;
-        $ot = 0;
-
-        if ($ot_duration > 0) {
-            // OT happens towards the end of shift
-            $end_of_shift = $end_2;
-
-            if (!$end_of_shift > 0) { // No valid end-of-shift time.  Stop (in the name of love).
-                throw new Exception('Invalid end-of-shift time.');
-            }
-
-            // Get start time of OT
-            $start_of_ot = $end_of_shift - ($ot_duration * 3600);
-
-            // Time crossed midnight?  Check for holiday rates for the following day
-            $ot_start_time = (int)date('Hi', $start_of_ot);
-            $ot_end_time = (int)date('Hi', $end_of_shift);
-
-            if ($ot_start_time > $ot_end_time || $ot_start_time == 0) {
-                $post_mn_ot = ($end_of_shift - $midnight) / 3600;
-            }
-
-            if ($start_of_ot > $midnight && $end_of_shift > $midnight) {
-                // echo "<br /> Time crossed meridian. B";
-                $post_mn_ot = ($end_of_shift - $start_of_ot) / 3600;
-                // TODO:  Recalc if time crosses 6AM
-            }
-
-
-            // Check for night OT
-            if ($start_of_ot >= $night_diff_start) { // OT began on/after night diff threshold
-                if (!$start_of_ot > $midnight) {
-                    $nd_ot = ($midnight - $start_of_ot) / 3600;
-                }
-            } elseif ($end_of_shift > $night_diff_start) { // OT began before night diff threshold
-                if ($post_mn_ot > 0) { // Crossed midnight
-                    $nd_ot = ($midnight - $night_diff_start) / 3600;
-                } else {
-                    $nd_ot = ($end_of_shift - $night_diff_start) / 3600;
-                }
-            }
-
-            $ot = $ot_duration - $nd_ot - $post_mn_ot;
-        } else {
-            $ot_duration = 0;
-        }
-
-        $regular_duration = $total_duration - $ot_duration;
-
-        $attendance_array = $this->_request->getPost();
-
-        if ($form->isValid($attendance_array)) {
-
-            if ($weekday === 'Sun') {
-                $attendance_array['sun'] = $regular_duration;
-                $attendance_array['sun_ot'] = $ot;
-                $attendance_array['sun_nd_ot'] = $nd_ot;
-            } else {
-                $attendance_array['reg'] = $regular_duration;
-                $attendance_array['reg_ot'] = $ot;
-                $attendance_array['reg_nd_ot'] = $nd_ot;
-            }
-
-            if ($post_mn_ot > 0) {
-                if ($weekday_midnight === 'Sun') {
-                    $attendance_array['sun_nd_ot'] = $post_mn_ot;
-                } else {
-                    $attendance_array['reg_nd_ot'] = $post_mn_ot;
-                }
-
-            }
-
-            if (!($form->getValue('id') > 0)) {
-                $form->removeElement('id');
-            }
-
-            $Attendance
-                ->setOptions($attendance_array)
-                ->save();
-
-            $this->redirect("/dataentry/attendance/employee/id/$employee_id/pay_period/$pay_period/date_start/$date_start/date_end/$date_end/group_id/$group_id");
-        }
-
-        return $form;
+        throw new RuntimeException('Not implemented');
     }
 
     public function editAction()
     {
-        throw new Exception('Deprecated');
-        // action body
-        $employee_id = (int)$this->_request->getParam('employee_id');
-
-        $Employee = new Messerve_Model_Employee();
-        $Employee->find($employee_id);
-        $this->view->employee = $Employee;
-
-        $group_id = (int)$this->_request->getParam('group_id');
-
-        $pay_period = $this->_request->getParam('pay_period');
-        $this->view->pay_period = $pay_period;
-
-        $date_start = $this->_request->getParam('date_start');
-        $date_end = $this->_request->getParam('date_end');
-
-        $date = $this->_request->getParam('date');
-
-
-        $attendance_id = (int)$this->_request->getParam('attendance_id');
-        $Attendance = new Messerve_Model_Attendance();
-
-        $Attendance->find($attendance_id);
-        $Attendance->setDatetimeStart($date);
-
-        $form = new Messerve_Form_EditAttendance();
-
-        if ($this->_request->isPost()) { // Save submit
-            $form = $this->saveSubmit($Attendance, $form, $date, $employee_id, $pay_period, $date_start, $date_end, $group_id);
-        }
-
-        $form->populate($Attendance->toArray());
-        $this->view->form = $form;
+        throw new RuntimeException('Deprecated');
     }
 
 
+    /**
+     * @throws Zend_Config_Exception
+     * @throws Zend_Exception
+     * @throws Zend_Http_Client_Exception
+     */
     public function _save_the_day($employee_id, $group_id, $data)
     {
         $Payroll = new Messervelib_Payroll();
@@ -298,7 +159,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                 , 'group_name' => $gvalue->getName()
                 , 'employee_count' => $employee_count
                 );
-                // }
+                //
 
             }
         }
@@ -329,7 +190,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
             $filename = realpath($_FILES['file']['tmp_name']);
 
             $ELoqGroup = Messerve_Model_Eloquent_Group::find($group_id);
-            // if ($Group->getClientId() == 14) {
 
             if ($ELoqGroup->client->usesBiometrics()) {
                 $this->readAaiBiometrics($filename, $ELoqGroup, $date_start);
@@ -887,7 +747,6 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                 , array($employee_id, $current_date, $group_id)
             );
 
-
             if (!$Attendance) {
                 $new_attendance = new Messerve_Model_Attendance();
 
@@ -928,13 +787,11 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
         $form = new Messerve_Form_EditAddDeduct();
 
-        $AddIncome = new Messerve_Model_Addincome();
-        $AddIncome = $AddIncome->getMapper()->findOneByField('attendance_id', $first_day_id);
+        $AddIncome = (new Messerve_Model_Addincome())->getMapper()->findOneByField('attendance_id', $first_day_id);
 
         if (!$AddIncome) {
             $AddIncome = new Messerve_Model_Addincome();
             $AddIncome->setAttendanceId($first_day_id)->save();
-
         }
 
         $Deductions = new Messerve_Model_Deductions();
@@ -964,11 +821,11 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
                     $this->redirect("/dataentry/attendance/employee/id/$employee_id/pay_period/$pay_period/date_start/$date_start/date_end/$date_end/group_id/$group_id");
                 } else {
-                    $validator = (new ValidateDtrPost())($employee_id, $group_id, DTRSubmission::fromFormArray($postvars));
-
-                    if ($validator->fails()) {
-                        $this->view->validationErrors = $validator->errors();
-                    } else {
+//                    $validator = (new ValidateDtrPost())($employee_id, $group_id, DTRSubmission::fromFormArray($postvars));
+//
+//                    if ($validator->fails()) {
+//                        $this->view->validationErrors = $validator->errors();
+//                    } else {
                         $MPayroll = new Messervelib_Payroll();
 
                         // TODO:  figure out why this needs to run twice
@@ -976,7 +833,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                         $MPayroll->save_the_day($employee_id, $group_id, $postvars);
 
                         $this->redirect("/dataentry/attendance/employee/id/$employee_id/pay_period/$pay_period/date_start/$date_start/date_end/$date_end/group_id/$group_id");
-                    }
+//                    }
                 }
             }
         }

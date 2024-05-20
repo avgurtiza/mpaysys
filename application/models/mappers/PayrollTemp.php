@@ -24,14 +24,15 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
      *
      * @param Messerve_Model_PayrollTemp $model
      * @return array
+     * @throws Exception
      */
-    public function toArray($model)
+    public function toArray($model): array
     {
         if (!$model instanceof Messerve_Model_PayrollTemp) {
             throw new Exception('Unable to create array: invalid model passed to mapper');
         }
 
-        $result = array(
+        return array(
             'id' => $model->getId(),
             'group_id' => $model->getGroupId(),
             'employee_id' => $model->getEmployeeId(),
@@ -55,6 +56,8 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
             'misc_deduction' => $model->getMiscDeduction(),
             'misc_addition' => $model->getMiscAddition(),
             'paternity' => $model->getPaternity(),
+            'solo_parent_leave' => $model->getSoloParentLeave(),
+            'tl_allowance' => $model->getTlAllowance(),
             'gross_pay' => $model->getGrossPay(),
             'deduction_data' => $model->getDeductionData(),
             'is_reliever' => $model->getIsReliever(),
@@ -84,8 +87,6 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
             'rate_id' => $model->getRateId(),
             'updated_at' => $model->getUpdatedAt(),
         );
-
-        return $result;
     }
 
     /**
@@ -274,6 +275,8 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
                 ->setBopInsurance($data['bop_insurance'])
                 ->setBopMaintenance($data['bop_maintenance'])
                 ->setPaternity($data['paternity'])
+                ->setSoloParentLeave($data['solo_parent_leave'])
+                ->setTlAllowance($data['tl_allowance'])
                 ->setLostCard($data['lost_card'])
                 ->setFood($data['food'])
                 ->setBasicPay($data['basic_pay'])
@@ -327,6 +330,8 @@ class Messerve_Model_Mapper_PayrollTemp extends Messerve_Model_Mapper_MapperAbst
                 ->setBopInsurance($data->bop_insurance)
                 ->setBopMaintenance($data->bop_maintenance)
                 ->setPaternity($data->paternity)
+                ->setSoloParentLeave($data->solo_parent_leave)
+                ->setTlAllowance($data->tl_allowance)
                 ->setLostCard($data->lost_card)
                 ->setFood($data->food)
                 ->setBasicPay($data->basic_pay)

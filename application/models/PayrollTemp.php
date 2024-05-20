@@ -324,6 +324,10 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
     protected $_Philhealthbasic;
     protected $_UpdatedAt;
 
+    protected $_SoloParentLeave;
+
+    protected $_TlAllowance;
+
 
     /**
      * Sets up column and relationship lists
@@ -377,6 +381,8 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
             'lost_card'=>'LostCard',
             'food'=>'Food',
             'paternity'=>'Paternity',
+            'solo_parent_leave'=>'SoloParentLeave',
+            'tl_allowance'=>'TlAllowance',
             'basic_pay'=>'BasicPay',
             'payroll_meta'=>'PayrollMeta',
             'rate_id'=>'RateId',
@@ -1420,6 +1426,28 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
         return $this->_UpdatedAt;
     }
 
+    public function setSoloParentLeave($data)
+    {
+        $this->_SoloParentLeave = $data;
+        return $this;
+    }
+
+    public function getSoloParentLeave()
+    {
+        return $this->_SoloParentLeave;
+    }
+
+    public function setTlAllowance($data)
+    {
+        $this->_TlAllowance = $data;
+        return $this;
+    }
+
+    public function getTlAllowance()
+    {
+        return $this->_TlAllowance;
+    }
+
     /**
      * Returns the mapper class for this model
      *
@@ -1454,4 +1482,5 @@ class Messerve_Model_PayrollTemp extends Messerve_Model_ModelAbstract
                                   ->getAdapter()
                                   ->quote($this->getId()));
     }
+
 }

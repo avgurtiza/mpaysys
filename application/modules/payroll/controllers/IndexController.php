@@ -1149,6 +1149,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $page->setFont($font, 8)->drawText('Misc income', $dim_x + 220, $dim_y);
                     $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['misc_income'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
                     $total_pay += $value['more_income']['misc_income'];
+
+                    $PayslipData->additions->push(new Payslip\Addition('Misc income', $value['more_income']['misc_income']));
                 }
 
                 if ($value['more_income']['incentives'] > 0) {
@@ -1156,6 +1158,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $page->setFont($font, 8)->drawText('SILP', $dim_x + 220, $dim_y);
                     $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['incentives'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
                     $total_pay += $value['more_income']['incentives'];
+
+                    $PayslipData->additions->push(new Payslip\Addition('Incentives', $value['more_income']['incentives']));
+
                 }
 
                 if ($value['more_income']['thirteenth_month_pay'] > 0) {
@@ -1163,6 +1168,9 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $page->setFont($font, 8)->drawText('13th month pay', $dim_x + 220, $dim_y);
                     $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['thirteenth_month_pay'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
                     $total_pay += $value['more_income']['thirteenth_month_pay'];
+
+                    $PayslipData->additions->push(new Payslip\Addition('13th month pay', $value['more_income']['thirteenth_month_pay']));
+
                 }
 
                 if ($value['more_income']['paternity'] > 0) {
@@ -1170,6 +1178,26 @@ class Payroll_IndexController extends Zend_Controller_Action
                     $page->setFont($font, 8)->drawText('Paternity leave', $dim_x + 220, $dim_y);
                     $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['paternity'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
                     $total_pay += $value['more_income']['paternity'];
+
+                    $PayslipData->additions->push(new Payslip\Addition('Paternity', $value['more_income']['paternity']));
+                }
+
+                if ($value['more_income']['solo_parent_leave'] > 0) {
+                    $dim_y -= 8;
+                    $page->setFont($font, 8)->drawText('Solo parent leave', $dim_x + 220, $dim_y);
+                    $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['solo_parent_leave'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
+                    $total_pay += $value['more_income']['solo_parent_leave'];
+
+                    $PayslipData->additions->push(new Payslip\Addition('Solo parent leave', $value['more_income']['solo_parent_leave']));
+                }
+
+                if ($value['more_income']['tl_allowance'] > 0) {
+                    $dim_y -= 8;
+                    $page->setFont($font, 8)->drawText('TL allowance', $dim_x + 220, $dim_y);
+                    $page->setFont($mono, 8)->drawText(str_pad(number_format($value['more_income']['tl_allowance'], 2), 10, ' ', STR_PAD_LEFT), $dim_x + 300, $dim_y);
+                    $total_pay += $value['more_income']['tl_allowance'];
+
+                    $PayslipData->additions->push(new Payslip\Addition('TL allowance', $value['more_income']['tl_allowance']));
                 }
             }
 
@@ -1421,6 +1449,8 @@ class Payroll_IndexController extends Zend_Controller_Action
                 ->setAccountNumber($Employee->getAccountNumber())
                 ->setPayrollMeta(json_encode($payroll_meta))
                 ->setPaternity($value['more_income']['paternity'])
+                ->setSoloParentLeave($value['more_income']['solo_parent_leave'])
+                ->setTlAllowance($value['more_income']['tl_allowance'])
                 ->setGrossPay($total_pay)
                 ->setBasicPay($basic_pay)
                 ->setNetPay($net_pay)
@@ -1563,6 +1593,9 @@ class Payroll_IndexController extends Zend_Controller_Action
 
     }
 
+    /**
+     * @throws Zend_Pdf_Exception
+     */
     protected function _receiving_copy($pdf, $rec_copy_data)
     {
         $page = new Zend_Pdf_Page(Zend_Pdf_Page::SIZE_A4);
@@ -1599,7 +1632,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $pdf->pages[] = $page;
     }
 
-    protected function _fetch_employees($group_id, $date_start, $date_end)
+    protected function _fetch_employees($group_id, $date_start, $date_end): array
     {
         $EmployeeMap = new Messerve_Model_Mapper_Employee();
 
@@ -2213,6 +2246,9 @@ class Payroll_IndexController extends Zend_Controller_Action
 
     }
 
+    /**
+     * @throws Zend_Pdf_Exception
+     */
     public function summaryreportAction()
     {
         function round_this($in, $digits = 2)
@@ -3810,6 +3846,10 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $sss_calamity_loan_amount = 0;
 
+            // TODO: Hacky! Fix this!
+            $fuel_overage_scheduled_amount = 0;
+            $maintenance_scheduled_amount = 0;
+
             if (count($misc_deduction) > 0) {
                 foreach ($misc_deduction as $mkey => $mvalue) {
                     if (is_numeric($mkey) && property_exists($mvalue, 'type')) {
@@ -3819,10 +3859,17 @@ class Payroll_IndexController extends Zend_Controller_Action
                         if ($mvalue->type === "sss_calamity") {
                             $sss_calamity_loan_amount = $amount;
                         }
+
+                        if ($mvalue->type === "fuel_overage") {
+                            $fuel_overage_scheduled_amount = $amount;
+                        }
+
+                        if ($mvalue->type === "maintenance_deduct") {
+                            $maintenance_scheduled_amount = $amount;
+                        }
                     }
                 }
             }
-
 
             $this_row += [
                 'BasicPay' => number_format($pvalue->getBasicPay(), 2)
@@ -3838,6 +3885,10 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , 'Misc addition' => number_format(round($pvalue->getMiscAddition(), 2), 2)
 
                 , 'Paternity' => number_format(round($pvalue->getPaternity(), 2), 2)
+
+                , 'Solo parent leave' => number_format(round($pvalue->getSoloParentLeave(), 2), 2)
+
+                , 'TL allowance' => number_format(round($pvalue->getTlAllowance(), 2), 2)
 
                 , 'Gross pay' => number_format(round($pvalue->getGrossPay(), 2), 2)
 
@@ -3870,7 +3921,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , 'Fuel price' => number_format(round($pvalue->getFuelPrice(), 2), 2)
                 , 'Fuel overage' => number_format(round($pvalue->getFuelOverage() * -1, 2), 2)
 
-
                 , 'Accident' => number_format(round($pvalue->getAccident() * -1, 2), 2)
                 , 'Uniform' => number_format(round($pvalue->getUniform() * -1, 2), 2)
                 , 'Adjustment' => number_format(round($pvalue->getAdjustment() * -1, 2), 2)
@@ -3880,11 +3930,11 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , 'Lost card' => number_format(round($pvalue->lost_card * -1, 2), 2)
                 , 'Food' => number_format(round($pvalue->food * -1, 2), 2)
 
-
                 , 'BOP motorcycle' => $pvalue->getBopMotorcycle() * -1
                 , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1
-                // , 'PayrollMeta' => $pvalue->getPayrollMeta()
 
+                , 'Fuel overage (scheduled)' => number_format(round($fuel_overage_scheduled_amount * -1, 2), 2)
+                , 'Maintenance (scheduled)' => number_format(round($maintenance_scheduled_amount * -1, 2), 2)
 
             ];
 
@@ -4273,9 +4323,8 @@ class Payroll_IndexController extends Zend_Controller_Action
         return $rows;
     }
 
-    protected function get_range_attendance_data($rows, $date, $period = 1)
+    protected function get_range_attendance_data($rows, $date, $period = 1): array
     {
-
         $first_cutoff = [
             '01' => 0
             , '02' => 0
