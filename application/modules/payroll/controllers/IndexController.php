@@ -1593,6 +1593,9 @@ class Payroll_IndexController extends Zend_Controller_Action
 
     }
 
+    /**
+     * @throws Zend_Pdf_Exception
+     */
     protected function _receiving_copy($pdf, $rec_copy_data)
     {
         $page = new Zend_Pdf_Page(Zend_Pdf_Page::SIZE_A4);
@@ -1629,7 +1632,7 @@ class Payroll_IndexController extends Zend_Controller_Action
         $pdf->pages[] = $page;
     }
 
-    protected function _fetch_employees($group_id, $date_start, $date_end)
+    protected function _fetch_employees($group_id, $date_start, $date_end): array
     {
         $EmployeeMap = new Messerve_Model_Mapper_Employee();
 
@@ -2243,6 +2246,9 @@ class Payroll_IndexController extends Zend_Controller_Action
 
     }
 
+    /**
+     * @throws Zend_Pdf_Exception
+     */
     public function summaryreportAction()
     {
         function round_this($in, $digits = 2)
@@ -3840,6 +3846,10 @@ class Payroll_IndexController extends Zend_Controller_Action
 
             $sss_calamity_loan_amount = 0;
 
+            // TODO: Hacky! Fix this!
+            $fuel_overage_scheduled_amount = 0;
+            $maintenance_scheduled_amount = 0;
+
             if (count($misc_deduction) > 0) {
                 foreach ($misc_deduction as $mkey => $mvalue) {
                     if (is_numeric($mkey) && property_exists($mvalue, 'type')) {
@@ -3849,10 +3859,17 @@ class Payroll_IndexController extends Zend_Controller_Action
                         if ($mvalue->type === "sss_calamity") {
                             $sss_calamity_loan_amount = $amount;
                         }
+
+                        if ($mvalue->type === "fuel_overage") {
+                            $fuel_overage_scheduled_amount = $amount;
+                        }
+
+                        if ($mvalue->type === "maintenance_deduct") {
+                            $maintenance_scheduled_amount = $amount;
+                        }
                     }
                 }
             }
-
 
             $this_row += [
                 'BasicPay' => number_format($pvalue->getBasicPay(), 2)
@@ -3904,7 +3921,6 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , 'Fuel price' => number_format(round($pvalue->getFuelPrice(), 2), 2)
                 , 'Fuel overage' => number_format(round($pvalue->getFuelOverage() * -1, 2), 2)
 
-
                 , 'Accident' => number_format(round($pvalue->getAccident() * -1, 2), 2)
                 , 'Uniform' => number_format(round($pvalue->getUniform() * -1, 2), 2)
                 , 'Adjustment' => number_format(round($pvalue->getAdjustment() * -1, 2), 2)
@@ -3914,11 +3930,11 @@ class Payroll_IndexController extends Zend_Controller_Action
                 , 'Lost card' => number_format(round($pvalue->lost_card * -1, 2), 2)
                 , 'Food' => number_format(round($pvalue->food * -1, 2), 2)
 
-
                 , 'BOP motorcycle' => $pvalue->getBopMotorcycle() * -1
                 , 'BOP ins/reg' => $pvalue->getBopInsurance() * -1
-                // , 'PayrollMeta' => $pvalue->getPayrollMeta()
 
+                , 'Fuel overage (scheduled)' => number_format(round($fuel_overage_scheduled_amount * -1, 2), 2)
+                , 'Maintenance (scheduled)' => number_format(round($maintenance_scheduled_amount * -1, 2), 2)
 
             ];
 
@@ -4307,9 +4323,8 @@ class Payroll_IndexController extends Zend_Controller_Action
         return $rows;
     }
 
-    protected function get_range_attendance_data($rows, $date, $period = 1)
+    protected function get_range_attendance_data($rows, $date, $period = 1): array
     {
-
         $first_cutoff = [
             '01' => 0
             , '02' => 0
