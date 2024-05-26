@@ -12,7 +12,6 @@ use Messerve_Model_Eloquent_Attendance as Attendance;
 
 class ValidateDtrPost
 {
-
     /**
      * @var DTRValidationErrors
      */
@@ -21,6 +20,7 @@ class ValidateDtrPost
      * @var int
      */
     private $employee_id;
+
     /**
      * @var int
      */
@@ -81,9 +81,10 @@ class ValidateDtrPost
 
         [$start, $end] = $this->getStartAndEnd($item, $date);
 
-        if($start == null || $end == null) {
+        if ($start == null || $end == null) {
             return null;
         }
+
         $periodAttendance = (new Attendance())->newQuery()
             ->where('employee_id', $this->employee_id)
             ->where('datetime_start', $date->startOfDay())
@@ -107,7 +108,7 @@ class ValidateDtrPost
 
             [$attendanceStart, $attendanceEnd] = $this->getStartAndEnd($form, $date);
 
-            if($attendanceStart == null || $attendanceEnd == null) {
+            if ($attendanceStart == null || $attendanceEnd == null) {
                 continue;
             }
 
@@ -124,50 +125,43 @@ class ValidateDtrPost
      */
     private function getStartAndEnd(DTRFormRow $item, Carbon $date): array
     {
-        $start = null;
-        $end = null;
+        $timePairs = [];
 
-        if ($item->start_3 > 0) {
-            $start = $item->start_3;
-            if (!$item->end_3) {
-                // throw new Exception("Start 3 has no end time");
-            }
-
-            $end = $item->end_3;
+        if ($item->start_1 > 0) {
+            $timePairs[] = [$item->start_1, $item->end_1];
         }
 
         if ($item->start_2 > 0) {
-            $start = $item->start_2;
+            $timePairs[] = [$item->start_2, $item->end_2];
+        }
 
-            if (!$item->end_2) {
-                // throw new Exception("Start 2 has no end time");
+        if ($item->start_3 > 0) {
+            $timePairs[] = [$item->start_3, $item->end_3];
+        }
+
+        // Initialize the earliest and latest times
+        $earliest = null;
+        $latest = null;
+
+        foreach ($timePairs as $pair) {
+            // Convert the start and end times to Carbon instances
+            $start = Carbon::createFromFormat('Y-m-d Hi', $date->format("Y-m-d" . str_pad($pair['start'], 4, '0', STR_PAD_LEFT)));
+            $end = Carbon::createFromFormat('Y-m-d Hi', $date->format("Y-m-d" . str_pad($pair['end'], 4, '0', STR_PAD_LEFT)));
+
+            // If the end time is earlier than the start time, it means it's on the next day
+            if ($end->lt($start)) {
+                $end->addDay();
             }
 
-            if (!$end || $end < $item->end_2) {
-                $end = $item->end_2;
+            // Update the earliest and latest times
+            if (!$earliest || $start->lt($earliest)) {
+                $earliest = $start;
+            }
+            if (!$latest || $end->gt($latest)) {
+                $latest = $end;
             }
         }
 
-        if ($item->start_1 > 0) {
-            $start = $item->start_1;
-
-            if (!$item->end_1) {
-                // throw new Exception("Start 1 has no end time");
-            }
-
-            if (!$end || $end < $item->end_1) {
-                $end = $item->end_1;
-            }
-        }
-
-        return [
-            $start ? $this->militaryToCarbon($start, $date->copy()) : null,
-            $end ? $this->militaryToCarbon($end, $date->copy()) : null
-        ];
-    }
-
-    private function militaryToCarbon(int $time, Carbon $date): Carbon
-    {
-        return $date->setTime($time / 100, $time % 100);
+        return [$earliest, $latest];
     }
 }

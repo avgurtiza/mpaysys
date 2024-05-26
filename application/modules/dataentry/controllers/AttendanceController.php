@@ -821,11 +821,11 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
 
                     $this->redirect("/dataentry/attendance/employee/id/$employee_id/pay_period/$pay_period/date_start/$date_start/date_end/$date_end/group_id/$group_id");
                 } else {
-//                    $validator = (new ValidateDtrPost())($employee_id, $group_id, DTRSubmission::fromFormArray($postvars));
-//
-//                    if ($validator->fails()) {
-//                        $this->view->validationErrors = $validator->errors();
-//                    } else {
+                    $validator = (new ValidateDtrPost())($employee_id, $group_id, DTRSubmission::fromFormArray($postvars));
+
+                    if ($validator->fails()) {
+                        $this->view->validationErrors = $validator->errors();
+                    } else {
                         $MPayroll = new Messervelib_Payroll();
 
                         // TODO:  figure out why this needs to run twice
@@ -833,7 +833,7 @@ class Dataentry_AttendanceController extends Zend_Controller_Action
                         $MPayroll->save_the_day($employee_id, $group_id, $postvars);
 
                         $this->redirect("/dataentry/attendance/employee/id/$employee_id/pay_period/$pay_period/date_start/$date_start/date_end/$date_end/group_id/$group_id");
-//                    }
+                    }
                 }
             }
         }
